@@ -5,8 +5,6 @@
 - Syntax highlighting (including in Markdown code fences)
 - Run the emulator, submit transactions, scripts from the editor
 
-More details are [in Notion](https://www.notion.so/dapperlabs/Using-Eddy-fa9df1c81bde4a81a449286b162f821e)
-
 ## Installation
 
 To install the extension, ensure you [have VS Code installed](https://code.visualstudio.com/docs/setup/mac)
