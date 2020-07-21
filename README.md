@@ -1,5 +1,35 @@
 # Cadence Visual Studio Code Extension
 
+
+## Developing the Extension
+
+### Pre-requisites
+- Must have Typescript installed globally: `npm i -g typescript`
+
+### Getting Started
+- Run the Typescript watcher: `tsc -watch -p ./`
+- Launch the extension by pressing `F5` in VSCode
+- Manually reload the extension host when you make changes to TypeScript code
+
+### Configuration for Extension Host if Missing (`launch.json`): 
+```
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "extensionHost",
+      "request": "launch",
+      "name": "Launch Extension",
+      "runtimeExecutable": "${execPath}",
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
+      "outFiles": ["${workspaceFolder}/out/**/*.js"]
+    }
+  ]
+}
+
+```
+---
+
 ## Features
 
 - Syntax highlighting (including in Markdown code fences)
