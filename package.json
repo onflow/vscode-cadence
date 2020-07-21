@@ -85,6 +85,17 @@
           "default": 3,
           "description": "The number of default accounts to create",
           "scope": "resource"
+        },
+        "cadence.trace.server": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Traces the communication between VS Code and the Cadence language server."
         }
       }
     },
