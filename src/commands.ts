@@ -126,7 +126,7 @@ const switchActiveAccount = (ext: Extension) => async () => {
     .map((account) => {
       const suffix: String =
         account.index === ext.config.activeAccount ? ` ${activeSuffix}` : "";
-      const label = `${account.fullName()}${suffix}`;
+      const label = account.fullName() + suffix;
 
       return {
         label: label,
