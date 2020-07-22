@@ -120,7 +120,6 @@ const switchActiveAccount = (ext: Extension) => async () => {
   // Suffix to indicate which account is active
   const activeSuffix = "(active)";
   // Create the options (mark the active account with an 'active' prefix)
-  console.log(">>>>", ext.config.accounts);
   const accountOptions = Object.values(ext.config.accounts)
     // Mark the active account with a `*` in the dialog
     .filter((acct) => acct.address !== SERVICE_ADDR)
