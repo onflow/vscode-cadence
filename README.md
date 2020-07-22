@@ -71,8 +71,6 @@ you should use the Flow CLI install option (above). It's much easier!
 
 #### VS Code Extension
 
-Make sure you are in this `vscode-extension` directory.
-
 If you haven't already, install dependencies.
 
 ```shell script
