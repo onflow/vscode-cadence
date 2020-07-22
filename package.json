@@ -3,10 +3,10 @@
   "displayName": "Cadence",
   "publisher": "dapperlabs",
   "description": "",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/onflow/cadence.git"
+    "url": "https://github.com/onflow/vscode-flow.git"
   },
   "engines": {
     "vscode": "^1.36.0"
