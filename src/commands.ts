@@ -6,7 +6,7 @@ import {
   window,
   workspace,
 } from "vscode";
-import { Extension, renderExtension } from "./extension";
+import { Extension, renderExtension, EmulatorState } from "./extension";
 import { LanguageServerAPI } from "./language-server";
 import { createTerminal } from "./terminal";
 import { removeAddressPrefix } from "./address";
@@ -54,6 +54,9 @@ const startEmulator = (ext: Extension) => async () => {
   // Start the emulator with the service key we gave to the language server.
   const { serverConfig } = ext.config;
 
+  ext.setEmulatorState(EmulatorState.Starting);
+  renderExtension(ext);
+
   ext.terminal.sendText(
     [
       ext.config.flowCommand,
@@ -70,7 +73,8 @@ const startEmulator = (ext: Extension) => async () => {
     ].join(" ")
   );
   ext.terminal.show();
-  ext.isEmulatorRunning = true;
+
+  ext.setEmulatorState(EmulatorState.Started);
 
   // create default accounts after the emulator has started
   setTimeout(async () => {
@@ -90,7 +94,8 @@ const stopEmulator = (ext: Extension) => async () => {
   ext.terminal.dispose();
   ext.terminal = createTerminal(ext.ctx);
 
-  ext.isEmulatorRunning = false;
+  ext.setEmulatorState(EmulatorState.Stopped);
+
   // Clear accounts and restart language server to ensure account
   // state is in sync.
   ext.config.resetAccounts();

@@ -5,18 +5,26 @@ import {
 } from "vscode";
 import {Account} from "./config";
 import {SWITCH_ACCOUNT, START_EMULATOR, STOP_EMULATOR} from "./commands";
+import { EmulatorState } from "./extension";
 
 export function createEmulatorStatusBarItem(): StatusBarItem {
     return window.createStatusBarItem(StatusBarAlignment.Left, 200);
 }
 
-export function updateEmulatorStatusBarItem(statusBarItem: StatusBarItem, isRunning: boolean): void {
-    if (isRunning) {
-        statusBarItem.command = STOP_EMULATOR;
-        statusBarItem.text = "$(debug-stop) Stop Flow Emulator"
-    } else {
-        statusBarItem.command = START_EMULATOR;
-        statusBarItem.text = "$(debug-start) Start Flow Emulator"
+export function updateEmulatorStatusBarItem(statusBarItem: StatusBarItem, emulatorState: EmulatorState): void {
+    switch (emulatorState) {
+        case EmulatorState.Stopped:
+            statusBarItem.command = START_EMULATOR;
+            statusBarItem.text = "$(debug-start) Start Flow Emulator"
+            break;
+        case EmulatorState.Starting:
+            statusBarItem.command = undefined;
+            statusBarItem.text = "$(loading~spin) Emulator starting..."
+            break;
+        case EmulatorState.Started:
+            statusBarItem.command = STOP_EMULATOR;
+            statusBarItem.text = "$(debug-stop) Stop Flow Emulator"
+            break;
     }
 
     statusBarItem.show()
