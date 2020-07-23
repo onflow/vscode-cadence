@@ -8,7 +8,12 @@ import {getConfig, handleConfigChanges, Config} from "./config";
 import {LanguageServerAPI} from "./language-server";
 import {registerCommands} from "./commands";
 import {createTerminal} from "./terminal";
-import {createActiveAccountStatusBarItem, updateActiveAccountStatusBarItem} from "./status-bar";
+import {
+    createEmulatorStatusBarItem, 
+    updateEmulatorStatusBarItem,
+    createActiveAccountStatusBarItem, 
+    updateActiveAccountStatusBarItem, 
+} from "./status-bar";
 
 // The container for all data relevant to the extension.
 export type Extension = {
@@ -16,6 +21,8 @@ export type Extension = {
     ctx: ExtensionContext
     api: LanguageServerAPI
     terminal: Terminal
+    isEmulatorRunning: boolean;
+    emulatorStatusBarItem: StatusBarItem
     activeAccountStatusBarItem: StatusBarItem
 };
 
@@ -24,14 +31,12 @@ export type Extension = {
 export function activate(ctx: ExtensionContext) {
     let config: Config;
     let terminal: Terminal;
-    let activeAccountStatusBarItem: StatusBarItem;
     let api: LanguageServerAPI;
 
     try {
         config = getConfig();
         terminal = createTerminal(ctx);
         api = new LanguageServerAPI(ctx, config);
-        activeAccountStatusBarItem = createActiveAccountStatusBarItem();
     } catch (err) {
         window.showErrorMessage("Failed to activate extension: ", err);
         return;
@@ -43,7 +48,9 @@ export function activate(ctx: ExtensionContext) {
         ctx: ctx,
         api: api,
         terminal: terminal,
-        activeAccountStatusBarItem: activeAccountStatusBarItem,
+        isEmulatorRunning: false,
+        emulatorStatusBarItem: createEmulatorStatusBarItem(),
+        activeAccountStatusBarItem: createActiveAccountStatusBarItem(),
     };
 
     registerCommands(ext);
@@ -53,5 +60,6 @@ export function activate(ctx: ExtensionContext) {
 export function deactivate() {}
 
 export function renderExtension(ext: Extension) {
+    updateEmulatorStatusBarItem(ext.emulatorStatusBarItem, ext.isEmulatorRunning);
     updateActiveAccountStatusBarItem(ext.activeAccountStatusBarItem, ext.config.getActiveAccount());
 }

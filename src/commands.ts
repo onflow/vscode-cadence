@@ -10,7 +10,6 @@ import { Extension, renderExtension } from "./extension";
 import { LanguageServerAPI } from "./language-server";
 import { createTerminal } from "./terminal";
 import { removeAddressPrefix } from "./address";
-import { SERVICE_ADDR } from "./config";
 
 // Command identifiers for locally handled commands
 export const RESTART_SERVER = "cadence.restartServer";
@@ -71,17 +70,14 @@ const startEmulator = (ext: Extension) => async () => {
     ].join(" ")
   );
   ext.terminal.show();
+  ext.isEmulatorRunning = true;
 
   // create default accounts after the emulator has started
-  // skip service account since it is already created
   setTimeout(async () => {
     try {
-      const accounts = await ext.api.createDefaultAccounts(
-        ext.config.numAccounts - 1
-      );
+      const accounts = await ext.api.createDefaultAccounts(ext.config.numAccounts);
       accounts.forEach((address) => ext.config.addAccount(address));
-      // set the first account as active
-      ext.config.setActiveAccount(1);
+      renderExtension(ext);
     } catch (err) {
       console.error("Failed to create default accounts", err);
       window.showWarningMessage("Failed to create default accounts");
@@ -94,6 +90,7 @@ const stopEmulator = (ext: Extension) => async () => {
   ext.terminal.dispose();
   ext.terminal = createTerminal(ext.ctx);
 
+  ext.isEmulatorRunning = false;
   // Clear accounts and restart language server to ensure account
   // state is in sync.
   ext.config.resetAccounts();
@@ -108,6 +105,7 @@ const createAccount = (ext: Extension) => async () => {
   try {
     const addr = await ext.api.createAccount();
     ext.config.addAccount(addr);
+    renderExtension(ext);
   } catch (err) {
     window.showErrorMessage("Failed to create account: " + err);
     return;
@@ -122,7 +120,6 @@ const switchActiveAccount = (ext: Extension) => async () => {
   // Create the options (mark the active account with an 'active' prefix)
   const accountOptions = Object.values(ext.config.accounts)
     // Mark the active account with a `*` in the dialog
-    .filter((acct) => acct.address !== SERVICE_ADDR)
     .map((account) => {
       const suffix: String =
         account.index === ext.config.activeAccount ? ` ${activeSuffix}` : "";
