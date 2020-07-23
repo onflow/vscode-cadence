@@ -81,8 +81,12 @@ const startEmulator = (ext: Extension) => async () => {
     try {
       const accounts = await ext.api.createDefaultAccounts(ext.config.numAccounts);
       accounts.forEach((address) => ext.config.addAccount(address));
+      
       renderExtension(ext);
     } catch (err) {
+      ext.setEmulatorState(EmulatorState.Stopped);
+      renderExtension(ext);
+
       console.error("Failed to create default accounts", err);
       window.showWarningMessage("Failed to create default accounts");
     }
