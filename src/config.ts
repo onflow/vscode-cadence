@@ -37,7 +37,7 @@ type ServerConfig = {
 
 // The configuration used by the extension.
 export class Config {
-  // The name of the flow CLI executable
+  // The name of the Flow CLI executable.
   flowCommand: string;
   serverConfig: ServerConfig;
   numAccounts: number;
