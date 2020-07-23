@@ -1,8 +1,6 @@
 import { commands, window, workspace } from "vscode";
 import { addAddressPrefix } from "./address";
 
-export const SERVICE_ADDR: string = "f8d6e0586b0a20c7";
-
 const CONFIG_FLOW_COMMAND = "flowCommand";
 const CONFIG_SERVICE_PRIVATE_KEY = "servicePrivateKey";
 const CONFIG_SERVICE_KEY_SIGNATURE_ALGORITHM = "serviceKeySignatureAlgorithm";
@@ -21,7 +19,7 @@ export class Account {
   }
 
   name(): string {
-    return this.index === 0 ? "Service Account" : `Account ${this.index}`;
+    return `Account ${this.index + 1}`;
   }
 
   fullName(): string {
@@ -47,7 +45,7 @@ export class Config {
   // Mapping from account address to account object.
   accounts: Array<Account>;
   // Index of the currently active account.
-  activeAccount: number;
+  activeAccount: number | null;
 
   constructor(
     flowCommand: string,
@@ -57,20 +55,28 @@ export class Config {
     this.flowCommand = flowCommand;
     this.numAccounts = numAccounts;
     this.serverConfig = serverConfig;
-    this.accounts = [new Account(0, SERVICE_ADDR)];
-    this.activeAccount = 0;
+    this.accounts = [];
+    this.activeAccount = null;
   }
 
   addAccount(address: string) {
     const index = this.accounts.length;
     this.accounts.push(new Account(index, address));
+
+    if (index == 0) {
+      this.setActiveAccount(0);
+    }
   }
 
   setActiveAccount(index: number) {
     this.activeAccount = index;
   }
 
-  getActiveAccount(): Account {
+  getActiveAccount(): Account | null {
+    if (this.activeAccount == null) {
+      return null;
+    }
+
     return this.accounts[this.activeAccount];
   }
 
@@ -84,8 +90,8 @@ export class Config {
 
   // Resets account state
   resetAccounts() {
-    this.accounts = [new Account(0, SERVICE_ADDR)];
-    this.activeAccount = 0;
+    this.accounts = [];
+    this.activeAccount = null;
   }
 }
 
