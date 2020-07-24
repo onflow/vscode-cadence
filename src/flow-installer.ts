@@ -117,9 +117,6 @@ export class FlowInstaller {
       // TODO
       case "darwin":
       case "linux":
-        if (fs.existsSync(this.downloadDest)) {
-          fs.unlinkSync(this.downloadDest);
-        }
         const downloadTask = window.withProgress({
           location: ProgressLocation.Notification,
           title: "Installing Flow on your system!",
