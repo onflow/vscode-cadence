@@ -5,7 +5,7 @@ import {
   Range,
   window,
 } from "vscode";
-import { Extension, renderExtension, EmulatorState } from "./extension";
+import { Extension, renderExtension, EmulatorState, ensureRuntimeDependencies } from "./extension";
 import { LanguageServerAPI } from "./language-server";
 import { createTerminal } from "./terminal";
 import { removeAddressPrefix } from "./address";
@@ -54,6 +54,8 @@ const startEmulator = (ext: Extension) => async () => {
   // Start the emulator with the service key we gave to the language server.
   const { serverConfig } = ext.config;
 
+  await ensureRuntimeDependencies(ext)
+
   ext.setEmulatorState(EmulatorState.Starting);
   renderExtension(ext);
 
@@ -82,7 +84,7 @@ const startEmulator = (ext: Extension) => async () => {
       const accounts = await ext.api.createDefaultAccounts(ext.config.numAccounts);
 
       accounts.forEach((address) => ext.config.addAccount(address));
-      
+
       const activeAccount = ext.config.getAccount(0)
 
       if (!activeAccount) {

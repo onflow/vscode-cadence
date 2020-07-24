@@ -96,6 +96,11 @@
           ],
           "default": "off",
           "description": "Traces the communication between VS Code and the Cadence language server."
+        },
+        "cadence.cliDownloadUrlBase": {
+          "type": "string",
+          "default": "https://storage.googleapis.com/flow-cli",
+          "description": "Location of flow-cli dependency"
         }
       }
     },
