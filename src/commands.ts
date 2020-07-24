@@ -19,10 +19,10 @@ export const CREATE_ACCOUNT = "cadence.createAccount";
 export const SWITCH_ACCOUNT = "cadence.switchActiveAccount";
 
 // Command identifies for commands handled by the Language server
-export const CREATE_ACCOUNT_SERVER = "cadence.server.createAccount";
+export const CREATE_ACCOUNT_SERVER = "cadence.server.flow.createAccount";
 export const CREATE_DEFAULT_ACCOUNTS_SERVER =
-  "cadence.server.createDefaultAccounts";
-export const SWITCH_ACCOUNT_SERVER = "cadence.server.switchActiveAccount";
+  "cadence.server.flow.createDefaultAccounts";
+export const SWITCH_ACCOUNT_SERVER = "cadence.server.flow.switchActiveAccount";
 
 // Registers a command with VS Code so it can be invoked by the user.
 function registerCommand(
