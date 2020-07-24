@@ -62,10 +62,6 @@ export class Config {
   addAccount(address: string) {
     const index = this.accounts.length;
     this.accounts.push(new Account(index, address));
-
-    if (index == 0) {
-      this.setActiveAccount(0);
-    }
   }
 
   setActiveAccount(index: number) {
