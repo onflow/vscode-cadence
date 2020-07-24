@@ -4,12 +4,12 @@ import {
   Position,
   Range,
   window,
-  workspace,
 } from "vscode";
 import { Extension, renderExtension, EmulatorState } from "./extension";
 import { LanguageServerAPI } from "./language-server";
 import { createTerminal } from "./terminal";
 import { removeAddressPrefix } from "./address";
+import { Account } from "./config";
 
 // Command identifiers for locally handled commands
 export const RESTART_SERVER = "cadence.restartServer";
@@ -80,8 +80,18 @@ const startEmulator = (ext: Extension) => async () => {
   setTimeout(async () => {
     try {
       const accounts = await ext.api.createDefaultAccounts(ext.config.numAccounts);
+
       accounts.forEach((address) => ext.config.addAccount(address));
       
+      const activeAccount = ext.config.getAccount(0)
+
+      if (!activeAccount) {
+        console.error("Failed to get initial active account");
+        return;
+      }
+
+      setActiveAccount(ext, activeAccount)
+
       renderExtension(ext);
     } catch (err) {
       ext.setEmulatorState(EmulatorState.Stopped);
@@ -155,32 +165,7 @@ const switchActiveAccount = (ext: Extension) => async () => {
       return;
     }
 
-    try {
-      ext.api.switchActiveAccount(removeAddressPrefix(activeAccount.address));
-      window.visibleTextEditors.forEach((editor) => {
-        if (!editor.document.lineCount) {
-          return;
-        }
-        // NOTE: We add a space to the end of the last line to force
-        // Codelens to refresh.
-        const lineCount = editor.document.lineCount;
-        const lastLine = editor.document.lineAt(lineCount - 1);
-        editor.edit((edit) => {
-          if (lastLine.isEmptyOrWhitespace) {
-            edit.insert(new Position(lineCount - 1, 0), " ");
-            edit.delete(new Range(lineCount - 1, 0, lineCount - 1, 1000));
-          } else {
-            edit.insert(new Position(lineCount - 1, 1000), "\n");
-          }
-        });
-      });
-    } catch (err) {
-      window.showWarningMessage("Failed to switch active account");
-      console.error(err);
-      return;
-    }
-
-    ext.config.setActiveAccount(activeIndex);
+    setActiveAccount(ext, activeAccount)
 
     window.showInformationMessage(
       `Switched to account ${activeAccount.fullName()}`
@@ -189,3 +174,32 @@ const switchActiveAccount = (ext: Extension) => async () => {
     renderExtension(ext);
   });
 };
+
+const setActiveAccount = (ext: Extension, activeAccount: Account) => {
+  try {
+    ext.api.switchActiveAccount(removeAddressPrefix(activeAccount.address));
+    window.visibleTextEditors.forEach((editor) => {
+      if (!editor.document.lineCount) {
+        return;
+      }
+      // NOTE: We add a space to the end of the last line to force
+      // Codelens to refresh.
+      const lineCount = editor.document.lineCount;
+      const lastLine = editor.document.lineAt(lineCount - 1);
+      editor.edit((edit) => {
+        if (lastLine.isEmptyOrWhitespace) {
+          edit.insert(new Position(lineCount - 1, 0), " ");
+          edit.delete(new Range(lineCount - 1, 0, lineCount - 1, 1000));
+        } else {
+          edit.insert(new Position(lineCount - 1, 1000), "\n");
+        }
+      });
+    });
+  } catch (err) {
+    window.showWarningMessage("Failed to switch active account");
+    console.error(err);
+    return;
+  }
+
+  ext.config.setActiveAccount(activeAccount.index);
+}
