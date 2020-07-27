@@ -22,9 +22,6 @@ const DARWIN_FLOW_BIN_PATH = "/usr/local/bin"
 const LINUX_FLOW_BIN_PATH = `${process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE}/.local/bin`
 const WINDOWS_FLOW_BIN_PATH = ""
 
-/*
- * Checks if the executable is on the PATH
- */
 function executableExists(exe: string): boolean {
   const cmd: string = process.platform === 'win32' ? 'where' : 'which';
   const out = child_process.spawnSync(cmd, [exe]);
@@ -127,13 +124,10 @@ export class FlowInstaller {
         }, async (progress) => {
           const p = new Promise<void>((resolve, reject) => {
 
-            const srcUrl = url.parse(this.downloadURL);
+            const { host, path, protocol, port } = url.parse(this.downloadURL);
 
             const opts: https.RequestOptions = {
-              host: srcUrl.host,
-              path: srcUrl.path,
-              protocol: srcUrl.protocol,
-              port: srcUrl.port,
+              host, path, protocol, port,
               headers: { 'User-Agent': 'vscode-cadence-ext' },
             };
 
