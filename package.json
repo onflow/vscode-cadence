@@ -100,7 +100,7 @@
         "cadence.cliDownloadUrlBase": {
           "type": "string",
           "default": "https://storage.googleapis.com/flow-cli",
-          "description": "Location of flow-cli dependency"
+          "description": "Location of Flow runtime dependencies."
         }
       }
     },

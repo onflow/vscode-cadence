@@ -63,6 +63,9 @@ export async function activate(ctx: ExtensionContext) {
   let config: Config;
   let terminal: Terminal;
   let api: LanguageServerAPI;
+
+  await ensureRuntimeDependencies(ctx)
+
   try {
     config = getConfig();
     terminal = createTerminal(ctx);
@@ -94,6 +97,6 @@ export function renderExtension(ext: Extension) {
   updateActiveAccountStatusBarItem(ext.activeAccountStatusBarItem, ext.config.getActiveAccount());
 }
 
-export async function ensureRuntimeDependencies(ext: Extension) {
-  await new FlowInstaller(ext.ctx).installDepsIfNotPresent()
+export async function ensureRuntimeDependencies(ctx: ExtensionContext) {
+  await new FlowInstaller(ctx).installDepsIfNotPresent()
 }

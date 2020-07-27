@@ -7,6 +7,7 @@ import * as url from 'url';
 import * as child_process from 'child_process';
 import { Extension } from "./extension";
 import { commands, window, workspace, ExtensionContext, ProgressLocation } from "vscode";
+import { rejects } from 'assert';
 
 interface InfoMessage {
   message: string;
@@ -16,17 +17,14 @@ const UNSUPPORTED_PLATFORM = "Unsupported platform."
 const UNSUPPORTED_ARCH = "Unsupported CPU."
 const BINARY_ALREADY_INSTALLED = "Binary already installed."
 const DOWNLOAD_IN_PROGRESS = "Download in progress."
+const COULD_NOT_GET_LATEST_VERSION = "Error getting the latest Cadence version."
 const DOWNLOAD_FAILED = "Download failed."
 
 const DARWIN_FLOW_BIN_PATH = "/usr/local/bin"
 const LINUX_FLOW_BIN_PATH = `${process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE}/.local/bin`
 const WINDOWS_FLOW_BIN_PATH = ""
 
-function executableExists(exe: string): boolean {
-  const cmd: string = process.platform === 'win32' ? 'where' : 'which';
-  const out = child_process.spawnSync(cmd, [exe]);
-  return out.status === 0;
-}
+const VERSION_TEXT = "/version.txt"
 
 export class FlowInstaller {
 
@@ -36,7 +34,7 @@ export class FlowInstaller {
   downloadURL: string;
   targetPath: string;
   downloadDest: string;
-  inFlightDownloads: Map<string, Map<string, Thenable<void>>>
+  downloads: Map<string, Map<string, Thenable<void>>>
   cadenceVersion: string;
 
   constructor(ctx: ExtensionContext) {
@@ -47,12 +45,13 @@ export class FlowInstaller {
     this.downloadDest = ""
     this.platform = process.platform;
     this.downloadURL = cadenceConfig.cliDownloadUrlBase;
-    this.inFlightDownloads = new Map()
-    this.cadenceVersion = "v0.6.0" // TODO: make this dynamic
+    this.downloads = new Map()
+    this.cadenceVersion = ""
   }
 
   async installDepsIfNotPresent() {
     try {
+      await this.getLatestCadenceVersion()
       await this.parsePlatform();
       await this.checkForInstalledBin();
       await this.checkForDownloadInProgress();
@@ -90,9 +89,38 @@ export class FlowInstaller {
   }
 
 
+  private async getLatestCadenceVersion() {
+    const getLatestVersion = async (): Promise<string> => {
+      return new Promise((res, rej) => {
+        https.get(this.downloadURL + VERSION_TEXT, (resp) => {
+          let data = '';
+          resp.on('data', (chunk) => { data += chunk });
+          resp.on('end', () => {
+            console.info('Got latest Cadence version:', data)
+            res(data)
+          });
+        }).on("error", rej);
+      })
+    }
+
+
+    try {
+      const version = await getLatestVersion()
+      this.cadenceVersion = version;
+    } catch (e) {
+      throw <InfoMessage>{ message: COULD_NOT_GET_LATEST_VERSION }
+    }
+  }
+
+
+  private executableExists(exe: string): boolean {
+    const cmd: string = process.platform === 'win32' ? 'where' : 'which';
+    const out = child_process.spawnSync(cmd, [exe]);
+    return out.status === 0;
+  }
 
   private async checkForInstalledBin() {
-    if (executableExists('flow')) {
+    if (this.executableExists('flow')) {
       throw <InfoMessage>{ message: BINARY_ALREADY_INSTALLED }
     }
     const downloadDest = this.downloadDest;
@@ -102,7 +130,7 @@ export class FlowInstaller {
   }
 
   private async checkForDownloadInProgress() {
-    const inFlightDownload = this.inFlightDownloads.get(this.downloadURL)?.get(this.targetPath);
+    const inFlightDownload = this.downloads.get(this.downloadURL)?.get(this.targetPath);
     if (inFlightDownload) {
       throw <InfoMessage>{ message: DOWNLOAD_IN_PROGRESS }
     }
@@ -114,16 +142,13 @@ export class FlowInstaller {
       // TODO
       case "darwin":
       case "linux":
-        if (fs.existsSync(this.downloadDest)) {
-          fs.unlinkSync(this.downloadDest);
-        }
         const downloadTask = window.withProgress({
           location: ProgressLocation.Notification,
-          title: "Installing Flow on your system!",
+          title: `Installing Flow (Cadence ${this.cadenceVersion})`,
           cancellable: false
         }, async (progress) => {
           const p = new Promise<void>((resolve, reject) => {
-
+            console.info('Attempting to download latest version from:', url)
             const { host, path, protocol, port } = url.parse(this.downloadURL);
 
             const opts: https.RequestOptions = {
@@ -158,14 +183,14 @@ export class FlowInstaller {
             await p;
             fs.renameSync(this.downloadDest + '.download', this.targetPath + '/flow');
           } finally {
-            this.inFlightDownloads.get(this.downloadURL)?.delete(this.targetPath);
+            this.downloads.get(this.downloadURL)?.delete(this.targetPath);
           }
         });
         try {
-          if (this.inFlightDownloads.has(this.downloadURL)) {
-            this.inFlightDownloads.get(this.downloadURL)?.set(this.targetPath, downloadTask);
+          if (this.downloads.has(this.downloadURL)) {
+            this.downloads.get(this.downloadURL)?.set(this.targetPath, downloadTask);
           } else {
-            this.inFlightDownloads.set(this.downloadURL, new Map([[this.targetPath, downloadTask]]));
+            this.downloads.set(this.downloadURL, new Map([[this.targetPath, downloadTask]]));
           }
           return downloadTask;
         } catch (e) {

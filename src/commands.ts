@@ -5,7 +5,7 @@ import {
   Range,
   window,
 } from "vscode";
-import { Extension, renderExtension, EmulatorState, ensureRuntimeDependencies } from "./extension";
+import { Extension, renderExtension, EmulatorState } from "./extension";
 import { LanguageServerAPI } from "./language-server";
 import { createTerminal } from "./terminal";
 import { removeAddressPrefix } from "./address";
@@ -53,8 +53,6 @@ const restartServer = (ext: Extension) => async () => {
 const startEmulator = (ext: Extension) => async () => {
   // Start the emulator with the service key we gave to the language server.
   const { serverConfig } = ext.config;
-
-  await ensureRuntimeDependencies(ext)
 
   ext.setEmulatorState(EmulatorState.Starting);
   renderExtension(ext);
