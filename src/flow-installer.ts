@@ -17,7 +17,8 @@ const UNSUPPORTED_PLATFORM = "Unsupported platform."
 const UNSUPPORTED_ARCH = "Unsupported CPU."
 const BINARY_ALREADY_INSTALLED = "Binary already installed."
 const DOWNLOAD_IN_PROGRESS = "Download in progress."
-const COULD_NOT_GET_LATEST_VERSION = "Error getting the latest Cadence version."
+const USER_CANCELED_DOWNLOAD = "User cancelled download."
+const COULD_NOT_GET_LATEST_CADENCE_VERSION = "Error getting the latest Cadence version."
 const DOWNLOAD_FAILED = "Download failed."
 
 const DARWIN_FLOW_BIN_PATH = "/usr/local/bin"
@@ -51,14 +52,44 @@ export class FlowInstaller {
 
   async installDepsIfNotPresent() {
     try {
-      await this.getLatestCadenceVersion()
+      await this.getLatestCadenceVersion();
       await this.parsePlatform();
       await this.checkForInstalledBin();
       await this.checkForDownloadInProgress();
       await this.startDownload();
     } catch (e) {
+
       console.log(e)
     }
+  }
+
+  private report(message: InfoMessage) {
+    console.log('Problem installing Cadence:', message)
+  }
+
+  async getLatestCadenceVersion() {
+    const getLatestVersion = async (): Promise<string> => {
+      return new Promise((res, rej) => {
+        https.get(this.downloadURL + VERSION_TEXT, (resp) => {
+          let data = '';
+          resp.on('data', (chunk) => { data += chunk });
+          resp.on('end', () => {
+            console.info('Got latest Cadence version:', data)
+            res(data)
+          });
+        }).on("error", rej);
+      })
+    }
+    try {
+      const version = await getLatestVersion()
+      this.cadenceVersion = version;
+    } catch (e) {
+      this.report({ message: COULD_NOT_GET_LATEST_CADENCE_VERSION })
+    }
+  }
+
+  async checkCurrentInstalledCadenceVersion() {
+
   }
 
   private parsePlatform() {
@@ -73,7 +104,7 @@ export class FlowInstaller {
         this.targetPath = LINUX_FLOW_BIN_PATH
         break;
       default:
-        throw <InfoMessage>{ message: UNSUPPORTED_PLATFORM }
+        this.report({ message: UNSUPPORTED_PLATFORM })
     }
 
     switch (["x86_64", "x86-64", "x64", "amd64"].includes(arch)) {
@@ -81,37 +112,12 @@ export class FlowInstaller {
         this.arch = "x86_64"
         break;
       default:
-        throw <InfoMessage>{ message: UNSUPPORTED_ARCH }
+        this.report({ message: UNSUPPORTED_ARCH })
     }
     const binaryIdent = `flow-${this.arch}-${this.platform}-${this.cadenceVersion}`
     this.downloadURL = `${this.downloadURL}/${binaryIdent}`
     this.downloadDest = path.join(this.ctx.globalStoragePath, binaryIdent + '.download');
   }
-
-
-  private async getLatestCadenceVersion() {
-    const getLatestVersion = async (): Promise<string> => {
-      return new Promise((res, rej) => {
-        https.get(this.downloadURL + VERSION_TEXT, (resp) => {
-          let data = '';
-          resp.on('data', (chunk) => { data += chunk });
-          resp.on('end', () => {
-            console.info('Got latest Cadence version:', data)
-            res(data)
-          });
-        }).on("error", rej);
-      })
-    }
-
-
-    try {
-      const version = await getLatestVersion()
-      this.cadenceVersion = version;
-    } catch (e) {
-      throw <InfoMessage>{ message: COULD_NOT_GET_LATEST_VERSION }
-    }
-  }
-
 
   private executableExists(exe: string): boolean {
     const cmd: string = process.platform === 'win32' ? 'where' : 'which';
@@ -121,8 +127,13 @@ export class FlowInstaller {
 
   private async checkForInstalledBin() {
     if (this.executableExists('flow')) {
-      throw <InfoMessage>{ message: BINARY_ALREADY_INSTALLED }
+      try {
+
+      } catch (e) {
+        this.report({ message: USER_CANCELED_DOWNLOAD })
+      }
     }
+
     const downloadDest = this.downloadDest;
     if (fs.existsSync(downloadDest)) {
       fs.unlinkSync(downloadDest);
@@ -132,7 +143,7 @@ export class FlowInstaller {
   private async checkForDownloadInProgress() {
     const inFlightDownload = this.downloads.get(this.downloadURL)?.get(this.targetPath);
     if (inFlightDownload) {
-      throw <InfoMessage>{ message: DOWNLOAD_IN_PROGRESS }
+      this.report({ message: DOWNLOAD_IN_PROGRESS })
     }
   }
 
@@ -147,7 +158,7 @@ export class FlowInstaller {
           title: `Installing Flow (Cadence ${this.cadenceVersion})`,
           cancellable: false
         }, async (progress) => {
-          const p = new Promise<void>((resolve, reject) => {
+          const download = new Promise<void>((resolve, reject) => {
             console.info('Attempting to download latest version from:', url)
             const { host, path, protocol, port } = url.parse(this.downloadURL);
 
@@ -180,10 +191,11 @@ export class FlowInstaller {
           });
 
           try {
-            await p;
+            await download;
             fs.renameSync(this.downloadDest + '.download', this.targetPath + '/flow');
-          } finally {
             this.downloads.get(this.downloadURL)?.delete(this.targetPath);
+          } catch (e) {
+            this.report({ message: DOWNLOAD_FAILED })
           }
         });
         try {
@@ -195,19 +207,11 @@ export class FlowInstaller {
           return downloadTask;
         } catch (e) {
           fs.unlinkSync(this.downloadDest);
-          throw new Error(`Failed to download ${url}`);
+          this.report({ message: DOWNLOAD_FAILED })
         }
       default:
-        throw <InfoMessage>{ message: UNSUPPORTED_PLATFORM }
+        this.report({ message: UNSUPPORTED_PLATFORM })
     }
   }
 
-  private parseThrownMessage(message: Error | InfoMessage) {
-    // TODO window.show info / show error
-    return message ?? "ERROR";
-  }
-
-  private confirmDownload() {
-    return this;
-  }
 }
