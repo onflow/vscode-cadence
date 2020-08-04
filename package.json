@@ -16,7 +16,11 @@
   ],
   "activationEvents": [
     "onLanguage:cadence",
-    "onCommand:cadence.runEmulator"
+    "onCommand:cadence.restartServer",
+    "onCommand:cadence.runEmulator",
+    "onCommand:cadence.stopEmulator",
+    "onCommand:cadence.createAccount",
+    "onCommand:cadence.switchActiveAccount"
   ],
   "main": "./out/extension.js",
   "contributes": {
