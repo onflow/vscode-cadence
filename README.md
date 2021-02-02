@@ -37,6 +37,10 @@ Note that most editing features (type checking, code completion, etc.) are imple
 ## Features
 
 - Syntax highlighting (including in Markdown code fences)
+- Diagnostics (errors and warnings)
+- Type information on hover
+- Go to declaration
+- Code completion
 - Run the emulator, submit transactions, scripts from the editor
 
 ## Installation
@@ -48,9 +52,7 @@ and have configured the [`code` command line interface](https://code.visualstudi
 
 The recommended way to install the latest released version is to use the Flow CLI.
 
-```shell script
-brew tap dapperlabs/homebrew && brew install flow-cli
-```
+First, [install the Flow CLI](https://github.com/onflow/flow-cli#installation).
 
 Check that it's been installed correctly.
 
