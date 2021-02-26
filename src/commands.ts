@@ -1,15 +1,22 @@
+import * as cp from 'child_process';
+import { decode } from "@onflow/decode"
+
 import {
   commands,
   ExtensionContext,
   Position,
   Range,
   window,
+  ProgressLocation,
+  env
 } from "vscode";
+
 import { Extension, renderExtension, EmulatorState } from "./extension";
 import { LanguageServerAPI } from "./language-server";
 import { createTerminal } from "./terminal";
-import { removeAddressPrefix } from "./address";
 import { Account } from "./config";
+import { makeArgsFlag, makeFlag } from "./utils";
+
 
 // Command identifiers for locally handled commands
 export const RESTART_SERVER = "cadence.restartServer";
@@ -18,11 +25,17 @@ export const STOP_EMULATOR = "cadence.stopEmulator";
 export const CREATE_ACCOUNT = "cadence.createAccount";
 export const SWITCH_ACCOUNT = "cadence.switchActiveAccount";
 
+// Command identifiers for commands running in CLI
+export const DEPLOY_CONTRACT = "cadence.deployContract"
+export const EXECUTE_SCRIPT = "cadence.executeScript"
+export const SEND_TRANSACTION = "cadence.sendTransaction"
+
 // Command identifies for commands handled by the Language server
 export const CREATE_ACCOUNT_SERVER = "cadence.server.flow.createAccount";
 export const CREATE_DEFAULT_ACCOUNTS_SERVER =
   "cadence.server.flow.createDefaultAccounts";
 export const SWITCH_ACCOUNT_SERVER = "cadence.server.flow.switchActiveAccount";
+export const CHANGE_EMULATOR_STATE = "cadence.server.flow.changeEmulatorState"
 
 // Registers a command with VS Code so it can be invoked by the user.
 function registerCommand(
@@ -41,20 +54,185 @@ export function registerCommands(ext: Extension) {
   registerCommand(ext.ctx, STOP_EMULATOR, stopEmulator(ext));
   registerCommand(ext.ctx, CREATE_ACCOUNT, createAccount(ext));
   registerCommand(ext.ctx, SWITCH_ACCOUNT, switchActiveAccount(ext));
+
+  registerCommand(ext.ctx, DEPLOY_CONTRACT, deployContract(ext))
+  registerCommand(ext.ctx, EXECUTE_SCRIPT, executeScript(ext))
+  registerCommand(ext.ctx, SEND_TRANSACTION, sendTransaction(ext))
 }
+
+// Show result of the script execution in form of an information message
+const showScriptResult = async (response: string) => {
+  const result = await decode(JSON.parse(response))
+  const content = `Script Result: ${result}`;
+  window.showInformationMessage(content)
+}
+
+// TODO: Error path
+// - check if emulator is running
+// - display error if tx/script failed
+
+const deployContract = (ext: Extension) => async (uri: string, name: string, args:string, to: string) => {
+  const filename = window.activeTextEditor?.document.fileName || ""
+  // const argsFlag = makeArgsFlag(args)
+
+  let txSigner = to
+  if (txSigner.includes("active")){
+    txSigner = ext.config.getActiveAccount()?.name || "service"
+  }
+
+  // Check that account exist
+  if (!ext.config.accountExists(txSigner)){
+    window.showErrorMessage(`Account "${txSigner}" does not exist`)
+    return false;
+  }
+
+  const signer = ext.config.getActiveAccount()?.name || "service"
+  const signerFlag = makeFlag("signer")(signer)
+  const configFlag = makeFlag("config-path")(ext.config.configPath)
+
+  const command =
+    [
+      ext.config.flowCommand,
+      `accounts`,
+      `add-contract`,
+      name,
+      filename,
+      signerFlag,
+      configFlag
+    ].join(" ")
+
+    console.log("Executing:", command)
+
+  window.withProgress({
+    location: ProgressLocation.Notification,
+    title: `Deploying ${name} contract. Please wait...`,
+    cancellable: true,
+    // TODO: add cancelation here
+  }, (_, token) => {
+    return new Promise((resolve, reject) => {
+      // TODO: Show transaction state here, updating the status of it. 
+      // We can utilize flow-js-sdk to subscribe to tx
+      cp.exec(command, (e, stdout) => {
+        if (e) {
+          window.showErrorMessage(e.message);
+          reject("Deployment failed")
+        } else {
+          resolve(null)
+        }
+      });
+    });
+  });  
+
+}
+
+const executeScript = (ext: Extension) => async (args: string) => {
+  const filename = window.activeTextEditor?.document.fileName || ""
+  const argsFlag = makeArgsFlag(args)
+  const codeFlag = makeFlag('code')(filename)
+
+  const command =
+    [
+      ext.config.flowCommand,
+      `scripts`,
+      `execute`,
+      codeFlag,
+      argsFlag,
+    ].join(" ")
+
+
+  window.withProgress({
+    location: ProgressLocation.Notification,
+    title: "Executing script. Please wait...",
+    cancellable: true
+  }, (_, token) => {
+    return new Promise((resolve) => {
+      cp.exec(command, (e, stdout) => {
+        if (e) {
+          window.showErrorMessage(e.message);
+        } else {
+          showScriptResult(stdout)
+          resolve(null)
+        }
+      });
+    });
+  });
+}
+
+const sendTransaction = (ext: Extension) => async (args: string, signers: string[]) => {
+  const filename = window.activeTextEditor?.document.fileName || ""
+  const argsFlag = makeArgsFlag(args)
+  const codeFlag = makeFlag("code")(filename)
+
+  let txSigner = signers[0]
+  if (txSigner.includes("active")){
+    txSigner = ext.config.getActiveAccount()?.name || "service"
+  }
+
+  // Check that account exist
+  if (!ext.config.accountExists(txSigner)){
+    window.showErrorMessage(`Account "${txSigner}" does not exist`)
+    return false;
+  }
+
+  console.log({ args })
+  console.log({ signers })
+
+  const signer = ext.config.getActiveAccount()?.name || "service"
+  const signerFlag = makeFlag("signer")(signer)
+  const configFlag = makeFlag("config-path")(ext.config.configPath)
+
+  const command =
+    [
+      ext.config.flowCommand,
+      `transactions`,
+      `send`,
+      codeFlag,
+      argsFlag,
+      signerFlag,
+      configFlag
+    ].join(" ")
+
+    console.log("Executing:", command)
+
+  window.withProgress({
+    location: ProgressLocation.Notification,
+    title: "Sending transaction. Please wait...",
+    cancellable: true,
+    // TODO: add cancelation here
+  }, (_, token) => {
+    return new Promise((resolve, reject) => {
+      // TODO: Show transaction state here, updating the status of it. 
+      // We can utilize flow-js-sdk to subscribe to tx
+      cp.exec(command, (e, stdout) => {
+        if (e) {
+          window.showErrorMessage(e.message);
+          reject("Transaction error happened")
+        } else {
+          resolve(null)
+        }
+      });
+    });
+  });  
+}
+
 
 // Restarts the language server, updating the client in the extension object.
 const restartServer = (ext: Extension) => async () => {
   await ext.api.client.stop();
-  ext.api = new LanguageServerAPI(ext.ctx, ext.config);
+  console.log(ext.emulatorState)
+  ext.api = new LanguageServerAPI(ext.ctx, ext.config, ext.emulatorState);
 };
 
 // Starts the emulator in a terminal window.
 const startEmulator = (ext: Extension) => async () => {
+
   // Start the emulator with the service key we gave to the language server.
-  const { serverConfig } = ext.config;
+  const { configPath } = ext.config;
+
+  const configFlag = makeFlag('config-path')(configPath)
 
   ext.setEmulatorState(EmulatorState.Starting);
+
   renderExtension(ext);
 
   ext.terminal.sendText(
@@ -62,27 +240,20 @@ const startEmulator = (ext: Extension) => async () => {
       ext.config.flowCommand,
       `emulator`,
       `start`,
-      `--init`,
       `--verbose`,
-      `--service-priv-key`,
-      serverConfig.servicePrivateKey,
-      `--service-sig-algo`,
-      serverConfig.serviceKeySignatureAlgorithm,
-      `--service-hash-algo`,
-      serverConfig.serviceKeyHashAlgorithm,
+      configFlag
     ].join(" ")
   );
   ext.terminal.show();
 
-  ext.setEmulatorState(EmulatorState.Started);
 
   // create default accounts after the emulator has started
   setTimeout(async () => {
-    try {
-      const accounts = await ext.api.createDefaultAccounts(ext.config.numAccounts);
+    // Read local "flow.json" file
+    await ext.config.readLocalConfig()
 
-      accounts.forEach((address) => ext.config.addAccount(address));
-      
+    try {
+      console.log(ext.config.accounts)
       const activeAccount = ext.config.getAccount(0)
 
       if (!activeAccount) {
@@ -91,16 +262,17 @@ const startEmulator = (ext: Extension) => async () => {
       }
 
       setActiveAccount(ext, activeAccount)
-
+      ext.setEmulatorState(EmulatorState.Started);
       renderExtension(ext);
     } catch (err) {
+
       ext.setEmulatorState(EmulatorState.Stopped);
       renderExtension(ext);
 
-      console.error("Failed to create default accounts", err);
-      window.showWarningMessage("Failed to create default accounts");
+      window.showWarningMessage("Failed to get account list from file");
     }
-  }, 3000);
+  
+  }, 3500);
 };
 
 // Stops emulator, exits the terminal, and removes all config/db files.
@@ -115,7 +287,7 @@ const stopEmulator = (ext: Extension) => async () => {
   ext.config.resetAccounts();
   renderExtension(ext);
   await ext.api.client.stop();
-  ext.api = new LanguageServerAPI(ext.ctx, ext.config);
+  ext.api = new LanguageServerAPI(ext.ctx, ext.config, ext.emulatorState);
 };
 
 // Creates a new account by requesting that the Language Server submit
@@ -123,7 +295,11 @@ const stopEmulator = (ext: Extension) => async () => {
 const createAccount = (ext: Extension) => async () => {
   try {
     const addr = await ext.api.createAccount();
-    ext.config.addAccount(addr);
+
+    // edit flow.json file with CLI "accounts create"
+    // manually update json
+
+    ext.config.addAccount(addr,"");
     renderExtension(ext);
   } catch (err) {
     window.showErrorMessage("Failed to create account: " + err);
@@ -135,14 +311,15 @@ const createAccount = (ext: Extension) => async () => {
 // is propagated to the Language Server.
 const switchActiveAccount = (ext: Extension) => async () => {
   // Suffix to indicate which account is active
-  const activeSuffix = "(active)";
+  const activePrefix = "🟢";
+  const passivePrefix = "⚫️"
   // Create the options (mark the active account with an 'active' prefix)
   const accountOptions = Object.values(ext.config.accounts)
     // Mark the active account with a `*` in the dialog
     .map((account) => {
-      const suffix: String =
-        account.index === ext.config.activeAccount ? ` ${activeSuffix}` : "";
-      const label = account.fullName() + suffix;
+      const prefix: String =
+        account.index === ext.config.activeAccount ? activePrefix : passivePrefix;
+      const label = `${prefix} ${account.fullName()}`;
 
       return {
         label: label,
@@ -168,14 +345,20 @@ const switchActiveAccount = (ext: Extension) => async () => {
     setActiveAccount(ext, activeAccount)
 
     window.showInformationMessage(
-      `Switched to account ${activeAccount.fullName()}`
-    );
+      `Switched to account ${activeAccount.fullName()}`,
+      "Copy Address"
+    ).then((choice) => {
+      if (choice === "Copy Address") {
+        env.clipboard.writeText(`0x${activeAccount.address}`)
+      }
+    });
 
     renderExtension(ext);
   });
 };
 
 const setActiveAccount = (ext: Extension, activeAccount: Account) => {
+  /*
   try {
     ext.api.switchActiveAccount(removeAddressPrefix(activeAccount.address));
     window.visibleTextEditors.forEach((editor) => {
@@ -200,6 +383,28 @@ const setActiveAccount = (ext: Extension, activeAccount: Account) => {
     console.error(err);
     return;
   }
+  */
 
   ext.config.setActiveAccount(activeAccount.index);
+}
+
+// This method will add and then remove a space on the last line to trick codelens to be updated
+export const refreshCodeLenses = () => {
+  window.visibleTextEditors.forEach((editor) => {
+      if (!editor.document.lineCount) {
+        return;
+      }
+      // NOTE: We add a space to the end of the last line to force
+      // Codelens to refresh.
+      const lineCount = editor.document.lineCount;
+      const lastLine = editor.document.lineAt(lineCount - 1);
+      editor.edit((edit) => {
+        if (lastLine.isEmptyOrWhitespace) {
+          edit.insert(new Position(lineCount - 1, 0), " ");
+          edit.delete(new Range(lineCount - 1, 0, lineCount - 1, 1000));
+        } else {
+          edit.insert(new Position(lineCount - 1, 1000), "\n");
+        }
+      });
+    });
 }
