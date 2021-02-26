@@ -1,19 +1,22 @@
+import * as fs from "fs"
 import {
     ExtensionContext,
     window,
     Terminal,
     StatusBarItem,
+    workspace,
 } from "vscode";
-import {getConfig, handleConfigChanges, Config} from "./config";
-import {LanguageServerAPI} from "./language-server";
-import {registerCommands} from "./commands";
-import {createTerminal} from "./terminal";
+import { getConfig, handleConfigChanges, Config } from "./config";
+import { LanguageServerAPI } from "./language-server";
+import { refreshCodeLenses, registerCommands } from "./commands";
+import { createTerminal } from "./terminal";
 import {
-    createEmulatorStatusBarItem, 
+    createEmulatorStatusBarItem,
     updateEmulatorStatusBarItem,
-    createActiveAccountStatusBarItem, 
-    updateActiveAccountStatusBarItem, 
+    createActiveAccountStatusBarItem,
+    updateActiveAccountStatusBarItem,
 } from "./status-bar";
+
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -47,6 +50,8 @@ export class Extension {
 
     setEmulatorState(state: EmulatorState) {
         this.emulatorState = state;
+        this.api.changeEmulatorState(state)
+        refreshCodeLenses();
     }
 };
 
@@ -66,7 +71,7 @@ export function activate(ctx: ExtensionContext) {
     try {
         config = getConfig();
         terminal = createTerminal(ctx);
-        api = new LanguageServerAPI(ctx, config);
+        api = new LanguageServerAPI(ctx, config, EmulatorState.Stopped);
     } catch (err) {
         window.showErrorMessage("Failed to activate extension: ", err);
         return;
@@ -86,9 +91,10 @@ export function activate(ctx: ExtensionContext) {
     renderExtension(ext);
 }
 
-export function deactivate() {}
+export function deactivate() { }
 
 export function renderExtension(ext: Extension) {
     updateEmulatorStatusBarItem(ext.emulatorStatusBarItem, ext.getEmulatorState());
     updateActiveAccountStatusBarItem(ext.activeAccountStatusBarItem, ext.config.getActiveAccount());
 }
+ 
