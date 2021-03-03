@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import { makeArgsFlag } from '../utils';
 
 suite("Utils Tests", function () {
 
@@ -9,4 +10,10 @@ suite("Utils Tests", function () {
         assert.strictEqual(result, expected);
     });
 
+    test("Make args flag with value", function(){
+        const input = ['{type: "String", value: "Hello, Cadence"}']
+        const result = makeArgsFlag(input)
+        const expected = "[{\"type\": \"String\", \"value\": \"Hello, Cadence\"}]"
+        assert.strictEqual(result, expected);
+    })
 })
