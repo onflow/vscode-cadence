@@ -1,10 +1,10 @@
-import {LanguageClient} from "vscode-languageclient";
-import {ExtensionContext, window, commands} from "vscode";
-import {Config} from "./config";
-import { 
-    CREATE_ACCOUNT_SERVER, 
-    CREATE_DEFAULT_ACCOUNTS_SERVER, 
-    SWITCH_ACCOUNT_SERVER, 
+import { LanguageClient } from "vscode-languageclient";
+import { ExtensionContext, window, commands } from "vscode";
+import { Config } from "./config";
+import {
+    CREATE_ACCOUNT_SERVER,
+    CREATE_DEFAULT_ACCOUNTS_SERVER,
+    SWITCH_ACCOUNT_SERVER,
     DEPLOY_CONTRACT,
     EXECUTE_SCRIPT,
     SEND_TRANSACTION,
@@ -22,7 +22,7 @@ export class LanguageServerAPI {
     constructor(ctx: ExtensionContext, config: Config, emulatorState: EmulatorState) {
         this.client = new LanguageClient(
             "cadence",
-            "Cadence", 
+            "Cadence",
             {
                 command: config.flowCommand,
                 args: START_LANGUAGE_SERVER_ARGS,
@@ -58,7 +58,7 @@ export class LanguageServerAPI {
         console.log({ emulatorState })
         return this.client.sendRequest("workspace/executeCommand", {
             command: CHANGE_EMULATOR_STATE,
-            arguments:[
+            arguments: [
                 emulatorState
             ]
         })

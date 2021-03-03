@@ -72,17 +72,17 @@ const showScriptResult = async (response: string) => {
 // - check if emulator is running
 // - display error if tx/script failed
 
-const deployContract = (ext: Extension) => async (uri: string, name: string, args:string, to: string) => {
+const deployContract = (ext: Extension) => async (uri: string, name: string, args: string, to: string) => {
   const filename = window.activeTextEditor?.document.fileName || ""
   // const argsFlag = makeArgsFlag(args)
 
   let txSigner = to
-  if (txSigner.includes("active")){
+  if (txSigner.includes("active")) {
     txSigner = ext.config.getActiveAccount()?.name || "service"
   }
 
   // Check that account exist
-  if (!ext.config.accountExists(txSigner)){
+  if (!ext.config.accountExists(txSigner)) {
     window.showErrorMessage(`Account "${txSigner}" does not exist`)
     return false;
   }
@@ -122,7 +122,7 @@ const deployContract = (ext: Extension) => async (uri: string, name: string, arg
         }
       });
     });
-  });  
+  });
 
 }
 
@@ -140,7 +140,7 @@ const executeScript = (ext: Extension) => async (uri: string, args: string[]) =>
       codeFlag,
       argsFlag,
     ].join(" ")
-      
+
   window.withProgress({
     location: ProgressLocation.Notification,
     title: "Executing script. Please wait...",
@@ -166,12 +166,12 @@ const sendTransaction = (ext: Extension) => async (uri: string, args: string[], 
   const codeFlag = makeFlag('code')(filename)
 
   let txSigner = signers[0]
-  if (txSigner.includes("active")){
+  if (txSigner.includes("active")) {
     txSigner = ext.config.getActiveAccount()?.name || "service"
   }
 
   // Check that account exist
-  if (!ext.config.accountExists(txSigner)){
+  if (!ext.config.accountExists(txSigner)) {
     window.showErrorMessage(`Account "${txSigner}" does not exist`)
     return false;
   }
@@ -190,7 +190,7 @@ const sendTransaction = (ext: Extension) => async (uri: string, args: string[], 
       configFlag
     ].join(" ")
 
-    console.log("Executing:", command)
+  console.log("Executing:", command)
 
   window.withProgress({
     location: ProgressLocation.Notification,
@@ -210,7 +210,7 @@ const sendTransaction = (ext: Extension) => async (uri: string, args: string[], 
         }
       });
     });
-  });  
+  });
 }
 
 
@@ -268,7 +268,7 @@ const startEmulator = (ext: Extension) => async () => {
 
       window.showWarningMessage("Failed to get account list from file");
     }
-  
+
   }, 3500);
 };
 
@@ -296,7 +296,7 @@ const createAccount = (ext: Extension) => async () => {
     // edit flow.json file with CLI "accounts create"
     // manually update json
 
-    ext.config.addAccount(addr,"");
+    ext.config.addAccount(addr, "");
     renderExtension(ext);
   } catch (err) {
     window.showErrorMessage("Failed to create account: " + err);
@@ -361,20 +361,20 @@ const setActiveAccount = (ext: Extension, activeAccount: Account) => {
 // This method will add and then remove a space on the last line to trick codelens to be updated
 export const refreshCodeLenses = () => {
   window.visibleTextEditors.forEach((editor) => {
-      if (!editor.document.lineCount) {
-        return;
+    if (!editor.document.lineCount) {
+      return;
+    }
+    // NOTE: We add a space to the end of the last line to force
+    // Codelens to refresh.
+    const lineCount = editor.document.lineCount;
+    const lastLine = editor.document.lineAt(lineCount - 1);
+    editor.edit((edit) => {
+      if (lastLine.isEmptyOrWhitespace) {
+        edit.insert(new Position(lineCount - 1, 0), " ");
+        edit.delete(new Range(lineCount - 1, 0, lineCount - 1, 1000));
+      } else {
+        edit.insert(new Position(lineCount - 1, 1000), "\n");
       }
-      // NOTE: We add a space to the end of the last line to force
-      // Codelens to refresh.
-      const lineCount = editor.document.lineCount;
-      const lastLine = editor.document.lineAt(lineCount - 1);
-      editor.edit((edit) => {
-        if (lastLine.isEmptyOrWhitespace) {
-          edit.insert(new Position(lineCount - 1, 0), " ");
-          edit.delete(new Range(lineCount - 1, 0, lineCount - 1, 1000));
-        } else {
-          edit.insert(new Position(lineCount - 1, 1000), "\n");
-        }
-      });
     });
+  });
 }

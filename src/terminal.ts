@@ -1,6 +1,6 @@
-import {ExtensionContext, Terminal, window} from "vscode";
-import {existsSync, mkdirSync, unlinkSync} from "fs";
-import {join} from "path";
+import { ExtensionContext, Terminal, window } from "vscode";
+import { existsSync, mkdirSync, unlinkSync } from "fs";
+import { join } from "path";
 
 // Name of all Flow files stored on-disk.
 const FLOW_CONFIG_FILENAME = "flow.json";
@@ -46,7 +46,7 @@ export function resetStorage(ctx: ExtensionContext) {
 // Returns a path to a directory that can be used for persistent storage.
 // Creates the directory if it doesn't already exist.
 function getStoragePath(ctx: ExtensionContext): string | undefined {
-     let storagePath = ctx.storagePath;
+    let storagePath = ctx.storagePath;
     if (!storagePath) {
         storagePath = ctx.globalStoragePath;
     }

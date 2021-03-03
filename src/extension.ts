@@ -97,4 +97,3 @@ export function renderExtension(ext: Extension) {
     updateEmulatorStatusBarItem(ext.emulatorStatusBarItem, ext.getEmulatorState());
     updateActiveAccountStatusBarItem(ext.activeAccountStatusBarItem, ext.config.getActiveAccount());
 }
- 
