@@ -8,7 +8,8 @@ import {
   Range,
   window,
   ProgressLocation,
-  env
+  env,
+  Uri
 } from "vscode";
 
 import { Extension, renderExtension, EmulatorState } from "./extension";
@@ -101,7 +102,7 @@ const deployContract = (ext: Extension) => async (uri: string, name: string, arg
       configFlag
     ].join(" ")
 
-    console.log("Executing:", command)
+  console.log("Executing:", command)
 
   window.withProgress({
     location: ProgressLocation.Notification,
@@ -125,8 +126,9 @@ const deployContract = (ext: Extension) => async (uri: string, name: string, arg
 
 }
 
-const executeScript = (ext: Extension) => async (args: string) => {
-  const filename = window.activeTextEditor?.document.fileName || ""
+const executeScript = (ext: Extension) => async (uri: string, args: string[]) => {
+  const filename = Uri.parse(uri).fsPath
+
   const argsFlag = makeArgsFlag(args)
   const codeFlag = makeFlag('code')(filename)
 
@@ -138,8 +140,7 @@ const executeScript = (ext: Extension) => async (args: string) => {
       codeFlag,
       argsFlag,
     ].join(" ")
-
-
+      
   window.withProgress({
     location: ProgressLocation.Notification,
     title: "Executing script. Please wait...",
@@ -158,10 +159,11 @@ const executeScript = (ext: Extension) => async (args: string) => {
   });
 }
 
-const sendTransaction = (ext: Extension) => async (args: string, signers: string[]) => {
-  const filename = window.activeTextEditor?.document.fileName || ""
+const sendTransaction = (ext: Extension) => async (uri: string, args: string[], signers: string[]) => {
+  const filename = Uri.parse(uri).fsPath
+
   const argsFlag = makeArgsFlag(args)
-  const codeFlag = makeFlag("code")(filename)
+  const codeFlag = makeFlag('code')(filename)
 
   let txSigner = signers[0]
   if (txSigner.includes("active")){
@@ -174,11 +176,7 @@ const sendTransaction = (ext: Extension) => async (args: string, signers: string
     return false;
   }
 
-  console.log({ args })
-  console.log({ signers })
-
-  const signer = ext.config.getActiveAccount()?.name || "service"
-  const signerFlag = makeFlag("signer")(signer)
+  const signerFlag = makeFlag("signer")(txSigner)
   const configFlag = makeFlag("config-path")(ext.config.configPath)
 
   const command =
@@ -225,7 +223,6 @@ const restartServer = (ext: Extension) => async () => {
 
 // Starts the emulator in a terminal window.
 const startEmulator = (ext: Extension) => async () => {
-
   // Start the emulator with the service key we gave to the language server.
   const { configPath } = ext.config;
 
@@ -261,7 +258,7 @@ const startEmulator = (ext: Extension) => async () => {
         return;
       }
 
-      setActiveAccount(ext, activeAccount)
+      ext.config.setActiveAccount(activeAccount.index);
       ext.setEmulatorState(EmulatorState.Started);
       renderExtension(ext);
     } catch (err) {
@@ -342,7 +339,7 @@ const switchActiveAccount = (ext: Extension) => async () => {
       return;
     }
 
-    setActiveAccount(ext, activeAccount)
+    ext.config.setActiveAccount(activeIndex);
 
     window.showInformationMessage(
       `Switched to account ${activeAccount.fullName()}`,
@@ -358,33 +355,6 @@ const switchActiveAccount = (ext: Extension) => async () => {
 };
 
 const setActiveAccount = (ext: Extension, activeAccount: Account) => {
-  /*
-  try {
-    ext.api.switchActiveAccount(removeAddressPrefix(activeAccount.address));
-    window.visibleTextEditors.forEach((editor) => {
-      if (!editor.document.lineCount) {
-        return;
-      }
-      // NOTE: We add a space to the end of the last line to force
-      // Codelens to refresh.
-      const lineCount = editor.document.lineCount;
-      const lastLine = editor.document.lineAt(lineCount - 1);
-      editor.edit((edit) => {
-        if (lastLine.isEmptyOrWhitespace) {
-          edit.insert(new Position(lineCount - 1, 0), " ");
-          edit.delete(new Range(lineCount - 1, 0, lineCount - 1, 1000));
-        } else {
-          edit.insert(new Position(lineCount - 1, 1000), "\n");
-        }
-      });
-    });
-  } catch (err) {
-    window.showWarningMessage("Failed to switch active account");
-    console.error(err);
-    return;
-  }
-  */
-
   ext.config.setActiveAccount(activeAccount.index);
 }
 
