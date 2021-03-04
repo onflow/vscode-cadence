@@ -72,9 +72,8 @@ const showScriptResult = async (response: string) => {
 // - check if emulator is running
 // - display error if tx/script failed
 
-const deployContract = (ext: Extension) => async (uri: string, name: string, args: string, to: string) => {
-  const filename = window.activeTextEditor?.document.fileName || ""
-  // const argsFlag = makeArgsFlag(args)
+const deployContract = (ext: Extension) => async (uri: string, name: string, to: string) => {
+  const filename = Uri.parse(uri).fsPath
 
   let txSigner = to
   if (txSigner.includes("active")) {
@@ -87,8 +86,8 @@ const deployContract = (ext: Extension) => async (uri: string, name: string, arg
     return false;
   }
 
-  const signer = ext.config.getActiveAccount()?.name || "service"
-  const signerFlag = makeFlag("signer")(signer)
+
+  const signerFlag = makeFlag("signer")(txSigner)
   const configFlag = makeFlag("config-path")(ext.config.configPath)
 
   const command =
