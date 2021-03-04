@@ -56,7 +56,7 @@ export class Extension {
 };
 
 export enum EmulatorState {
-    Stopped = 1,
+    Stopped = 0,
     Starting,
     Started,
 }
