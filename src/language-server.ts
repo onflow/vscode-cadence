@@ -55,7 +55,6 @@ export class LanguageServerAPI {
     }
 
     async changeEmulatorState(emulatorState: EmulatorState) {
-        console.log({ emulatorState })
         return this.client.sendRequest("workspace/executeCommand", {
             command: CHANGE_EMULATOR_STATE,
             arguments: [

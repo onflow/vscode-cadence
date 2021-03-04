@@ -102,8 +102,6 @@ const deployContract = (ext: Extension) => async (uri: string, name: string, arg
       configFlag
     ].join(" ")
 
-  console.log("Executing:", command)
-
   window.withProgress({
     location: ProgressLocation.Notification,
     title: `Deploying ${name} contract. Please wait...`,
@@ -190,8 +188,6 @@ const sendTransaction = (ext: Extension) => async (uri: string, args: string[], 
       configFlag
     ].join(" ")
 
-  console.log("Executing:", command)
-
   window.withProgress({
     location: ProgressLocation.Notification,
     title: "Sending transaction. Please wait...",
@@ -217,7 +213,6 @@ const sendTransaction = (ext: Extension) => async (uri: string, args: string[], 
 // Restarts the language server, updating the client in the extension object.
 const restartServer = (ext: Extension) => async () => {
   await ext.api.client.stop();
-  console.log(ext.emulatorState)
   ext.api = new LanguageServerAPI(ext.ctx, ext.config, ext.emulatorState);
 };
 
@@ -250,7 +245,6 @@ const startEmulator = (ext: Extension) => async () => {
     await ext.config.readLocalConfig()
 
     try {
-      console.log(ext.config.accounts)
       const activeAccount = ext.config.getAccount(0)
 
       if (!activeAccount) {

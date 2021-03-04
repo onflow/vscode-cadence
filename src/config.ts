@@ -89,7 +89,6 @@ export class Config {
   }
 
   async createAccount(key: string) {
-    console.log(`Init account for ${key}`)
     // TODO: This shall be removed and handled by emulator...
     const publicKeys: any = {
       "alice": "0ec9d54500e37b1d55219daac65907e48ab34a0535886fc38f1784f1260a9fe65e641fd0ead0f7d269d38f53460f219f22478d49cdf1b497114a843e885e0132",
@@ -112,7 +111,6 @@ export class Config {
           reject("Error creating account")
           window.showErrorMessage(e.message);
         } else {
-          console.log(`Account for ${key} created`)
           resolve(null)
         }
       });
@@ -126,9 +124,6 @@ export class Config {
       const configFile = file[0]
       const content = await fs.promises.readFile(configFile.path, { encoding: "utf-8" })
       const config = await JSON.parse(content.toString())
-
-      console.log({ config })
-      console.log(configFile.path)
 
       for (const key in config.accounts) {
         if (key !== "service") {
@@ -171,7 +166,6 @@ export class Config {
 
   accountExists(name: string) {
     return this.accounts.filter(acc => {
-      console.log({ acc })
       return acc.name === name
     }).length > 0
   }
