@@ -63,7 +63,7 @@ export enum EmulatorState {
 
 // Called when the extension starts up. Reads config, starts the language
 // server, and registers command handlers.
-export function activate(ctx: ExtensionContext) {
+export async function activate(ctx: ExtensionContext) {
     let config: Config;
     let terminal: Terminal;
     let api: LanguageServerAPI;
@@ -89,6 +89,7 @@ export function activate(ctx: ExtensionContext) {
 
     registerCommands(ext);
     renderExtension(ext);
+    await ext.config.readLocalConfig()
 }
 
 export function deactivate() { }

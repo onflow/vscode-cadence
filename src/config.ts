@@ -125,14 +125,6 @@ export class Config {
       const content = await fs.promises.readFile(configFile.path, { encoding: "utf-8" })
       const config = await JSON.parse(content.toString())
 
-      for (const key in config.accounts) {
-        if (key !== "service") {
-          const account = config.accounts[key]
-          this.addAccount(account.address, key)
-          await this.createAccount(key)
-        }
-      }
-
       this.configPath = configFile.path;
     } else {
       // TODO: show message that file is not present and propose to init it

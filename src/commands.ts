@@ -218,9 +218,11 @@ const restartServer = (ext: Extension) => async () => {
 // Starts the emulator in a terminal window.
 const startEmulator = (ext: Extension) => async () => {
   // Start the emulator with the service key we gave to the language server.
+
   const { configPath } = ext.config;
 
   const configFlag = makeFlag('config-path')(configPath)
+
 
   ext.setEmulatorState(EmulatorState.Starting);
 
@@ -229,21 +231,19 @@ const startEmulator = (ext: Extension) => async () => {
   ext.terminal.sendText(
     [
       ext.config.flowCommand,
-      `emulator`,
-      `start`,
+      `project`,
+      `start-emulator`,
+      configFlag,
       `--verbose`,
-      configFlag
     ].join(" ")
   );
   ext.terminal.show();
 
-
-  // create default accounts after the emulator has started
+  // TODO: set active account, create new accounts
+  // Update emulator state
   setTimeout(async () => {
-    // Read local "flow.json" file
-    await ext.config.readLocalConfig()
-
     try {
+      /*
       const activeAccount = ext.config.getAccount(0)
 
       if (!activeAccount) {
@@ -252,6 +252,7 @@ const startEmulator = (ext: Extension) => async () => {
       }
 
       ext.config.setActiveAccount(activeAccount.index);
+      */
       ext.setEmulatorState(EmulatorState.Started);
       renderExtension(ext);
     } catch (err) {
@@ -259,10 +260,9 @@ const startEmulator = (ext: Extension) => async () => {
       ext.setEmulatorState(EmulatorState.Stopped);
       renderExtension(ext);
 
-      window.showWarningMessage("Failed to get account list from file");
     }
-
-  }, 3500);
+  }, 1500);
+  
 };
 
 // Stops emulator, exits the terminal, and removes all config/db files.
