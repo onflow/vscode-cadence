@@ -22,7 +22,7 @@
     "onCommand:cadence.createAccount",
     "onCommand:cadence.switchActiveAccount"
   ],
-  "main": "./out/extension.js",
+  "main": "./out/out/extension.js",
   "contributes": {
     "commands": [
       {
