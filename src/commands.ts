@@ -37,6 +37,7 @@ export const CREATE_DEFAULT_ACCOUNTS_SERVER =
   "cadence.server.flow.createDefaultAccounts";
 export const SWITCH_ACCOUNT_SERVER = "cadence.server.flow.switchActiveAccount";
 export const CHANGE_EMULATOR_STATE = "cadence.server.flow.changeEmulatorState"
+export const INIT_ACCOUNT_MANAGER = "cadence.server.flow.createDefaultAccounts"
 
 // Registers a command with VS Code so it can be invoked by the user.
 function registerCommand(
