@@ -37,7 +37,7 @@ export const CREATE_DEFAULT_ACCOUNTS_SERVER =
   "cadence.server.flow.createDefaultAccounts";
 export const SWITCH_ACCOUNT_SERVER = "cadence.server.flow.switchActiveAccount";
 export const CHANGE_EMULATOR_STATE = "cadence.server.flow.changeEmulatorState"
-export const INIT_ACCOUNT_MANAGER = "cadence.server.flow.createDefaultAccounts"
+export const INIT_ACCOUNT_MANAGER = "cadence.server.flow.initAccountManager"
 
 // Registers a command with VS Code so it can be invoked by the user.
 function registerCommand(
@@ -244,16 +244,8 @@ const startEmulator = (ext: Extension) => async () => {
   // Update emulator state
   setTimeout(async () => {
     try {
-      /*
-      const activeAccount = ext.config.getAccount(0)
-
-      if (!activeAccount) {
-        console.error("Failed to get initial active account");
-        return;
-      }
-
-      ext.config.setActiveAccount(activeAccount.index);
-      */
+      const deployResult = await ext.api.initAccountManager()
+      console.log(`Deploy result: ${deployResult}`)
       ext.setEmulatorState(EmulatorState.Started);
       renderExtension(ext);
     } catch (err) {
