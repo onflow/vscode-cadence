@@ -70,8 +70,9 @@ export async function activate(ctx: ExtensionContext) {
 
     try {
         config = getConfig();
+        await config.readLocalConfig()
         terminal = createTerminal(ctx);
-        api = new LanguageServerAPI(ctx, config, EmulatorState.Stopped);
+        api = new LanguageServerAPI(ctx, config, EmulatorState.Stopped, {name: "", address: ""});
     } catch (err) {
         window.showErrorMessage("Failed to activate extension: ", err);
         return;
@@ -89,7 +90,6 @@ export async function activate(ctx: ExtensionContext) {
 
     registerCommands(ext);
     renderExtension(ext);
-    await ext.config.readLocalConfig()
 }
 
 export function deactivate() { }
