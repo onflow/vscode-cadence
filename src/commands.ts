@@ -56,174 +56,22 @@ export function registerCommands(ext: Extension) {
   registerCommand(ext.ctx, STOP_EMULATOR, stopEmulator(ext));
   registerCommand(ext.ctx, CREATE_ACCOUNT, createAccount(ext));
   registerCommand(ext.ctx, SWITCH_ACCOUNT, switchActiveAccount(ext));
-
-  registerCommand(ext.ctx, DEPLOY_CONTRACT, deployContract(ext))
-  registerCommand(ext.ctx, EXECUTE_SCRIPT, executeScript(ext))
-  registerCommand(ext.ctx, SEND_TRANSACTION, sendTransaction(ext))
 }
-
-// Show result of the script execution in form of an information message
-const showScriptResult = async (response: string) => {
-  const result = await decode(JSON.parse(response))
-  const content = `Script Result: ${result}`;
-  window.showInformationMessage(content)
-}
-
-// TODO: Error path
-// - check if emulator is running
-// - display error if tx/script failed
-
-const deployContract = (ext: Extension) => async (uri: string, name: string, to: string) => {
-  const filename = Uri.parse(uri).fsPath
-
-  let txSigner = to
-  if (txSigner.includes("active")) {
-    txSigner = ext.config.getActiveAccount()?.name || "service"
-  }
-
-  // Check that account exist
-  if (!ext.config.accountExists(txSigner)) {
-    window.showErrorMessage(`Account "${txSigner}" does not exist`)
-    return false;
-  }
-
-
-  const signerFlag = makeFlag("signer")(txSigner)
-  const configFlag = makeFlag("config-path")(ext.config.configPath)
-
-  const command =
-    [
-      ext.config.flowCommand,
-      `accounts`,
-      `add-contract`,
-      name,
-      filename,
-      signerFlag,
-      configFlag
-    ].join(" ")
-
-  window.withProgress({
-    location: ProgressLocation.Notification,
-    title: `Deploying ${name} contract. Please wait...`,
-    cancellable: true,
-    // TODO: add cancelation here
-  }, (_, token) => {
-    return new Promise((resolve, reject) => {
-      // TODO: Show transaction state here, updating the status of it. 
-      // We can utilize flow-js-sdk to subscribe to tx
-      cp.exec(command, (e, stdout) => {
-        if (e) {
-          window.showErrorMessage(e.message);
-          reject("Deployment failed")
-        } else {
-          resolve(null)
-        }
-      });
-    });
-  });
-
-}
-
-const executeScript = (ext: Extension) => async (uri: string, args: string[]) => {
-  const filename = Uri.parse(uri).fsPath
-
-  const argsFlag = makeArgsFlag(args)
-  const codeFlag = makeFlag('code')(filename)
-
-  const command =
-    [
-      ext.config.flowCommand,
-      `scripts`,
-      `execute`,
-      codeFlag,
-      argsFlag,
-    ].join(" ")
-
-  window.withProgress({
-    location: ProgressLocation.Notification,
-    title: "Executing script. Please wait...",
-    cancellable: true
-  }, (_, token) => {
-    return new Promise((resolve) => {
-      cp.exec(command, (e, stdout) => {
-        if (e) {
-          window.showErrorMessage(e.message);
-        } else {
-          showScriptResult(stdout)
-          resolve(null)
-        }
-      });
-    });
-  });
-}
-
-const sendTransaction = (ext: Extension) => async (uri: string, args: string[], signers: string[]) => {
-  const filename = Uri.parse(uri).fsPath
-
-  const argsFlag = makeArgsFlag(args)
-  const codeFlag = makeFlag('code')(filename)
-
-  let txSigner = signers[0]
-  if (txSigner.includes("active")) {
-    txSigner = ext.config.getActiveAccount()?.name || "service"
-  }
-
-  // Check that account exist
-  if (!ext.config.accountExists(txSigner)) {
-    window.showErrorMessage(`Account "${txSigner}" does not exist`)
-    return false;
-  }
-
-  const signerFlag = makeFlag("signer")(txSigner)
-  const configFlag = makeFlag("config-path")(ext.config.configPath)
-
-  const command =
-    [
-      ext.config.flowCommand,
-      `transactions`,
-      `send`,
-      codeFlag,
-      argsFlag,
-      signerFlag,
-      configFlag
-    ].join(" ")
-
-  window.withProgress({
-    location: ProgressLocation.Notification,
-    title: "Sending transaction. Please wait...",
-    cancellable: true,
-    // TODO: add cancelation here
-  }, (_, token) => {
-    return new Promise((resolve, reject) => {
-      // TODO: Show transaction state here, updating the status of it. 
-      // We can utilize flow-js-sdk to subscribe to tx
-      cp.exec(command, (e, stdout) => {
-        if (e) {
-          window.showErrorMessage(e.message);
-          reject("Transaction error happened")
-        } else {
-          resolve(null)
-        }
-      });
-    });
-  });
-}
-
 
 // Restarts the language server, updating the client in the extension object.
 const restartServer = (ext: Extension) => async () => {
   await ext.api.client.stop();
-  ext.api = new LanguageServerAPI(ext.ctx, ext.config, ext.emulatorState);
+  const activeIndex = ext.config.activeAccount
+  const {name, address} = activeIndex ? ext.config.accounts[activeIndex] : {name: "", address: ""}
+  ext.api = new LanguageServerAPI(ext.ctx, ext.config, ext.emulatorState, {name, address});
 };
 
 // Starts the emulator in a terminal window.
 const startEmulator = (ext: Extension) => async () => {
   // Start the emulator with the service key we gave to the language server.
-
   const { configPath } = ext.config;
 
   const configFlag = makeFlag('config-path')(configPath)
-
 
   ext.setEmulatorState(EmulatorState.Starting);
 
@@ -240,13 +88,17 @@ const startEmulator = (ext: Extension) => async () => {
   );
   ext.terminal.show();
 
-  // TODO: set active account, create new accounts
-  // Update emulator state
   setTimeout(async () => {
     try {
       const deployResult = await ext.api.initAccountManager()
-      console.log(`Deploy result: ${deployResult}`)
       ext.setEmulatorState(EmulatorState.Started);
+      const accounts = await ext.api.createDefaultAccounts(ext.config.numAccounts);
+      for (const account of accounts) {
+        ext.config.addAccount(account)
+      }
+
+      await ext.api.switchActiveAccount(accounts[0])
+      
       renderExtension(ext);
     } catch (err) {
 
@@ -254,7 +106,7 @@ const startEmulator = (ext: Extension) => async () => {
       renderExtension(ext);
 
     }
-  }, 1500);
+  }, 7000);
   
 };
 
@@ -264,25 +116,21 @@ const stopEmulator = (ext: Extension) => async () => {
   ext.terminal = createTerminal(ext.ctx);
 
   ext.setEmulatorState(EmulatorState.Stopped);
+  ext.config.setActiveAccount(-1)
 
-  // Clear accounts and restart language server to ensure account
-  // state is in sync.
+  // Clear accounts and restart language server to ensure account state is in sync.
   ext.config.resetAccounts();
   renderExtension(ext);
   await ext.api.client.stop();
-  ext.api = new LanguageServerAPI(ext.ctx, ext.config, ext.emulatorState);
+  ext.api = new LanguageServerAPI(ext.ctx, ext.config, ext.emulatorState, {name: "", address: ""});
 };
 
 // Creates a new account by requesting that the Language Server submit
 // a "create account" transaction from the currently active account.
 const createAccount = (ext: Extension) => async () => {
   try {
-    const addr = await ext.api.createAccount();
-
-    // edit flow.json file with CLI "accounts create"
-    // manually update json
-
-    ext.config.addAccount(addr, "");
+    const account: any = await ext.api.createAccount();
+    ext.config.addAccount(account)
     renderExtension(ext);
   } catch (err) {
     window.showErrorMessage("Failed to create account: " + err);
@@ -310,7 +158,7 @@ const switchActiveAccount = (ext: Extension) => async () => {
       };
     });
 
-  window.showQuickPick(accountOptions).then((selected) => {
+  window.showQuickPick(accountOptions).then(async (selected) => {
     // `selected` is undefined if the QuickPick is dismissed, and the
     // string value of the selected option otherwise.
     if (selected === undefined) {
@@ -326,6 +174,7 @@ const switchActiveAccount = (ext: Extension) => async () => {
     }
 
     ext.config.setActiveAccount(activeIndex);
+    await ext.api.switchActiveAccount(activeAccount)
 
     window.showInformationMessage(
       `Switched to account ${activeAccount.fullName()}`,
