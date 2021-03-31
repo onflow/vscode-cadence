@@ -18,7 +18,7 @@ export class LanguageServerAPI {
     client: LanguageClient;
     running: boolean
 
-    constructor(ctx: ExtensionContext, config: Config, emulatorState: EmulatorState) {
+    constructor(ctx: ExtensionContext, config: Config, emulatorState: EmulatorState, activeAccount: any) {
         // Init running state with false and update, when client is connected to server
         this.running = false
 
@@ -35,8 +35,10 @@ export class LanguageServerAPI {
                     configurationSection: "cadence"
                 },
                 initializationOptions: {
-                    ...config.serverConfig,
-                    emulatorState
+                    emulatorState,
+                    activeAccountName: activeAccount.name,
+                    activeAccountAddress: activeAccount.address,
+                    configPath: config.configPath,
                 }
             }
         );
@@ -54,12 +56,9 @@ export class LanguageServerAPI {
 
         this.client.onDidChangeState((e: StateChangeEvent) => {
             switch(e.newState){
-                case 1:
-                    this.running = false
-                    break;
                 case 2:
                     this.running = true
-                    break;
+                    break
                 default:
                     this.running = false
                     break
@@ -87,32 +86,33 @@ export class LanguageServerAPI {
     }
 
     // Sends a request to switch the currently active account.
-    async switchActiveAccount(accountAddr: string) {
+    async switchActiveAccount(account: {name: string, address: string}) {
         return this.client.sendRequest("workspace/executeCommand", {
             command: SWITCH_ACCOUNT_SERVER,
             arguments: [
-                accountAddr,
+                account.name,
+                account.address
             ],
         });
     }
 
     // Sends a request to create a new account. Returns the address of the new
     // account, if it was created successfully.
-    async createAccount(): Promise<string> {
-        let res = await this.client.sendRequest("workspace/executeCommand", {
+    async createAccount(): Promise<any>{
+        let res:any = await this.client.sendRequest("workspace/executeCommand", {
             command: CREATE_ACCOUNT_SERVER,
             arguments: [],
         });
-        return res as string;
+        return res
     }
 
     // Sends a request to create a set of default accounts. Returns the addresses of the new
     // accounts, if they were created successfully.
-    async createDefaultAccounts(count: number): Promise<Array<string>> {
+    async createDefaultAccounts(count: number): Promise<any> {
         let res = await this.client.sendRequest("workspace/executeCommand", {
             command: CREATE_DEFAULT_ACCOUNTS_SERVER,
             arguments: [count],
         });
-        return res as Array<string>;
+        return res;
     }
 }
