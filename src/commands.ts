@@ -62,7 +62,7 @@ export function registerCommands(ext: Extension) {
 const restartServer = (ext: Extension) => async () => {
   await ext.api.client.stop();
   const activeIndex = ext.config.activeAccount
-  const {name, address} = activeIndex ? ext.config.accounts[activeIndex] : {name: "", address: ""}
+  const {name, address} = activeIndex != null ? ext.config.accounts[activeIndex] : {name: "", address: ""}
   ext.api = new LanguageServerAPI(ext.ctx, ext.config, ext.emulatorState, {name, address});
 };
 
