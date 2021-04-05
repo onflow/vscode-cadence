@@ -1,4 +1,4 @@
-import { LanguageClient, StateChangeEvent } from "vscode-languageclient";
+import { LanguageClient, State, StateChangeEvent } from "vscode-languageclient";
 import { ExtensionContext, window, commands } from "vscode";
 import { Config } from "./config";
 import {
@@ -9,6 +9,7 @@ import {
     INIT_ACCOUNT_MANAGER
 } from "./commands";
 import { EmulatorState } from './extension'
+import { Account } from './account'
 
 // The args to pass to the Flow CLI to start the language server.
 const START_LANGUAGE_SERVER_ARGS = ["cadence", "language-server"];
@@ -18,9 +19,13 @@ export class LanguageServerAPI {
     client: LanguageClient;
     running: boolean
 
-    constructor(ctx: ExtensionContext, config: Config, emulatorState: EmulatorState, activeAccount: any) {
+    constructor(ctx: ExtensionContext, config: Config, emulatorState: EmulatorState, activeAccount: Account | null) {
         // Init running state with false and update, when client is connected to server
         this.running = false
+
+        const activeAccountName = activeAccount ? activeAccount.name : ""
+        const activeAccountAddress = activeAccount ? activeAccount.address: ""
+        const { configPath } = config
 
         this.client = new LanguageClient(
             "cadence",
@@ -34,11 +39,11 @@ export class LanguageServerAPI {
                 synchronize: {
                     configurationSection: "cadence"
                 },
-                initializationOptions: {
+                initializationOptions: { 
+                    configPath,
                     emulatorState,
-                    activeAccountName: activeAccount.name,
-                    activeAccountAddress: activeAccount.address,
-                    configPath: config.configPath,
+                    activeAccountName,
+                    activeAccountAddress,
                 }
             }
         );
@@ -55,14 +60,7 @@ export class LanguageServerAPI {
             });
 
         this.client.onDidChangeState((e: StateChangeEvent) => {
-            switch(e.newState){
-                case 2:
-                    this.running = true
-                    break
-                default:
-                    this.running = false
-                    break
-            }
+            this.running = e.newState === State.Running
         })
 
         const clientDisposable = this.client.start();
@@ -98,21 +96,27 @@ export class LanguageServerAPI {
 
     // Sends a request to create a new account. Returns the address of the new
     // account, if it was created successfully.
-    async createAccount(): Promise<any>{
+    async createAccount(): Promise<Account>{
         let res:any = await this.client.sendRequest("workspace/executeCommand", {
             command: CREATE_ACCOUNT_SERVER,
             arguments: [],
         });
-        return res
+        const { name, address } = res
+        return new Account(name, address, null)
     }
 
     // Sends a request to create a set of default accounts. Returns the addresses of the new
     // accounts, if they were created successfully.
-    async createDefaultAccounts(count: number): Promise<any> {
-        let res = await this.client.sendRequest("workspace/executeCommand", {
+    async createDefaultAccounts(count: number): Promise<Account[]> {
+        let res:[] = await this.client.sendRequest("workspace/executeCommand", {
             command: CREATE_DEFAULT_ACCOUNTS_SERVER,
             arguments: [count],
         });
-        return res;
+        const accounts: Account [] = [] 
+        for (const account of res) {
+            const { name, address } = account
+            accounts.push(new Account(name, address, null))
+          }
+        return accounts;
     }
 }

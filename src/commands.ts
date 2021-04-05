@@ -7,16 +7,13 @@ import {
   Position,
   Range,
   window,
-  ProgressLocation,
   env,
-  Uri
 } from "vscode";
 
 import { Extension, renderExtension, EmulatorState } from "./extension";
 import { LanguageServerAPI } from "./language-server";
 import { createTerminal } from "./terminal";
-import { Account } from "./config";
-import { makeArgsFlag, makeFlag } from "./utils";
+import { Account } from "./account";
 
 
 // Command identifiers for locally handled commands
@@ -63,15 +60,13 @@ const restartServer = (ext: Extension) => async () => {
   await ext.api.client.stop();
   const activeIndex = ext.config.activeAccount
   const {name, address} = activeIndex != null ? ext.config.accounts[activeIndex] : {name: "", address: ""}
-  ext.api = new LanguageServerAPI(ext.ctx, ext.config, ext.emulatorState, {name, address});
+  ext.api = new LanguageServerAPI(ext.ctx, ext.config, ext.emulatorState, null);
 };
 
 // Starts the emulator in a terminal window.
 const startEmulator = (ext: Extension) => async () => {
   // Start the emulator with the service key we gave to the language server.
   const { configPath } = ext.config;
-
-  const configFlag = makeFlag('config-path')(configPath)
 
   ext.setEmulatorState(EmulatorState.Starting);
 
@@ -82,7 +77,7 @@ const startEmulator = (ext: Extension) => async () => {
       ext.config.flowCommand,
       `project`,
       `start-emulator`,
-      configFlag,
+      `--config-path=${configPath}`,
       `--verbose`,
     ].join(" ")
   );
@@ -90,7 +85,7 @@ const startEmulator = (ext: Extension) => async () => {
 
   setTimeout(async () => {
     try {
-      const deployResult = await ext.api.initAccountManager()
+      await ext.api.initAccountManager()
       ext.setEmulatorState(EmulatorState.Started);
       const accounts = await ext.api.createDefaultAccounts(ext.config.numAccounts);
       for (const account of accounts) {
@@ -122,14 +117,14 @@ const stopEmulator = (ext: Extension) => async () => {
   ext.config.resetAccounts();
   renderExtension(ext);
   await ext.api.client.stop();
-  ext.api = new LanguageServerAPI(ext.ctx, ext.config, ext.emulatorState, {name: "", address: ""});
+  ext.api = new LanguageServerAPI(ext.ctx, ext.config, ext.emulatorState, null);
 };
 
 // Creates a new account by requesting that the Language Server submit
 // a "create account" transaction from the currently active account.
 const createAccount = (ext: Extension) => async () => {
   try {
-    const account: any = await ext.api.createAccount();
+    const account = await ext.api.createAccount();
     ext.config.addAccount(account)
     renderExtension(ext);
   } catch (err) {
@@ -141,15 +136,15 @@ const createAccount = (ext: Extension) => async () => {
 // Switches the active account to the option selected by the user. The selection
 // is propagated to the Language Server.
 const switchActiveAccount = (ext: Extension) => async () => {
-  // Suffix to indicate which account is active
+  // Preffix to indicate which account is active
   const activePrefix = "🟢";
-  const passivePrefix = "⚫️"
+  const inactivePrefix = "⚫️"
   // Create the options (mark the active account with an 'active' prefix)
   const accountOptions = Object.values(ext.config.accounts)
     // Mark the active account with a `*` in the dialog
     .map((account) => {
       const prefix: String =
-        account.index === ext.config.activeAccount ? activePrefix : passivePrefix;
+        account.index === ext.config.activeAccount ? activePrefix : inactivePrefix;
       const label = `${prefix} ${account.fullName()}`;
 
       return {

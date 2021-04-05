@@ -1,39 +1,8 @@
 import { commands, window, workspace } from "vscode";
-import { addAddressPrefix } from "./address";
+import { Account } from './account'
 
 const CONFIG_FLOW_COMMAND = "flowCommand";
-const CONFIG_SERVICE_PRIVATE_KEY = "servicePrivateKey";
-const CONFIG_SERVICE_KEY_SIGNATURE_ALGORITHM = "serviceKeySignatureAlgorithm";
-const CONFIG_SERVICE_KEY_HASH_ALGORITHM = "serviceKeyHashAlgorithm";
-const CONFIG_EMULATOR_ADDRESS = "emulatorAddress";
 const CONFIG_NUM_ACCOUNTS = "numAccounts";
-
-// An account that can be used to submit transactions.
-export class Account {
-  index: number;
-  address: string;
-  name: string;
-
-  constructor(index: number, address: string, name: string) {
-    this.index = index;
-    this.address = address;
-    this.name = name;
-  }
-
-  getAddress(withPrefix: boolean = true): string {
-    return withPrefix ? `0x${this.address}` : this.address
-  }
-
-  getName(): string {
-    const name = this.name || `Account ${this.index + 1}`
-    return `${name[0].toUpperCase()}${name.slice(1)}`
-  }
-
-  fullName(): string {
-    return `${this.getName()} (${addAddressPrefix(this.address)})`;
-  }
-}
-
 
 // The configuration used by the extension.
 export class Config {
@@ -71,10 +40,11 @@ export class Config {
     }
   }
   
-  addAccount(account: {address: string, name: string}) {
+  addAccount(account: Account) {
     const index = this.accounts.length;
-    const {address, name} = account
-    this.accounts.push(new Account(index, address, name));
+    account.setIndex(index)
+    this.accounts.push(account)
+    
     if (index === 0) {
       this.setActiveAccount(0)
     }

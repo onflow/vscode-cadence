@@ -72,7 +72,7 @@ export async function activate(ctx: ExtensionContext) {
         config = getConfig();
         await config.readLocalConfig()
         terminal = createTerminal(ctx);
-        api = new LanguageServerAPI(ctx, config, EmulatorState.Stopped, {name: "", address: ""});
+        api = new LanguageServerAPI(ctx, config, EmulatorState.Stopped, null);
     } catch (err) {
         window.showErrorMessage("Failed to activate extension: ", err);
         return;
