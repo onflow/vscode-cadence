@@ -6,7 +6,7 @@ export class Account {
     address: string;
     name: string;
   
-    constructor(address: string, name: string, index: number | null) {
+    constructor(name: string, address: string, index: number | null) {
       this.address = address;
       this.name = name;
 
