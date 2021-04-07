@@ -6,15 +6,10 @@ export class Account {
     address: string;
     name: string;
   
-    constructor(name: string, address: string, index: number | null) {
+    constructor(name: string, address: string) {
       this.address = address;
       this.name = name;
-
-      if (index != null){
-        this.index = index
-      } else {
-        this.index = -1
-      }
+      this.index = -1
     }
 
     setIndex(index: number){
