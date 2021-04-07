@@ -44,10 +44,6 @@ export class Config {
     const index = this.accounts.length;
     account.setIndex(index)
     this.accounts.push(account)
-    
-    if (index === 0) {
-      this.setActiveAccount(0)
-    }
   }
 
   setActiveAccount(index: number) {
