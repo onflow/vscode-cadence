@@ -79,7 +79,7 @@ export class Config {
   // Resets account state
   resetAccounts() {
     this.accounts = [];
-    this.activeAccount = null;
+    this.activeAccount = -1;
   }
 }
 
