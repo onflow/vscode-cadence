@@ -77,20 +77,16 @@ export class LanguageServerAPI {
     async changeEmulatorState(emulatorState: EmulatorState) {
         return this.client.sendRequest("workspace/executeCommand", {
             command: CHANGE_EMULATOR_STATE,
-            arguments: [
-                emulatorState
-            ]
+            arguments: [ emulatorState ]
         })
     }
 
     // Sends a request to switch the currently active account.
-    async switchActiveAccount(account: {name: string, address: string}) {
+    async switchActiveAccount(account: Account) {
+        const { name, address } = account
         return this.client.sendRequest("workspace/executeCommand", {
             command: SWITCH_ACCOUNT_SERVER,
-            arguments: [
-                account.name,
-                account.address
-            ],
+            arguments: [ name, address ],
         });
     }
 
