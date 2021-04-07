@@ -154,9 +154,40 @@ const switchActiveAccount = (ext: Extension) => async () => {
       return;
     }
 
-    const activeIndex = selected.target;
-    const activeAccount = ext.config.getAccount(activeIndex);
-    await setActiveAccount(ext, activeIndex)
+    if (selected.target === accountOptions.length-1){
+      await createNewAccount(ext)
+      return
+    }
+
+    await setActiveAccount(ext, selected.target)
+    renderExtension(ext);
+  });
+};
+
+const createNewAccount = async (ext: Extension) => {
+  try {
+    const account = await ext.api.createAccount();
+    ext.config.addAccount(account)
+    const lastIndex = ext.config.accounts.length - 1
+    setActiveAccount(ext, lastIndex)
+    
+    renderExtension(ext);
+  } catch (err) {
+    window.showErrorMessage("Failed to create account: " + err);
+    return;
+  }
+}
+
+const setActiveAccount = async (ext: Extension, activeIndex: number) => {
+  const activeAccount = ext.config.getAccount(activeIndex);
+  
+  if (!activeAccount){
+    return false
+  }
+  
+  try{
+    await ext.api.switchActiveAccount(activeAccount)
+    ext.config.setActiveAccount(activeIndex);
 
     window.showInformationMessage(
       `Switched to account ${activeAccount!.fullName()}`,
@@ -168,16 +199,10 @@ const switchActiveAccount = (ext: Extension) => async () => {
     });
 
     renderExtension(ext);
-  });
-};
-
-const setActiveAccount = async (ext: Extension, activeIndex: number) => {
-  const activeAccount = ext.config.getAccount(activeIndex);
-  if (!activeAccount){
-    return false
+  } catch (err) {
+    window.showErrorMessage("Failed to switch account: " + err);
+    return 
   }
-  ext.config.setActiveAccount(activeIndex);
-  return ext.api.switchActiveAccount(activeAccount)
 }
 
 // This method will add and then remove a space on the last line to trick codelens to be updated
