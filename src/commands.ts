@@ -56,8 +56,6 @@ export function registerCommands(ext: Extension) {
 // Restarts the language server, updating the client in the extension object.
 const restartServer = (ext: Extension) => async () => {
   await ext.api.client.stop();
-  const activeIndex = ext.config.activeAccount
-  const {name, address} = activeIndex != null ? ext.config.accounts[activeIndex] : {name: "", address: ""}
   ext.api = new LanguageServerAPI(ext.ctx, ext.config, ext.emulatorState, null);
 };
 
@@ -90,7 +88,7 @@ const startEmulator = (ext: Extension) => async () => {
         ext.config.addAccount(account)
       }
 
-      await ext.api.switchActiveAccount(accounts[0])
+      await setActiveAccount(ext, 0)
       
       renderExtension(ext);
     } catch (err) {
@@ -99,7 +97,7 @@ const startEmulator = (ext: Extension) => async () => {
       renderExtension(ext);
 
     }
-  }, 7000);
+  }, 3000);
   
 };
 
@@ -109,7 +107,6 @@ const stopEmulator = (ext: Extension) => async () => {
   ext.terminal = createTerminal(ext.ctx);
 
   ext.setEmulatorState(EmulatorState.Stopped);
-  ext.config.setActiveAccount(-1)
 
   // Clear accounts and restart language server to ensure account state is in sync.
   ext.config.resetAccounts();
@@ -160,21 +157,14 @@ const switchActiveAccount = (ext: Extension) => async () => {
 
     const activeIndex = selected.target;
     const activeAccount = ext.config.getAccount(activeIndex);
-
-    if (!activeAccount) {
-      console.error("Switched to invalid account");
-      return;
-    }
-
-    ext.config.setActiveAccount(activeIndex);
-    await ext.api.switchActiveAccount(activeAccount)
+    await setActiveAccount(ext, activeIndex)
 
     window.showInformationMessage(
-      `Switched to account ${activeAccount.fullName()}`,
+      `Switched to account ${activeAccount!.fullName()}`,
       COPY_ADDRESS
     ).then((choice) => {
       if (choice === COPY_ADDRESS) {
-        env.clipboard.writeText(`0x${activeAccount.address}`)
+        env.clipboard.writeText(`0x${activeAccount!.address}`)
       }
     });
 
@@ -182,8 +172,13 @@ const switchActiveAccount = (ext: Extension) => async () => {
   });
 };
 
-const setActiveAccount = (ext: Extension, activeAccount: Account) => {
-  ext.config.setActiveAccount(activeAccount.index);
+const setActiveAccount = async (ext: Extension, activeIndex: number) => {
+  const activeAccount = ext.config.getAccount(activeIndex);
+  if (!activeAccount){
+    return false
+  }
+  ext.config.setActiveAccount(activeIndex);
+  return ext.api.switchActiveAccount(activeAccount)
 }
 
 // This method will add and then remove a space on the last line to trick codelens to be updated
