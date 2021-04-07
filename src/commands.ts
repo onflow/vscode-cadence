@@ -80,25 +80,23 @@ const startEmulator = (ext: Extension) => async () => {
   );
   ext.terminal.show();
 
-  setTimeout(async () => {
-    try {
-      await ext.api.initAccountManager()
-      ext.setEmulatorState(EmulatorState.Started);
-      const accounts = await ext.api.createDefaultAccounts(ext.config.numAccounts);
-      for (const account of accounts) {
-        ext.config.addAccount(account)
-      }
+  try {
+    await ext.api.initAccountManager()
 
-      await setActiveAccount(ext, 0)
-      
-      renderExtension(ext);
-    } catch (err) {
-
-      ext.setEmulatorState(EmulatorState.Stopped);
-      renderExtension(ext);
-
+    const accounts = await ext.api.createDefaultAccounts(ext.config.numAccounts);
+    for (const account of accounts) {
+      ext.config.addAccount(account)
     }
-  }, 3000);
+
+    await setActiveAccount(ext, 0)
+    
+    ext.setEmulatorState(EmulatorState.Started);
+    renderExtension(ext);
+  } catch (err) {
+
+    ext.setEmulatorState(EmulatorState.Stopped);
+    renderExtension(ext);
+  }
   
 };
 
