@@ -10,8 +10,13 @@ import {
 import { Extension, renderExtension, EmulatorState } from "./extension";
 import { LanguageServerAPI } from "./language-server";
 import { createTerminal } from "./terminal";
-import { Account } from "./account";
-import { COPY_ADDRESS } from './strings';
+import { 
+  COPY_ADDRESS, 
+  CREATE_NEW_ACCOUNT, 
+  ACTIVE_PREFIX, 
+  INACTIVE_PREFIX, 
+  ADD_NEW_PREFIX 
+} from './strings';
 
 
 // Command identifiers for locally handled commands
@@ -117,28 +122,18 @@ const stopEmulator = (ext: Extension) => async () => {
 // Creates a new account by requesting that the Language Server submit
 // a "create account" transaction from the currently active account.
 const createAccount = (ext: Extension) => async () => {
-  try {
-    const account = await ext.api.createAccount();
-    ext.config.addAccount(account)
-    renderExtension(ext);
-  } catch (err) {
-    window.showErrorMessage("Failed to create account: " + err);
-    return;
-  }
+  return createNewAccount(ext)
 };
 
 // Switches the active account to the option selected by the user. The selection
 // is propagated to the Language Server.
 const switchActiveAccount = (ext: Extension) => async () => {
-  // Preffix to indicate which account is active
-  const activePrefix = "🟢";
-  const inactivePrefix = "⚫️"
   // Create the options (mark the active account with an 'active' prefix)
   const accountOptions = Object.values(ext.config.accounts)
     // Mark the active account with a `*` in the dialog
     .map((account) => {
       const prefix: String =
-        account.index === ext.config.activeAccount ? activePrefix : inactivePrefix;
+        account.index === ext.config.activeAccount ? ACTIVE_PREFIX : INACTIVE_PREFIX;
       const label = `${prefix} ${account.fullName()}`;
 
       return {
@@ -146,6 +141,11 @@ const switchActiveAccount = (ext: Extension) => async () => {
         target: account.index,
       };
     });
+
+  accountOptions.push({
+    label: `${ADD_NEW_PREFIX} ${CREATE_NEW_ACCOUNT}`,
+    target: accountOptions.length
+  })
 
   window.showQuickPick(accountOptions).then(async (selected) => {
     // `selected` is undefined if the QuickPick is dismissed, and the
