@@ -56,7 +56,8 @@ export function registerCommands(ext: Extension) {
 // Restarts the language server, updating the client in the extension object.
 const restartServer = (ext: Extension) => async () => {
   await ext.api.client.stop();
-  ext.api = new LanguageServerAPI(ext.ctx, ext.config, ext.emulatorState, null);
+  const activeAccount = ext.config.getActiveAccount()
+  ext.api = new LanguageServerAPI(ext.ctx, ext.config, ext.emulatorState, activeAccount);
 };
 
 // Starts the emulator in a terminal window.
