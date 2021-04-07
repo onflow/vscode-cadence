@@ -1,6 +1,3 @@
-import * as cp from 'child_process';
-import { decode } from "@onflow/decode"
-
 import {
   commands,
   ExtensionContext,
