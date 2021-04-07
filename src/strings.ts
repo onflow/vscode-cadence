@@ -1,0 +1,1 @@
+export const COPY_ADDRESS = "Copy Address"

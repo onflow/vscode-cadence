@@ -11,6 +11,7 @@ import { Extension, renderExtension, EmulatorState } from "./extension";
 import { LanguageServerAPI } from "./language-server";
 import { createTerminal } from "./terminal";
 import { Account } from "./account";
+import { COPY_ADDRESS } from './strings';
 
 
 // Command identifiers for locally handled commands
@@ -170,9 +171,9 @@ const switchActiveAccount = (ext: Extension) => async () => {
 
     window.showInformationMessage(
       `Switched to account ${activeAccount.fullName()}`,
-      "Copy Address"
+      COPY_ADDRESS
     ).then((choice) => {
-      if (choice === "Copy Address") {
+      if (choice === COPY_ADDRESS) {
         env.clipboard.writeText(`0x${activeAccount.address}`)
       }
     });
