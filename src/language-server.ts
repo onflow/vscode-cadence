@@ -102,7 +102,7 @@ export class LanguageServerAPI {
             arguments: [],
         });
         const { name, address } = res
-        return new Account(name, address, null)
+        return new Account(name, address)
     }
 
     // Sends a request to create a set of default accounts. Returns the addresses of the new
@@ -115,7 +115,7 @@ export class LanguageServerAPI {
         const accounts: Account [] = [] 
         for (const account of res) {
             const { name, address } = account
-            accounts.push(new Account(name, address, null))
+            accounts.push(new Account(name, address))
           }
         return accounts;
     }
