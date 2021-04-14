@@ -182,6 +182,7 @@ const setActiveAccount = async (ext: Extension, activeIndex: number) => {
   const activeAccount = ext.config.getAccount(activeIndex);
   
   if (!activeAccount){
+    window.showErrorMessage("Failed to switch account: account does not exist.");
     return false
   }
   
