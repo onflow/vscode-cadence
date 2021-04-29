@@ -1,45 +1,13 @@
 import { commands, window, workspace } from "vscode";
-import { addAddressPrefix } from "./address";
+import { Account } from './account'
 
 const CONFIG_FLOW_COMMAND = "flowCommand";
-const CONFIG_SERVICE_PRIVATE_KEY = "servicePrivateKey";
-const CONFIG_SERVICE_KEY_SIGNATURE_ALGORITHM = "serviceKeySignatureAlgorithm";
-const CONFIG_SERVICE_KEY_HASH_ALGORITHM = "serviceKeyHashAlgorithm";
-const CONFIG_EMULATOR_ADDRESS = "emulatorAddress";
 const CONFIG_NUM_ACCOUNTS = "numAccounts";
-
-// An account that can be used to submit transactions.
-export class Account {
-  index: number;
-  address: string;
-
-  constructor(index: number, address: string) {
-    this.index = index;
-    this.address = address;
-  }
-
-  name(): string {
-    return `Account ${this.index + 1}`;
-  }
-
-  fullName(): string {
-    return `${this.name()} (${addAddressPrefix(this.address)})`;
-  }
-}
-
-// The subset of extension configuration used by the language server.
-type ServerConfig = {
-  servicePrivateKey: string;
-  serviceKeySignatureAlgorithm: string;
-  serviceKeyHashAlgorithm: string;
-  emulatorAddress: string;
-};
 
 // The configuration used by the extension.
 export class Config {
   // The name of the Flow CLI executable.
   flowCommand: string;
-  serverConfig: ServerConfig;
   numAccounts: number;
   // Set of created accounts for which we can submit transactions.
   // Mapping from account address to account object.
@@ -47,21 +15,35 @@ export class Config {
   // Index of the currently active account.
   activeAccount: number | null;
 
+
+  // Full path to flow.json file
+  configPath: string;
+
   constructor(
     flowCommand: string,
     numAccounts: number,
-    serverConfig: ServerConfig
   ) {
     this.flowCommand = flowCommand;
     this.numAccounts = numAccounts;
-    this.serverConfig = serverConfig;
     this.accounts = [];
     this.activeAccount = null;
+    this.configPath = "";
   }
 
-  addAccount(address: string) {
+  async readLocalConfig() {
+    const file = await workspace.findFiles('flow.json')
+    if (file.length === 1) {
+      const configFile = file[0]
+      this.configPath = configFile.path;
+    } else {
+      // TODO: show message that file is not present and propose to init it
+    }
+  }
+  
+  addAccount(account: Account) {
     const index = this.accounts.length;
-    this.accounts.push(new Account(index, address));
+    account.setIndex(index)
+    this.accounts.push(account)
   }
 
   setActiveAccount(index: number) {
@@ -84,15 +66,22 @@ export class Config {
     return this.accounts[index];
   }
 
+  accountExists(name: string) {
+    return this.accounts.filter(acc => {
+      return acc.name === name
+    }).length > 0
+  }
+
   // Resets account state
   resetAccounts() {
     this.accounts = [];
-    this.activeAccount = null;
+    this.activeAccount = -1;
   }
 }
 
 // Retrieves config from the workspace.
 export function getConfig(): Config {
+
   const cadenceConfig = workspace.getConfiguration("cadence");
 
   const flowCommand: string | undefined = cadenceConfig.get(
@@ -102,34 +91,6 @@ export function getConfig(): Config {
     throw new Error(`Missing ${CONFIG_FLOW_COMMAND} config`);
   }
 
-  const servicePrivateKey: string | undefined = cadenceConfig.get(
-    CONFIG_SERVICE_PRIVATE_KEY
-  );
-  if (!servicePrivateKey) {
-    throw new Error(`Missing ${CONFIG_SERVICE_PRIVATE_KEY} config`);
-  }
-
-  const serviceKeySignatureAlgorithm: string | undefined = cadenceConfig.get(
-    CONFIG_SERVICE_KEY_SIGNATURE_ALGORITHM
-  );
-  if (!serviceKeySignatureAlgorithm) {
-    throw new Error(`Missing ${CONFIG_SERVICE_KEY_SIGNATURE_ALGORITHM} config`);
-  }
-
-  const serviceKeyHashAlgorithm: string | undefined = cadenceConfig.get(
-    CONFIG_SERVICE_KEY_HASH_ALGORITHM
-  );
-  if (!serviceKeyHashAlgorithm) {
-    throw new Error(`Missing ${CONFIG_SERVICE_KEY_HASH_ALGORITHM} config`);
-  }
-
-  const emulatorAddress: string | undefined = cadenceConfig.get(
-    CONFIG_EMULATOR_ADDRESS
-  );
-  if (!emulatorAddress) {
-    throw new Error(`Missing ${CONFIG_EMULATOR_ADDRESS} config`);
-  }
-
   const numAccounts: number | undefined = cadenceConfig.get(
     CONFIG_NUM_ACCOUNTS
   );
@@ -137,14 +98,7 @@ export function getConfig(): Config {
     throw new Error(`Missing ${CONFIG_NUM_ACCOUNTS} config`);
   }
 
-  const serverConfig: ServerConfig = {
-    servicePrivateKey,
-    serviceKeySignatureAlgorithm,
-    serviceKeyHashAlgorithm,
-    emulatorAddress,
-  };
-
-  return new Config(flowCommand, numAccounts, serverConfig);
+  return new Config(flowCommand, numAccounts);
 }
 
 // Adds an event handler that prompts the user to reload whenever the config

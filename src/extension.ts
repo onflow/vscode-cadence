@@ -1,19 +1,22 @@
+import * as fs from "fs"
 import {
     ExtensionContext,
     window,
     Terminal,
     StatusBarItem,
+    workspace,
 } from "vscode";
-import {getConfig, handleConfigChanges, Config} from "./config";
-import {LanguageServerAPI} from "./language-server";
-import {registerCommands} from "./commands";
-import {createTerminal} from "./terminal";
+import { getConfig, handleConfigChanges, Config } from "./config";
+import { LanguageServerAPI } from "./language-server";
+import { refreshCodeLenses, registerCommands } from "./commands";
+import { createTerminal } from "./terminal";
 import {
-    createEmulatorStatusBarItem, 
+    createEmulatorStatusBarItem,
     updateEmulatorStatusBarItem,
-    createActiveAccountStatusBarItem, 
-    updateActiveAccountStatusBarItem, 
+    createActiveAccountStatusBarItem,
+    updateActiveAccountStatusBarItem,
 } from "./status-bar";
+
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -47,26 +50,29 @@ export class Extension {
 
     setEmulatorState(state: EmulatorState) {
         this.emulatorState = state;
+        this.api.changeEmulatorState(state)
+        refreshCodeLenses();
     }
 };
 
 export enum EmulatorState {
-    Stopped = 1,
+    Stopped = 0,
     Starting,
     Started,
 }
 
 // Called when the extension starts up. Reads config, starts the language
 // server, and registers command handlers.
-export function activate(ctx: ExtensionContext) {
+export async function activate(ctx: ExtensionContext) {
     let config: Config;
     let terminal: Terminal;
     let api: LanguageServerAPI;
 
     try {
         config = getConfig();
+        await config.readLocalConfig()
         terminal = createTerminal(ctx);
-        api = new LanguageServerAPI(ctx, config);
+        api = new LanguageServerAPI(ctx, config, EmulatorState.Stopped, null);
     } catch (err) {
         window.showErrorMessage("Failed to activate extension: ", err);
         return;
@@ -86,7 +92,7 @@ export function activate(ctx: ExtensionContext) {
     renderExtension(ext);
 }
 
-export function deactivate() {}
+export function deactivate() { }
 
 export function renderExtension(ext: Extension) {
     updateEmulatorStatusBarItem(ext.emulatorStatusBarItem, ext.getEmulatorState());

@@ -3,8 +3,8 @@ import {
     StatusBarItem,
     StatusBarAlignment,
 } from "vscode";
-import {Account} from "./config";
-import {SWITCH_ACCOUNT, START_EMULATOR, STOP_EMULATOR} from "./commands";
+import { Account } from "./account";
+import { SWITCH_ACCOUNT, START_EMULATOR, STOP_EMULATOR } from "./commands";
 import { EmulatorState } from "./extension";
 
 export function createEmulatorStatusBarItem(): StatusBarItem {
