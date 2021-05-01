@@ -66,6 +66,24 @@
           "description": "The number of default accounts to create",
           "scope": "resource"
         },
+        "cadence.accessCheckMode": {
+          "type": "string",
+          "default": "strict",
+          "enum": [
+            "strict",
+            "notSpecifiedRestricted",
+            "notSpecifiedUnrestricted",
+            "none"
+          ],
+          "enumDescriptions": [
+            "Access modifiers are required and always enforced",
+            "Access modifiers are optional. Access is assumed private if not specified",
+            "Access modifiers are optional. Access is assumed public if not specified",
+            "Access modifiers are optional and ignored"
+          ],
+          "description": "Configures if access modifiers are required and how they are are enforced",
+          "scope": "resource"
+        },
         "cadence.trace.server": {
           "scope": "window",
           "type": "string",

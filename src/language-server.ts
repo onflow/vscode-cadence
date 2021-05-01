@@ -39,7 +39,8 @@ export class LanguageServerAPI {
                 synchronize: {
                     configurationSection: "cadence"
                 },
-                initializationOptions: { 
+                initializationOptions: {
+                    accessCheckMode: config.accessCheckMode,
                     configPath,
                     emulatorState,
                     activeAccountName,
@@ -108,7 +109,7 @@ export class LanguageServerAPI {
             command: CREATE_DEFAULT_ACCOUNTS_SERVER,
             arguments: [count],
         });
-        const accounts: Account [] = [] 
+        const accounts: Account [] = []
         for (const account of res) {
             const { name, address } = account
             accounts.push(new Account(name, address))
