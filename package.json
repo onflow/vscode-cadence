@@ -110,7 +110,6 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "postinstall": "node ./node_modules/vscode/bin/install",
     "test": "npm run compile && node ./node_modules/vscode/bin/test",
     "package": "./node_modules/.bin/vsce package",
     "snyk-protect": "snyk protect",
@@ -119,10 +118,10 @@
   "devDependencies": {
     "@types/mocha": "^2.2.42",
     "@types/node": "^10.12.21",
+    "@types/vscode": "^1.36.0",
     "snyk": "^1.316.1",
     "tslint": "^5.12.1",
-    "typescript": "^3.9.7",
-    "vscode": "^1.1.28"
+    "typescript": "^3.9.7"
   },
   "dependencies": {
     "@onflow/decode": "0.0.11",
