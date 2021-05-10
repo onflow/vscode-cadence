@@ -304,7 +304,7 @@
             "name": "keyword.control.loop.cadence"
           },
           {
-            "match": "(?<!\\.)\\b(?:pre|post|prepare|execute|import|from|create|destroy|emit)\\b",
+            "match": "(?<!\\.)\\b(?:pre|post|prepare|execute|create|destroy|emit)\\b",
             "name": "keyword.other.cadence"
           },
           {
@@ -314,6 +314,10 @@
           {
             "match": "\\binit\\b|\\bdestroy\\b|(?<!\\.)\\b(?:get|set)\\b",
             "name": "storage.type.function.cadence"
+          },
+          {
+            "match": "(?<!\\.)\\b(?:import|from)\\b",
+            "name": "keyword.control.import.cadence"
           }
         ]
       },
