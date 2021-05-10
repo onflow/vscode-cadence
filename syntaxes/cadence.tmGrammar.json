@@ -268,10 +268,6 @@
             "name": "keyword.operator.arithmetic.cadence"
           },
           {
-            "match": "&(\\+|\\-|\\*)",
-            "name": "keyword.operator.arithmetic.overflow.cadence"
-          },
-          {
             "match": "%",
             "name": "keyword.operator.arithmetic.remainder.cadence"
           },
