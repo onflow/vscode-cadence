@@ -260,6 +260,10 @@
             "name": "keyword.operator.move.cadence"
           },
           {
+            "match": "<-!",
+            "name": "keyword.operator.force-move.cadence"
+          },
+          {
             "match": "\\+|\\-|\\*|/",
             "name": "keyword.operator.arithmetic.cadence"
           },
@@ -526,7 +530,7 @@
             "name": "entity.name.type.$1.cadence"
           }
         },
-        "end": "=|<-|$",
+        "end": "=|<-|<-!|$",
         "patterns": [
           { "include": "#type" }
         ]
