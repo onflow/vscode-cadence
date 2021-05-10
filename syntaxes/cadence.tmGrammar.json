@@ -6,7 +6,8 @@
       { "include": "#declarations" },
       { "include": "#keywords" },
       { "include": "#code-block" },
-      { "include": "#composite" }
+      { "include": "#composite" },
+      { "include": "#event" }
     ],
     "repository": {
       "comments": {
@@ -308,7 +309,7 @@
             "name": "keyword.other.cadence"
           },
           {
-            "match": "(?<!\\.)\\b(?:private|pub(?:\\(set\\))?)\\b",
+            "match": "(?<!\\.)\\b(?:private|pub(?:\\(set\\))?|access\\((?:self|contract|account|all)\\))\\b",
             "name": "keyword.other.declaration-specifier.accessibility.cadence"
           },
           {
@@ -611,8 +612,29 @@
           }
         ]
       },
+      "event": {
+        "begin": "\\b(event)\\b\\s+([\\p{L}_][\\p{L}_\\p{N}\\p{M}]*)\\s*",
+        "beginCaptures": {
+          "1": {
+            "name": "storage.type.event.cadence"
+          },
+          "2": {
+            "name": "entity.name.type.event.cadence"
+          }
+        },
+        "end": "(?<=\\))|$",
+        "name": "meta.definition.type.event.cadence",
+        "patterns": [
+          {
+            "include": "#comments"
+          },
+          {
+            "include": "#parameter-clause"
+          }
+        ]
+      },
       "composite": {
-        "begin": "\\b((?:(?:struct|resource|contract)(?:\\s+interface)?)|transaction|event)\\s+([\\p{L}_][\\p{L}_\\p{N}\\p{M}]*)",
+        "begin": "\\b((?:(?:struct|resource|contract)(?:\\s+interface)?)|transaction|enum)\\s+([\\p{L}_][\\p{L}_\\p{N}\\p{M}]*)",
         "beginCaptures": {
           "1": {
             "name": "storage.type.$1.cadence"
