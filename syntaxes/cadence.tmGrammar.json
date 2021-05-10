@@ -312,7 +312,7 @@
             "name": "keyword.other.declaration-specifier.accessibility.cadence"
           },
           {
-            "match": "\\binit\\b|\\bdestroy\\b|(?<!\\.)\\b(?:get|set)\\b",
+            "match": "\\b(?:init|destroy)\\b",
             "name": "storage.type.function.cadence"
           },
           {
