@@ -628,6 +628,9 @@
             "include": "#comments"
           },
           {
+            "include": "#conformance-clause"
+          },
+          {
             "begin": "\\{",
             "beginCaptures": {
               "0": {
@@ -644,6 +647,33 @@
             "patterns": [
               {
                 "include": "$self"
+              }
+            ]
+          }
+        ]
+      },
+      "conformance-clause": {
+        "begin": "(:)(?=\\s*\\{)|(:)\\s*",
+        "beginCaptures": {
+          "1": {
+            "name": "invalid.illegal.empty-conformance-clause.cadence"
+          },
+          "2": {
+            "name": "punctuation.separator.conformance-clause.cadence"
+          }
+        },
+        "end": "(?!\\G)$|(?=[={}])",
+        "name": "meta.conformance-clause.cadence",
+        "patterns": [
+          {
+            "begin": "\\G",
+            "end": "(?!\\G)$|(?=[={}])",
+            "patterns": [
+              {
+                "include": "#comments"
+              },
+              {
+                "include": "#type"
               }
             ]
           }
