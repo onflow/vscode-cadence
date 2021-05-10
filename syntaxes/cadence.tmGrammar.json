@@ -292,7 +292,7 @@
       "keywords": {
         "patterns": [
           {
-            "match": "(?<!\\.)\\b(?:if|else)\\b",
+            "match": "(?<!\\.)\\b(?:if|else|switch|case|default)\\b",
             "name": "keyword.control.branch.cadence"
           },
           {
@@ -300,7 +300,7 @@
             "name": "keyword.control.transfer.cadence"
           },
           {
-            "match": "(?<!\\.)\\b(?:while)\\b",
+            "match": "(?<!\\.)\\b(?:while|for|in)\\b",
             "name": "keyword.control.loop.cadence"
           },
           {
