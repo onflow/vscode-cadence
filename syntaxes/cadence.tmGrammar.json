@@ -282,6 +282,10 @@
           {
             "match": "&&|\\|\\|",
             "name": "keyword.operator.logical.cadence"
+          },
+          {
+            "match": "[?!]",
+            "name": "keyword.operator.type.optional.cadence"
           }
         ]
       },
