@@ -3,6 +3,7 @@ import { Account } from './account'
 
 const CONFIG_FLOW_COMMAND = "flowCommand";
 const CONFIG_NUM_ACCOUNTS = "numAccounts";
+const CONFIG_ACCESS_CHECK_MODE = "accessCheckMode";
 
 // The configuration used by the extension.
 export class Config {
@@ -14,7 +15,7 @@ export class Config {
   accounts: Array<Account>;
   // Index of the currently active account.
   activeAccount: number | null;
-
+  accessCheckMode: string;
 
   // Full path to flow.json file
   configPath: string;
@@ -22,9 +23,11 @@ export class Config {
   constructor(
     flowCommand: string,
     numAccounts: number,
+    accessCheckMode: string,
   ) {
     this.flowCommand = flowCommand;
     this.numAccounts = numAccounts;
+    this.accessCheckMode = accessCheckMode;
     this.accounts = [];
     this.activeAccount = null;
     this.configPath = "";
@@ -39,7 +42,7 @@ export class Config {
       // TODO: show message that file is not present and propose to init it
     }
   }
-  
+
   addAccount(account: Account) {
     const index = this.accounts.length;
     account.setIndex(index)
@@ -98,7 +101,14 @@ export function getConfig(): Config {
     throw new Error(`Missing ${CONFIG_NUM_ACCOUNTS} config`);
   }
 
-  return new Config(flowCommand, numAccounts);
+  let accessCheckMode: string | undefined = cadenceConfig.get(
+    CONFIG_ACCESS_CHECK_MODE
+  );
+  if (!accessCheckMode) {
+    accessCheckMode = "strict";
+  }
+
+  return new Config(flowCommand, numAccounts, accessCheckMode);
 }
 
 // Adds an event handler that prompts the user to reload whenever the config
