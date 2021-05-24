@@ -9,7 +9,7 @@
     "url": "https://github.com/onflow/vscode-flow.git"
   },
   "engines": {
-    "vscode": "^1.36.0"
+    "vscode": "^1.56.0"
   },
   "categories": [
     "Other"
@@ -136,15 +136,15 @@
   "devDependencies": {
     "@types/mocha": "^2.2.42",
     "@types/node": "^10.12.21",
-    "@types/vscode": "^1.36.0",
+    "@types/vscode": "^1.56.0",
     "snyk": "^1.316.1",
     "tslint": "^5.12.1",
     "typescript": "^3.9.7"
   },
   "dependencies": {
     "@onflow/decode": "0.0.11",
-    "vsce": "^1.69.0",
-    "vscode-languageclient": "~4.4.0"
+    "vsce": "^1.88.0",
+    "vscode-languageclient": "~7.0.0"
   },
   "snyk": true
 }
