@@ -1,5 +1,5 @@
-import { LanguageClient, State, StateChangeEvent } from "vscode-languageclient";
-import { ExtensionContext, window, commands } from "vscode";
+import { LanguageClient, State, StateChangeEvent } from "vscode-languageclient/node";
+import { ExtensionContext, window } from "vscode";
 import { Config } from "./config";
 import {
     CREATE_ACCOUNT_SERVER,
@@ -54,7 +54,7 @@ export class LanguageServerAPI {
             .then(() => {
                 return window.showInformationMessage("Cadence language server started");
             })
-            .catch(err => {
+            .catch((err: Error) => {
                 return window.showErrorMessage(
                     `Cadence language server failed to start: ${err}`
                 );

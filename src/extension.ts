@@ -1,10 +1,8 @@
-import * as fs from "fs"
 import {
     ExtensionContext,
     window,
     Terminal,
     StatusBarItem,
-    workspace,
 } from "vscode";
 import { getConfig, handleConfigChanges, Config } from "./config";
 import { LanguageServerAPI } from "./language-server";
