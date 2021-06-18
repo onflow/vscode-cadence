@@ -33,14 +33,14 @@ export class Config {
     this.configPath = "";
   }
 
-  async readLocalConfig() {
-    const file = await workspace.findFiles('flow.json')
-    if (file.length === 1) {
-      const configFile = file[0]
-      this.configPath = configFile.path;
-    } else {
-      // TODO: show message that file is not present and propose to init it
+  async readLocalConfig(): Promise<boolean> {
+    const file = await workspace.findFiles('flow.json');
+    if (file.length !== 1) {
+      return false;
     }
+    const configFile = file[0]
+    this.configPath = configFile.path;
+    return true;
   }
 
   addAccount(account: Account) {
