@@ -3,6 +3,7 @@ import {
     window,
     Terminal,
     StatusBarItem,
+    workspace,
 } from "vscode";
 import { getConfig, handleConfigChanges, Config } from "./config";
 import { LanguageServerAPI } from "./language-server";
@@ -14,7 +15,9 @@ import {
     createActiveAccountStatusBarItem,
     updateActiveAccountStatusBarItem,
 } from "./status-bar";
-
+import * as util from 'util';
+import * as cp from 'child_process'
+const exec = util.promisify(cp.exec);
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -68,7 +71,11 @@ export async function activate(ctx: ExtensionContext) {
 
     try {
         config = getConfig();
-        await config.readLocalConfig()
+        if (!await config.readLocalConfig()) {
+            if (!await promptInitializeConfig())
+                return
+            await config.readLocalConfig()
+        }
         terminal = createTerminal(ctx);
         api = new LanguageServerAPI(ctx, config, EmulatorState.Stopped, null);
     } catch (err) {
@@ -88,6 +95,27 @@ export async function activate(ctx: ExtensionContext) {
 
     registerCommands(ext);
     renderExtension(ext);
+}
+
+async function promptInitializeConfig(): Promise<boolean> {
+    let rootPath: string | undefined;
+    if (workspace.workspaceFolders && workspace.workspaceFolders.length) {
+        rootPath = workspace.workspaceFolders[0].uri.fsPath;
+    } else {
+        rootPath = workspace.rootPath;
+    }
+    if (!rootPath)
+        return false
+
+    const continueMessage = 'Continue'
+    const selection = await window.showInformationMessage('Missing Flow CLI configuration. Create a new one?', continueMessage);
+    if (selection !== continueMessage) {
+        return false
+    }
+
+    await exec('flow init', {cwd: rootPath})
+
+    return true
 }
 
 export function deactivate() { }
