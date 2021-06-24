@@ -22,7 +22,7 @@
     "onCommand:cadence.createAccount",
     "onCommand:cadence.switchActiveAccount"
   ],
-  "main": "./out/extension.js",
+  "main": "./out/main.js",
   "contributes": {
     "commands": [
       {
@@ -125,10 +125,12 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "test": "npm run compile && node ./node_modules/vscode/bin/test",
+    "vscode:prepublish": "npm run -S esbuild-base -- --minify",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
+    "esbuild": "npm run -S esbuild-base -- --sourcemap",
+    "esbuild-watch": "npm run -S esbuild-base -- --sourcemap --watch",
+    "test-compile": "tsc -p ./",
+    "test": "npm run test-compile && node ./node_modules/vscode/bin/test",
     "package": "./node_modules/.bin/vsce package",
     "snyk-protect": "snyk protect",
     "prepare": "npm run snyk-protect"
@@ -137,6 +139,7 @@
     "@types/mocha": "^2.2.42",
     "@types/node": "^10.12.21",
     "@types/vscode": "^1.56.0",
+    "esbuild": "^0.12.9",
     "snyk": "^1.316.1",
     "tslint": "^5.12.1",
     "typescript": "^3.9.7"
