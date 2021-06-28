@@ -2,8 +2,8 @@
   "name": "cadence",
   "displayName": "Cadence",
   "publisher": "DapperLabs",
-  "description": "",
-  "version": "0.6.1",
+  "description": "This extension integrates Cadence, the resource-oriented smart contract programming language of Flow, into Visual Studio Code",
+  "version": "0.6.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/onflow/vscode-flow.git"
@@ -14,6 +14,7 @@
   "categories": [
     "Other"
   ],
+  "icon": "icon.png",
   "activationEvents": [
     "onLanguage:cadence",
     "onCommand:cadence.restartServer",
