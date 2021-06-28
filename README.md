@@ -7,9 +7,19 @@ It provides features like syntax highlighting, type checking, code completion, e
 
 - Syntax highlighting (including in Markdown code fences)
 - Diagnostics (errors and warnings)
+- Code completion, including documentation
 - Type information on hover
 - Go to declaration
-- Code completion
+- Go to symbol
+- Document outline
+- Renaming
+- Signature help
+- Symbol highlighting
+- Code actions
+  - Declare constants, variables, functions, fields, and methods
+  - Add missing members when implementing an interface
+  - Apply removal suggestion
+  - Apply replacement suggestion
 - Run the emulator, submit transactions, scripts from the editor
 
 ## Installation
