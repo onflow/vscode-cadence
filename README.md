@@ -27,19 +27,33 @@ It provides features like syntax highlighting, type checking, code completion, e
 To install the extension, ensure you [have VS Code installed](https://code.visualstudio.com/docs/setup/mac)
 and have configured the [`code` command line interface](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line).
 
-### Using the Flow CLI
+### From the Marketplace
 
-The recommended way to install the latest released version is to use the Flow CLI.
+The recommended way to install the latest version of the extension is to get it from the Marketplace.
 
-First, [install the Flow CLI](https://github.com/onflow/flow-cli#installation).
+First, as the extension requires the Flow CLI, [install the CLI](https://github.com/onflow/flow-cli#installation).
 
-Check that it's been installed correctly.
+Check that the CLI been installed correctly:
 
 ```shell script
 flow version
 ```
 
-Next, use the CLI to install the VS Code extension.
+Finally, [install the extension from the Marketplace](https://marketplace.visualstudio.com/items?itemName=DapperLabs.cadence).
+
+### Using the Flow CLI
+
+The extension can also be installed from the Flow CLI.
+
+First, [install the Flow CLI](https://github.com/onflow/flow-cli#installation).
+
+Check that the CLI been installed correctly:
+
+```shell script
+flow version
+```
+
+Next, use the CLI to install the VS Code extension:
 
 ```shell script
 flow cadence install-vscode-extension
