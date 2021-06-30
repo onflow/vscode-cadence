@@ -60,4 +60,3 @@ flow cadence install-vscode-extension
 ```
 
 Restart VS Code and the extension should be installed!
-
