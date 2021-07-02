@@ -39,7 +39,7 @@ Check that the CLI been installed correctly:
 flow version
 ```
 
-Finally, [install the extension from the Marketplace](https://marketplace.visualstudio.com/items?itemName=DapperLabs.cadence).
+Finally, [install the extension from the Marketplace](https://marketplace.visualstudio.com/items?itemName=onflow.cadence).
 
 ### Using the Flow CLI
 
