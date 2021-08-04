@@ -4,126 +4,123 @@ import {
   Position,
   Range,
   window,
-  env,
-} from "vscode";
+  env
+} from 'vscode'
 
-import { Extension, renderExtension, EmulatorState } from "./extension";
-import { LanguageServerAPI } from "./language-server";
-import { createTerminal } from "./terminal";
-import { 
-  COPY_ADDRESS, 
-  CREATE_NEW_ACCOUNT, 
-  ACTIVE_PREFIX, 
-  INACTIVE_PREFIX, 
-  ADD_NEW_PREFIX 
-} from './strings';
-
+import { Extension, renderExtension, EmulatorState } from './extension'
+import { LanguageServerAPI } from './language-server'
+import { createTerminal } from './terminal'
+import {
+  COPY_ADDRESS,
+  CREATE_NEW_ACCOUNT,
+  ACTIVE_PREFIX,
+  INACTIVE_PREFIX,
+  ADD_NEW_PREFIX
+} from './strings'
 
 // Command identifiers for locally handled commands
-export const RESTART_SERVER = "cadence.restartServer";
-export const START_EMULATOR = "cadence.runEmulator";
-export const STOP_EMULATOR = "cadence.stopEmulator";
-export const CREATE_ACCOUNT = "cadence.createAccount";
-export const SWITCH_ACCOUNT = "cadence.switchActiveAccount";
+export const RESTART_SERVER = 'cadence.restartServer'
+export const START_EMULATOR = 'cadence.runEmulator'
+export const STOP_EMULATOR = 'cadence.stopEmulator'
+export const CREATE_ACCOUNT = 'cadence.createAccount'
+export const SWITCH_ACCOUNT = 'cadence.switchActiveAccount'
 
 // Command identifiers for commands running in CLI
-export const DEPLOY_CONTRACT = "cadence.deployContract"
-export const EXECUTE_SCRIPT = "cadence.executeScript"
-export const SEND_TRANSACTION = "cadence.sendTransaction"
+export const DEPLOY_CONTRACT = 'cadence.deployContract'
+export const EXECUTE_SCRIPT = 'cadence.executeScript'
+export const SEND_TRANSACTION = 'cadence.sendTransaction'
 
 // Command identifies for commands handled by the Language server
-export const CREATE_ACCOUNT_SERVER = "cadence.server.flow.createAccount";
+export const CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
 export const CREATE_DEFAULT_ACCOUNTS_SERVER =
-  "cadence.server.flow.createDefaultAccounts";
-export const SWITCH_ACCOUNT_SERVER = "cadence.server.flow.switchActiveAccount";
-export const CHANGE_EMULATOR_STATE = "cadence.server.flow.changeEmulatorState"
-export const INIT_ACCOUNT_MANAGER = "cadence.server.flow.initAccountManager"
+  'cadence.server.flow.createDefaultAccounts'
+export const SWITCH_ACCOUNT_SERVER = 'cadence.server.flow.switchActiveAccount'
+export const CHANGE_EMULATOR_STATE = 'cadence.server.flow.changeEmulatorState'
+export const INIT_ACCOUNT_MANAGER = 'cadence.server.flow.initAccountManager'
 
 // Registers a command with VS Code so it can be invoked by the user.
-function registerCommand(
+function registerCommand (
   ctx: ExtensionContext,
   command: string,
   callback: (...args: any[]) => any
 ) {
-  ctx.subscriptions.push(commands.registerCommand(command, callback));
+  ctx.subscriptions.push(commands.registerCommand(command, callback))
 }
 
 // Registers all commands that are handled by the extension (as opposed to
 // those handled by the Language Server).
-export function registerCommands(ext: Extension) {
-  registerCommand(ext.ctx, RESTART_SERVER, restartServer(ext));
-  registerCommand(ext.ctx, START_EMULATOR, startEmulator(ext));
-  registerCommand(ext.ctx, STOP_EMULATOR, stopEmulator(ext));
-  registerCommand(ext.ctx, CREATE_ACCOUNT, createAccount(ext));
-  registerCommand(ext.ctx, SWITCH_ACCOUNT, switchActiveAccount(ext));
+export function registerCommands (ext: Extension) {
+  registerCommand(ext.ctx, RESTART_SERVER, restartServer(ext))
+  registerCommand(ext.ctx, START_EMULATOR, startEmulator(ext))
+  registerCommand(ext.ctx, STOP_EMULATOR, stopEmulator(ext))
+  registerCommand(ext.ctx, CREATE_ACCOUNT, createAccount(ext))
+  registerCommand(ext.ctx, SWITCH_ACCOUNT, switchActiveAccount(ext))
 }
 
 // Restarts the language server, updating the client in the extension object.
 const restartServer = (ext: Extension) => async () => {
-  await ext.api.client.stop();
+  await ext.api.client.stop()
   const activeAccount = ext.config.getActiveAccount()
-  ext.api = new LanguageServerAPI(ext.ctx, ext.config, ext.emulatorState, activeAccount);
-};
+  ext.api = new LanguageServerAPI(ext.ctx, ext.config, ext.emulatorState, activeAccount)
+}
 
 // Starts the emulator in a terminal window.
 const startEmulator = (ext: Extension) => async () => {
   // Start the emulator with the service key we gave to the language server.
-  const { configPath } = ext.config;
+  const { configPath } = ext.config
 
-  ext.setEmulatorState(EmulatorState.Starting);
+  ext.setEmulatorState(EmulatorState.Starting)
 
-  renderExtension(ext);
+  renderExtension(ext)
 
   ext.terminal.sendText(
     [
       ext.config.flowCommand,
-      `project`,
-      `start-emulator`,
+      'project',
+      'start-emulator',
       `--config-path=${configPath}`,
-      `--verbose`,
-    ].join(" ")
-  );
-  ext.terminal.show();
+      '--verbose'
+    ].join(' ')
+  )
+  ext.terminal.show()
 
   try {
     await ext.api.initAccountManager()
 
-    const accounts = await ext.api.createDefaultAccounts(ext.config.numAccounts);
+    const accounts = await ext.api.createDefaultAccounts(ext.config.numAccounts)
     for (const account of accounts) {
       ext.config.addAccount(account)
     }
 
     await setActiveAccount(ext, 0)
-    
-    ext.setEmulatorState(EmulatorState.Started);
-    renderExtension(ext);
-  } catch (err) {
 
-    ext.setEmulatorState(EmulatorState.Stopped);
-    renderExtension(ext);
+    ext.setEmulatorState(EmulatorState.Started)
+    renderExtension(ext)
+  } catch (err) {
+    ext.setEmulatorState(EmulatorState.Stopped)
+    renderExtension(ext)
   }
-  
-};
+}
 
 // Stops emulator, exits the terminal, and removes all config/db files.
 const stopEmulator = (ext: Extension) => async () => {
-  ext.terminal.dispose();
-  ext.terminal = createTerminal(ext.ctx);
+  ext.terminal.dispose()
+  ext.terminal = createTerminal(ext.ctx)
 
-  ext.setEmulatorState(EmulatorState.Stopped);
+  ext.setEmulatorState(EmulatorState.Stopped)
 
   // Clear accounts and restart language server to ensure account state is in sync.
-  ext.config.resetAccounts();
-  renderExtension(ext);
-  await ext.api.client.stop();
-  ext.api = new LanguageServerAPI(ext.ctx, ext.config, ext.emulatorState, null);
-};
+  ext.config.resetAccounts()
+  renderExtension(ext)
+  await ext.api.client.stop()
+  ext.api = new LanguageServerAPI(ext.ctx, ext.config, ext.emulatorState, null)
+}
 
 // Creates a new account by requesting that the Language Server submit
 // a "create account" transaction from the currently active account.
 const createAccount = (ext: Extension) => async () => {
-  return createNewAccount(ext)
-};
+  return await createNewAccount(ext)
+}
 
 // Switches the active account to the option selected by the user. The selection
 // is propagated to the Language Server.
@@ -133,14 +130,14 @@ const switchActiveAccount = (ext: Extension) => async () => {
     // Mark the active account with a `*` in the dialog
     .map((account) => {
       const prefix: String =
-        account.index === ext.config.activeAccount ? ACTIVE_PREFIX : INACTIVE_PREFIX;
-      const label = `${prefix} ${account.fullName()}`;
+        account.index === ext.config.activeAccount ? ACTIVE_PREFIX : INACTIVE_PREFIX
+      const label = `${prefix} ${account.fullName()}`
 
       return {
         label: label,
-        target: account.index,
-      };
-    });
+        target: account.index
+      }
+    })
 
   accountOptions.push({
     label: `${ADD_NEW_PREFIX} ${CREATE_NEW_ACCOUNT}`,
@@ -151,58 +148,56 @@ const switchActiveAccount = (ext: Extension) => async () => {
     // `selected` is undefined if the QuickPick is dismissed, and the
     // string value of the selected option otherwise.
     if (selected === undefined) {
-      return;
+      return
     }
 
-    if (selected.target === accountOptions.length-1){
+    if (selected.target === accountOptions.length - 1) {
       await createNewAccount(ext)
       return
     }
 
     await setActiveAccount(ext, selected.target)
-    renderExtension(ext);
-  });
-};
+    renderExtension(ext)
+  })
+}
 
 const createNewAccount = async (ext: Extension) => {
   try {
-    const account = await ext.api.createAccount();
+    const account = await ext.api.createAccount()
     ext.config.addAccount(account)
     const lastIndex = ext.config.accounts.length - 1
     setActiveAccount(ext, lastIndex)
-    
-    renderExtension(ext);
+
+    renderExtension(ext)
   } catch (err) {
-    window.showErrorMessage("Failed to create account: " + err);
-    return;
+    window.showErrorMessage('Failed to create account: ' + err)
   }
 }
 
 const setActiveAccount = async (ext: Extension, activeIndex: number) => {
-  const activeAccount = ext.config.getAccount(activeIndex);
-  
-  if (!activeAccount){
-    window.showErrorMessage("Failed to switch account: account does not exist.");
+  const activeAccount = ext.config.getAccount(activeIndex)
+
+  if (activeAccount == null) {
+    window.showErrorMessage('Failed to switch account: account does not exist.')
     return false
   }
-  
-  try{
+
+  try {
     await ext.api.switchActiveAccount(activeAccount)
-    ext.config.setActiveAccount(activeIndex);
+    ext.config.setActiveAccount(activeIndex)
 
     window.showInformationMessage(
-      `Switched to account ${activeAccount!.fullName()}`,
+      `Switched to account ${activeAccount.fullName()}`,
       COPY_ADDRESS
     ).then((choice) => {
       if (choice === COPY_ADDRESS) {
-        env.clipboard.writeText(`0x${activeAccount!.address}`)
+        env.clipboard.writeText(`0x${activeAccount.address}`)
       }
-    });
+    })
 
-    renderExtension(ext);
+    renderExtension(ext)
   } catch (err) {
-    window.showErrorMessage("Failed to switch account: " + err);
-    return 
+    window.showErrorMessage('Failed to switch account: ' + err)
   }
 }
 
@@ -210,19 +205,19 @@ const setActiveAccount = async (ext: Extension, activeIndex: number) => {
 export const refreshCodeLenses = () => {
   window.visibleTextEditors.forEach((editor) => {
     if (!editor.document.lineCount) {
-      return;
+      return
     }
     // NOTE: We add a space to the end of the last line to force
     // Codelens to refresh.
-    const lineCount = editor.document.lineCount;
-    const lastLine = editor.document.lineAt(lineCount - 1);
+    const lineCount = editor.document.lineCount
+    const lastLine = editor.document.lineAt(lineCount - 1)
     editor.edit((edit) => {
       if (lastLine.isEmptyOrWhitespace) {
-        edit.insert(new Position(lineCount - 1, 0), " ");
-        edit.delete(new Range(lineCount - 1, 0, lineCount - 1, 1000));
+        edit.insert(new Position(lineCount - 1, 0), ' ')
+        edit.delete(new Range(lineCount - 1, 0, lineCount - 1, 1000))
       } else {
-        edit.insert(new Position(lineCount - 1, 1000), "\n");
+        edit.insert(new Position(lineCount - 1, 1000), '\n')
       }
-    });
-  });
+    })
+  })
 }
