@@ -142,7 +142,7 @@
     "@types/vscode": "^1.56.0",
     "esbuild": "^0.12.9",
     "snyk": "^1.316.1",
-    "tslint": "^5.12.1",
+    "ts-standard": "^10.0.0",
     "typescript": "^3.9.7"
   },
   "dependencies": {
