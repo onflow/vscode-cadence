@@ -19,6 +19,12 @@ import * as util from 'util'
 import * as cp from 'child_process'
 const exec = util.promisify(cp.exec)
 
+export enum EmulatorState {
+  Stopped = 0,
+  Starting,
+  Started,
+}
+
 // The container for all data relevant to the extension.
 export class Extension {
   config: Config
@@ -54,12 +60,6 @@ export class Extension {
     this.api.changeEmulatorState(state)
     refreshCodeLenses()
   }
-};
-
-export enum EmulatorState {
-  Stopped = 0,
-  Starting,
-  Started,
 }
 
 // Called when the extension starts up. Reads config, starts the language
