@@ -58,6 +58,7 @@ export class Extension {
   setEmulatorState (state: EmulatorState): void {
     this.emulatorState = state
     this.api.changeEmulatorState(state)
+      .then(() => {}, () => {})
     refreshCodeLenses()
   }
 }
@@ -79,6 +80,7 @@ export async function activate (ctx: ExtensionContext): Promise<void> {
     api = new LanguageServerAPI(ctx, config, EmulatorState.Stopped, null)
   } catch (err) {
     window.showErrorMessage('Failed to activate extension: ', err)
+      .then(() => {}, () => {})
     return
   }
   handleConfigChanges()

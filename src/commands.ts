@@ -158,7 +158,7 @@ const switchActiveAccount = (ext: Extension) => async () => {
 
     await setActiveAccount(ext, selected.target)
     renderExtension(ext)
-  })
+  }, () => {})
 }
 
 const createNewAccount = async (ext: Extension): Promise<void> => {
@@ -166,11 +166,12 @@ const createNewAccount = async (ext: Extension): Promise<void> => {
     const account = await ext.api.createAccount()
     ext.config.addAccount(account)
     const lastIndex = ext.config.accounts.length - 1
-    setActiveAccount(ext, lastIndex)
 
+    await setActiveAccount(ext, lastIndex)
     renderExtension(ext)
   } catch (err) { // ref: is error handling necessary here?
     window.showErrorMessage(`Failed to create account: ${err.message as string}`)
+      .then(() => {}, () => {})
   }
 }
 
@@ -179,6 +180,7 @@ const setActiveAccount = async (ext: Extension, activeIndex: number): Promise<vo
 
   if (activeAccount == null) {
     window.showErrorMessage('Failed to switch account: account does not exist.')
+      .then(() => {}, () => {})
     return
   }
 
@@ -192,12 +194,14 @@ const setActiveAccount = async (ext: Extension, activeIndex: number): Promise<vo
     ).then((choice) => {
       if (choice === COPY_ADDRESS) {
         env.clipboard.writeText(`0x${activeAccount.address}`)
+          .then(() => {}, () => {})
       }
-    })
+    }, () => {})
 
     renderExtension(ext)
   } catch (err) {
     window.showErrorMessage(`Failed to switch account: ${err.message as string}`)
+      .then(() => {}, () => {})
   }
 }
 
@@ -218,6 +222,6 @@ export const refreshCodeLenses = (): void => {
       } else {
         edit.insert(new Position(lineCount - 1, 1000), '\n')
       }
-    })
+    }).then(() => {}, () => {})
   })
 }

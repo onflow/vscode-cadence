@@ -134,8 +134,9 @@ export function handleConfigChanges (): void {
         .then((choice) => {
           if (choice === 'Reload Window') {
             commands.executeCommand('workbench.action.reloadWindow')
+              .then(() => {}, () => {})
           }
-        })
+        }, () => {})
     }
   })
 }
