@@ -129,7 +129,7 @@ const switchActiveAccount = (ext: Extension) => async () => {
   const accountOptions = Object.values(ext.config.accounts)
     // Mark the active account with a `*` in the dialog
     .map((account) => {
-      const prefix: String =
+      const prefix: string =
         account.index === ext.config.activeAccount ? ACTIVE_PREFIX : INACTIVE_PREFIX
       const label = `${prefix} ${account.fullName()}`
 
