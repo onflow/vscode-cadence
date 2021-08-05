@@ -112,7 +112,7 @@ export function getConfig (): Config {
 
 // Adds an event handler that prompts the user to reload whenever the config
 // changes.
-export function handleConfigChanges () {
+export function handleConfigChanges (): void {
   workspace.onDidChangeConfiguration((e) => {
     // TODO: do something smarter for account/emulator config (re-send to server)
     const promptRestartKeys = [

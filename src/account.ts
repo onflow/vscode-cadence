@@ -12,7 +12,7 @@ export class Account {
     this.index = -1
   }
 
-  setIndex (index: number) {
+  setIndex (index: number): void {
     this.index = index
   }
 
@@ -21,7 +21,7 @@ export class Account {
   }
 
   getName (): string {
-    const name = this.name || `Account ${this.index + 1}`
+    const name = this.name === '' ? `Account ${this.index + 1}` : this.name
     return `${name[0].toUpperCase()}${name.slice(1)}`
   }
 
