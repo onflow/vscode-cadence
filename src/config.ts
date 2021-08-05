@@ -43,13 +43,13 @@ export class Config {
     return true
   }
 
-  addAccount (account: Account) {
+  addAccount (account: Account): void {
     const index = this.accounts.length
     account.setIndex(index)
     this.accounts.push(account)
   }
 
-  setActiveAccount (index: number) {
+  setActiveAccount (index: number): void {
     this.activeAccount = index
   }
 
@@ -69,14 +69,14 @@ export class Config {
     return this.accounts[index]
   }
 
-  accountExists (name: string) {
+  accountExists (name: string): boolean {
     return this.accounts.filter(acc => {
       return acc.name === name
     }).length > 0
   }
 
   // Resets account state
-  resetAccounts () {
+  resetAccounts (): void {
     this.accounts = []
     this.activeAccount = -1
   }
@@ -89,21 +89,21 @@ export function getConfig (): Config {
   const flowCommand: string | undefined = cadenceConfig.get(
     CONFIG_FLOW_COMMAND
   )
-  if (!flowCommand) {
+  if (flowCommand === undefined) {
     throw new Error(`Missing ${CONFIG_FLOW_COMMAND} config`)
   }
 
   const numAccounts: number | undefined = cadenceConfig.get(
     CONFIG_NUM_ACCOUNTS
   )
-  if (!numAccounts) {
+  if (numAccounts === undefined) {
     throw new Error(`Missing ${CONFIG_NUM_ACCOUNTS} config`)
   }
 
   let accessCheckMode: string | undefined = cadenceConfig.get(
     CONFIG_ACCESS_CHECK_MODE
   )
-  if (!accessCheckMode) {
+  if (accessCheckMode === undefined) {
     accessCheckMode = 'strict'
   }
 
