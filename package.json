@@ -134,7 +134,8 @@
     "test": "npm run test-compile && node ./node_modules/vscode/bin/test",
     "package": "./node_modules/.bin/vsce package",
     "snyk-protect": "snyk protect",
-    "prepare": "npm run snyk-protect"
+    "prepare": "npm run snyk-protect",
+    "lint": "ts-standard"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.42",
