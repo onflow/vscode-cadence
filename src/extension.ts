@@ -103,7 +103,9 @@ async function promptInitializeConfig (): Promise<boolean> {
   } else {
     rootPath = workspace.rootPath
   }
-  if (!rootPath) { return false }
+  if (rootPath === undefined) {
+    return false
+  }
 
   const continueMessage = 'Continue'
   const selection = await window.showInformationMessage('Missing Flow CLI configuration. Create a new one?', continueMessage)
