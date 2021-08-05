@@ -55,7 +55,7 @@ export class Extension {
     return this.emulatorState
   }
 
-  setEmulatorState (state: EmulatorState) {
+  setEmulatorState (state: EmulatorState): void {
     this.emulatorState = state
     this.api.changeEmulatorState(state)
     refreshCodeLenses()
@@ -64,7 +64,7 @@ export class Extension {
 
 // Called when the extension starts up. Reads config, starts the language
 // server, and registers command handlers.
-export async function activate (ctx: ExtensionContext) {
+export async function activate (ctx: ExtensionContext): Promise<void> {
   let config: Config
   let terminal: Terminal
   let api: LanguageServerAPI
@@ -116,9 +116,9 @@ async function promptInitializeConfig (): Promise<boolean> {
   return true
 }
 
-export function deactivate () { }
+export function deactivate (): void { }
 
-export function renderExtension (ext: Extension) {
+export function renderExtension (ext: Extension): void {
   updateEmulatorStatusBarItem(ext.emulatorStatusBarItem, ext.getEmulatorState())
   updateActiveAccountStatusBarItem(ext.activeAccountStatusBarItem, ext.config.getActiveAccount())
 }
