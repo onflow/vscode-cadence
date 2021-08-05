@@ -54,9 +54,7 @@ export class LanguageServerAPI {
         return window.showInformationMessage('Cadence language server started')
       })
       .catch((err: Error) => {
-        return window.showErrorMessage(
-                    `Cadence language server failed to start: ${err}`
-        )
+        return window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
       })
 
     this.client.onDidChangeState((e: StateChangeEvent) => {
@@ -67,14 +65,14 @@ export class LanguageServerAPI {
     ctx.subscriptions.push(clientDisposable)
   }
 
-  async initAccountManager () {
+  async initAccountManager (): Promise<void> {
     return await this.client.sendRequest('workspace/executeCommand', {
       command: INIT_ACCOUNT_MANAGER,
       arguments: []
     })
   }
 
-  async changeEmulatorState (emulatorState: EmulatorState) {
+  async changeEmulatorState (emulatorState: EmulatorState): Promise<void> {
     return await this.client.sendRequest('workspace/executeCommand', {
       command: CHANGE_EMULATOR_STATE,
       arguments: [emulatorState]
@@ -82,7 +80,7 @@ export class LanguageServerAPI {
   }
 
   // Sends a request to switch the currently active account.
-  async switchActiveAccount (account: Account) {
+  async switchActiveAccount (account: Account): Promise<void> {
     const { name, address } = account
     return await this.client.sendRequest('workspace/executeCommand', {
       command: SWITCH_ACCOUNT_SERVER,
