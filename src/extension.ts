@@ -101,7 +101,7 @@ async function promptInitializeConfig (): Promise<boolean> {
   if ((workspace.workspaceFolders != null) && (workspace.workspaceFolders.length > 0)) {
     rootPath = workspace.workspaceFolders[0].uri.fsPath
   } else {
-    rootPath = workspace.rootPath
+    rootPath = workspace.rootPath // ref: deprecated
   }
   if (rootPath === undefined) {
     return false
