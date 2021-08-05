@@ -19,3 +19,10 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: yarn
       - run: yarn lint
+  security:
+    name: "Vulnerabilities Check"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
