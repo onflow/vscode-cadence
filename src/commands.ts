@@ -201,7 +201,6 @@ const setActiveAccount = async (ext: Extension, activeIndex: number): Promise<vo
     renderExtension(ext)
   } catch (err) {
     window.showErrorMessage(`Failed to switch account: ${err.message as string}`)
-      .then(() => {}, () => {})
   }
 }
 
