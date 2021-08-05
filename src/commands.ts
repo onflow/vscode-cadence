@@ -43,13 +43,13 @@ function registerCommand (
   ctx: ExtensionContext,
   command: string,
   callback: (...args: any[]) => any
-) {
+): void {
   ctx.subscriptions.push(commands.registerCommand(command, callback))
 }
 
 // Registers all commands that are handled by the extension (as opposed to
 // those handled by the Language Server).
-export function registerCommands (ext: Extension) {
+export function registerCommands (ext: Extension): void {
   registerCommand(ext.ctx, RESTART_SERVER, restartServer(ext))
   registerCommand(ext.ctx, START_EMULATOR, startEmulator(ext))
   registerCommand(ext.ctx, STOP_EMULATOR, stopEmulator(ext))
@@ -161,7 +161,7 @@ const switchActiveAccount = (ext: Extension) => async () => {
   })
 }
 
-const createNewAccount = async (ext: Extension) => {
+const createNewAccount = async (ext: Extension): Promise<void> => {
   try {
     const account = await ext.api.createAccount()
     ext.config.addAccount(account)
@@ -169,17 +169,17 @@ const createNewAccount = async (ext: Extension) => {
     setActiveAccount(ext, lastIndex)
 
     renderExtension(ext)
-  } catch (err) {
-    window.showErrorMessage('Failed to create account: ' + err)
+  } catch (err) { // ref: is error handling necessary here?
+    window.showErrorMessage(`Failed to create account: ${err.message as string}`)
   }
 }
 
-const setActiveAccount = async (ext: Extension, activeIndex: number) => {
+const setActiveAccount = async (ext: Extension, activeIndex: number): Promise<void> => {
   const activeAccount = ext.config.getAccount(activeIndex)
 
   if (activeAccount == null) {
     window.showErrorMessage('Failed to switch account: account does not exist.')
-    return false
+    return
   }
 
   try {
@@ -197,14 +197,14 @@ const setActiveAccount = async (ext: Extension, activeIndex: number) => {
 
     renderExtension(ext)
   } catch (err) {
-    window.showErrorMessage('Failed to switch account: ' + err)
+    window.showErrorMessage(`Failed to switch account: ${err.message as string}`)
   }
 }
 
 // This method will add and then remove a space on the last line to trick codelens to be updated
-export const refreshCodeLenses = () => {
+export const refreshCodeLenses = (): void => {
   window.visibleTextEditors.forEach((editor) => {
-    if (!editor.document.lineCount) {
+    if (editor.document.lineCount !== 0) {
       return
     }
     // NOTE: We add a space to the end of the last line to force
