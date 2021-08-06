@@ -8,6 +8,16 @@
     "type": "git",
     "url": "https://github.com/onflow/vscode-cadence.git"
   },
+  "scripts": {
+    "vscode:prepublish": "npm run -S esbuild-base -- --minify",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
+    "esbuild": "npm run -S esbuild-base -- --sourcemap",
+    "esbuild-watch": "npm run -S esbuild-base -- --sourcemap --watch",
+    "test": "ts-mocha src/**/*.test.ts",
+    "package": "./node_modules/.bin/vsce package",
+    "secure": "snyk protect",
+    "lint": "ts-standard && snyk protect --fail-on=all"
+  },
   "engines": {
     "vscode": "^1.56.0"
   },
@@ -124,16 +134,6 @@
         }
       }
     ]
-  },
-  "scripts": {
-    "vscode:prepublish": "npm run -S esbuild-base -- --minify",
-    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
-    "esbuild": "npm run -S esbuild-base -- --sourcemap",
-    "esbuild-watch": "npm run -S esbuild-base -- --sourcemap --watch",
-    "test": "ts-mocha -p ./tsconfig.json src/**/*.test*",
-    "package": "./node_modules/.bin/vsce package",
-    "secure": "snyk protect",
-    "lint": "ts-standard && snyk protect --fail-on=all"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.42",
