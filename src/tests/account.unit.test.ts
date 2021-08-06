@@ -11,5 +11,12 @@ describe('AccountUnitTest', () => {
         assert.equal(a1.getName(), a1.name)
         assert.equal(a1.fullName(), `${a1.name} (${a1.address})`)
         assert.equal(a1.index, 2)
+
+        assert.equal(a1.getAddress(), '0x1')
+        assert.equal(a1.getAddress(false), '1')
+
+        a1.address = '1'
+        assert.equal(a1.getAddress(), '0x1')
+        assert.equal(a1.getAddress(false), '1')
     })
 })
