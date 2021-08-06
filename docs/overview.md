@@ -24,9 +24,27 @@ https://marketplace.visualstudio.com/items?itemName=onflow.cadence
 
 ## Features
 
-![](https://storage.googleapis.com/flow-resources/documentation-assets/vscode-extension/emulator-1.gif)
+### Start Emulator
+Starting the Flow emulator is as simple as one click. You can also switch between accounts and 
+if your projects contains `flow.json` it gets automatically loaded by the emulator.
 
-### List of features
+![](https://storage.googleapis.com/flow-resources/documentation-assets/vscode-extension/start-emulator.gif)
+
+### Deploy Contracts
+Deploy contracts to the emulator without leaving the VSCode editor. The address the contract 
+gets deployed to is returned and available for copying.
+
+![](https://storage.googleapis.com/flow-resources/documentation-assets/vscode-extension/deploy-contract.gif)
+
+### Code Generation
+Write cadence code with the speed of light and get your product live before 
+that afternoon coffee. How? Use the snippets provided by VSCode extension. 
+
+![](https://storage.googleapis.com/flow-resources/documentation-assets/vscode-extension/code-generation.gif)
+
+But wait, there is much more than meets the eye, check some more features 
+the VSCode Cadence extension offers: 
+
 - Syntax highlighting (including in Markdown code fences)
 - Diagnostics (errors and warnings)
 - Code completion, including documentation
