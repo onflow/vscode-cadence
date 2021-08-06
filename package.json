@@ -130,7 +130,7 @@
     "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
     "esbuild": "npm run -S esbuild-base -- --sourcemap",
     "esbuild-watch": "npm run -S esbuild-base -- --sourcemap --watch",
-    "test": "mocha src/tests/**/*",
+    "test": "ts-mocha -p ./tsconfig.json src/**/*.test*",
     "package": "./node_modules/.bin/vsce package",
     "secure": "snyk protect",
     "lint": "ts-standard && snyk protect --fail-on=all"
@@ -141,7 +141,9 @@
     "@types/vscode": "^1.56.0",
     "esbuild": "^0.12.9",
     "mocha": "^9.0.3",
+    "nyc": "^15.1.0",
     "snyk": "^1.316.1",
+    "ts-mocha": "^8.0.0",
     "ts-standard": "^10.0.0",
     "typescript": "^3.9.7"
   },
