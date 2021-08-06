@@ -135,7 +135,7 @@
     "package": "./node_modules/.bin/vsce package",
     "snyk-protect": "snyk protect",
     "prepare": "npm run snyk-protect",
-    "lint": "ts-standard"
+    "lint": "ts-standard && snyk protect --fail-on=all"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.42",
