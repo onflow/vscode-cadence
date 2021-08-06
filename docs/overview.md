@@ -24,7 +24,7 @@ https://marketplace.visualstudio.com/items?itemName=onflow.cadence
 
 ## Features
 
-![](1.gif)
+![](https://storage.googleapis.com/flow-resources/documentation-assets/vscode-extension/emulator-1.gif)
 
 ### List of features
 - Syntax highlighting (including in Markdown code fences)
