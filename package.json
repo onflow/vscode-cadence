@@ -130,11 +130,9 @@
     "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
     "esbuild": "npm run -S esbuild-base -- --sourcemap",
     "esbuild-watch": "npm run -S esbuild-base -- --sourcemap --watch",
-    "test-compile": "tsc -p ./",
-    "test": "npm run test-compile && node ./node_modules/vscode/bin/test",
+    "test": "",
     "package": "./node_modules/.bin/vsce package",
-    "snyk-protect": "snyk protect",
-    "prepare": "npm run snyk-protect",
+    "secure": "snyk protect",
     "lint": "ts-standard && snyk protect --fail-on=all"
   },
   "devDependencies": {
