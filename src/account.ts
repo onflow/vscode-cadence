@@ -1,4 +1,4 @@
-import { addAddressPrefix } from './address'
+const addressPrefix = '0x'
 
 // An account that can be used to submit transactions.
 export class Account {
@@ -17,7 +17,11 @@ export class Account {
   }
 
   getAddress (withPrefix: boolean = true): string {
-    return withPrefix ? `0x${this.address}` : this.address
+    if (this.address.includes('0x')) {
+      return withPrefix ? this.address : this.address.replace('0x', '')
+    } else {
+      return withPrefix ? `0x${this.address}` : this.address
+    }
   }
 
   getName (): string {
@@ -26,6 +30,6 @@ export class Account {
   }
 
   fullName (): string {
-    return `${this.getName()} (${addAddressPrefix(this.address)})`
+    return `${this.getName()} (${this.getAddress()})`
   }
 }
