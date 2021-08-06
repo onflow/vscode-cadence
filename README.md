@@ -39,7 +39,7 @@ gets deployed to is returned and available for copying.
 Write cadence code with the speed of light and get your product live before
 that afternoon coffee. How? Use the snippets provided by VSCode extension.
 
-![](https://storage.googleapis.com/flow-resources/documentation-assets/vscode-extension/code-generation.gif)
+![](https://storage.googleapis.com/flow-resources/documentation-assets/vscode-extension/code-completion.gif)
 
 But wait, there is much more than meets the eye, check some more features
 the VSCode Cadence extension offers:
