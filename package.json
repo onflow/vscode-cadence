@@ -150,6 +150,7 @@
   "dependencies": {
     "@onflow/decode": "0.0.11",
     "vsce": "^1.88.0",
+    "vscode": "^1.1.37",
     "vscode-languageclient": "~7.0.0"
   },
   "snyk": true
