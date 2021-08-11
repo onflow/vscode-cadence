@@ -13,7 +13,8 @@
     "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
     "esbuild": "npm run -S esbuild-base -- --sourcemap",
     "esbuild-watch": "npm run -S esbuild-base -- --sourcemap --watch",
-    "test": "ts-mocha src/**/*.test.ts",
+    "unit-test": "ts-mocha **/*.unit.test.ts",
+    "integration-test": "tsc -p ./ && node ./out/test/runTest.js",
     "package": "./node_modules/.bin/vsce package",
     "secure": "snyk protect",
     "lint": "ts-standard && snyk protect --fail-on=all"
@@ -136,10 +137,13 @@
     ]
   },
   "devDependencies": {
+    "@types/glob": "^7.1.4",
     "@types/mocha": "^2.2.42",
     "@types/node": "^10.12.21",
     "@types/vscode": "^1.56.0",
+    "@vscode/test-electron": "^1.6.2",
     "esbuild": "^0.12.9",
+    "glob": "^7.1.7",
     "mocha": "^9.0.3",
     "nyc": "^15.1.0",
     "snyk": "^1.316.1",
@@ -150,7 +154,6 @@
   "dependencies": {
     "@onflow/decode": "0.0.11",
     "vsce": "^1.88.0",
-    "vscode": "^1.1.37",
     "vscode-languageclient": "~7.0.0"
   },
   "snyk": true
