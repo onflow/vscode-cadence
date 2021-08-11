@@ -42,5 +42,3 @@ jobs:
       - run: yarn --frozen-lockfile
       - name: "Unit Tests"
         run: yarn run unit-test
-      - name: "Integration Tests"
-        run: yarn run integration-test
