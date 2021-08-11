@@ -10,10 +10,10 @@ export async function run (): Promise<void> {
 
   const testsRoot = path.resolve(__dirname, '..')
 
-  return await new Promise((c, e) => {
+  return await new Promise((resolve, reject) => {
     glob('**/**.integration.test.js', { cwd: testsRoot }, (err, files) => {
       if (err != null) {
-        return e(err)
+        return reject(err)
       }
 
       // Add files to the test suite
@@ -23,14 +23,14 @@ export async function run (): Promise<void> {
         // Run the mocha test
         mocha.run(failures => {
           if (failures > 0) {
-            e(new Error(`${failures} tests failed.`))
+            reject(new Error(`${failures} tests failed.`))
           } else {
-            c()
+            resolve()
           }
         })
       } catch (err) {
         console.error(err)
-        e(err)
+        reject(err)
       }
     })
   })
