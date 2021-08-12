@@ -1,11 +1,9 @@
 import * as assert from 'assert'
-import * as fs from 'fs'
 
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 import * as vscode from 'vscode'
-import * as cmd from '../../commands'
-import {Config} from "../../config";
+import { Config } from '../../config'
 
 suite('Extension Test Suite', () => {
   vscode.window.showInformationMessage('Start all tests.')
@@ -22,11 +20,11 @@ suite('Extension Test Suite', () => {
 
   test('Extension is registered', async () => {
     const ext = vscode.extensions.getExtension('onflow.cadence')
-    await ext!.activate()
+    await ext?.activate()
 
-    assert.strictEqual(ext!.isActive, true)
+    assert.strictEqual(ext?.isActive, true)
 
-    await vscode.commands.executeCommand('cadence.restartServer')
-
+    const r = await vscode.commands.executeCommand('cadence.restartServer')
+    console.log('##', r)
   }).timeout(10000)
 })
