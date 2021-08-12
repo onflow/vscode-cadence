@@ -14,7 +14,7 @@
     "esbuild": "npm run -S esbuild-base -- --sourcemap",
     "esbuild-watch": "npm run -S esbuild-base -- --sourcemap --watch",
     "unit-test": "ts-mocha **/*.unit.test.ts",
-    "integration-test": "tsc -p ./ && node ./out/test/runTest.js",
+    "integration-test": "npm run esbuild && tsc -p ./ && node ./out/test/runTest.js",
     "package": "./node_modules/.bin/vsce package",
     "secure": "snyk protect",
     "lint": "ts-standard && snyk protect --fail-on=all"
