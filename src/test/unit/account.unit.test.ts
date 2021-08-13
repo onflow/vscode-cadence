@@ -1,4 +1,4 @@
-import { Account } from '../account'
+import { Account } from '../../account'
 import * as assert from 'assert'
 
 describe('AccountUnitTest', () => {
