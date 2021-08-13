@@ -1,15 +1,16 @@
 import * as assert from 'assert'
-
-// You can import and use all API from the 'vscode' module
-// as well as import your extension to test it
+import * as cmd from '../../commands'
 import * as vscode from 'vscode'
 import { Config } from '../../config'
+import {EmulatorState, Extension} from "../../extension";
+import {delay} from './index'
+import {window} from 'vscode'
 
 suite('Extension Test Suite', () => {
   vscode.window.showInformationMessage('Start all tests.')
     .then(() => {}, () => {})
 
-  test('creates config', async () => {
+  test('Creates config', async () => {
     const c = new Config('flowCommand', 2, 'strict')
 
     assert.strictEqual(c.accounts.length, 0)
@@ -18,13 +19,23 @@ suite('Extension Test Suite', () => {
     assert.strictEqual(await c.readLocalConfig(), true)
   })
 
-  test('Extension is registered', async () => {
+  test('Extension commands', async () => {
     const ext = vscode.extensions.getExtension('onflow.cadence')
     await ext?.activate()
 
     assert.strictEqual(ext?.isActive, true)
 
-    const r = await vscode.commands.executeCommand('cadence.restartServer')
-    console.log('##', r)
+    const extension = (await vscode.commands.executeCommand(cmd.RESTART_SERVER)) as Extension
+    assert.strictEqual(extension.getEmulatorState(), EmulatorState.Stopped)
+
+    await delay(1)
+
+    const emulatorState = await vscode.commands.executeCommand(cmd.START_EMULATOR)
+    assert.strictEqual(emulatorState, EmulatorState.Started)
+
+    await vscode.commands.executeCommand(cmd.CREATE_ACCOUNT)
+    assert.strictEqual(extension.config.getActiveAccount()?.address, "e03daebed8ca0615")
+    assert.strictEqual(extension.config.getAccount(1)?.address, "01cf0e2f2f715450")
+
   }).timeout(10000)
 })
