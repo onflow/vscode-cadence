@@ -2,9 +2,8 @@ import * as assert from 'assert'
 import * as cmd from '../../commands'
 import * as vscode from 'vscode'
 import { Config } from '../../config'
-import {EmulatorState, Extension} from "../../extension";
-import {delay} from './index'
-import {window} from 'vscode'
+import { EmulatorState, Extension } from '../../extension'
+import { delay } from './index'
 
 suite('Extension Test Suite', () => {
   vscode.window.showInformationMessage('Start all tests.')
@@ -34,8 +33,7 @@ suite('Extension Test Suite', () => {
     assert.strictEqual(emulatorState, EmulatorState.Started)
 
     await vscode.commands.executeCommand(cmd.CREATE_ACCOUNT)
-    assert.strictEqual(extension.config.getActiveAccount()?.address, "e03daebed8ca0615")
-    assert.strictEqual(extension.config.getAccount(1)?.address, "01cf0e2f2f715450")
-
+    assert.strictEqual(extension.config.getActiveAccount()?.address, 'e03daebed8ca0615')
+    assert.strictEqual(extension.config.getAccount(1)?.address, '01cf0e2f2f715450')
   }).timeout(10000)
 })

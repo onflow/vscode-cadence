@@ -181,7 +181,7 @@ const createNewAccount = async (ext: Extension): Promise<void> => {
   }
 }
 
-const setActiveAccount = async (ext: Extension, activeIndex: number) => {
+const setActiveAccount = async (ext: Extension, activeIndex: number): Promise<void> => {
   const activeAccount = ext.config.getAccount(activeIndex)
 
   if (activeAccount == null) {
