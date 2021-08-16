@@ -16,8 +16,11 @@
     "unit-test": "ts-mocha **/*.unit.test.ts",
     "integration-test": "npm run esbuild && tsc -p ./ && node ./out/test/runTest.js",
     "package": "./node_modules/.bin/vsce package",
+    "package-test": "./node_modules/.bin/vsce package --out ./src/test/fixtures/workspace/test.vsix",
     "secure": "snyk protect",
-    "lint": "ts-standard && snyk protect --fail-on=all"
+    "lint": "ts-standard && snyk protect --fail-on=all",
+    "code-server-up": "npm run package-test && docker-compose up -d && docker exec vscode code-server --install-extension /source/test.vsix",
+    "code-server-down": "docker-compose down"
   },
   "engines": {
     "vscode": "^1.56.0"
@@ -153,7 +156,7 @@
   },
   "dependencies": {
     "@onflow/decode": "0.0.11",
-    "vsce": "^1.88.0",
+    "vsce": "^1.96.1",
     "vscode-languageclient": "~7.0.0"
   },
   "snyk": true
