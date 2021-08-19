@@ -14,13 +14,14 @@
     "esbuild": "npm run -S esbuild-base -- --sourcemap",
     "esbuild-watch": "npm run -S esbuild-base -- --sourcemap --watch",
     "unit-test": "ts-mocha **/*.unit.test.ts",
-    "integration-test": "npm run esbuild && tsc -p ./ && node ./out/test/runTest.js",
+    "integration-test": "npm run esbuild && tsc -p ./ && node ./out/test/run-test.js",
     "package": "./node_modules/.bin/vsce package",
     "package-test": "./node_modules/.bin/vsce package --out ./src/test/fixtures/workspace/test.vsix",
     "secure": "snyk protect",
     "lint": "ts-standard && snyk protect --fail-on=all",
-    "code-server-up": "npm run package-test && docker-compose up -d && docker exec vscode /source/install-flow.sh && docker exec vscode code-server --install-extension /source/test.vsix",
-    "code-server-down": "docker-compose down"
+    "code-server-up": "docker-compose up -d && docker exec vscode /source/install-flow.sh && docker exec vscode code-server --install-extension /source/cadence.vsix",
+    "code-server-down": "docker-compose down",
+    "e2e-local": "code-server --auth none --disable-telemetry --disable-update-check --port 8888 & ./node_modules/.bin/cypress run"
   },
   "engines": {
     "vscode": "^1.56.0"
@@ -145,6 +146,7 @@
     "@types/node": "^10.12.21",
     "@types/vscode": "^1.56.0",
     "@vscode/test-electron": "^1.6.2",
+    "cypress": "^8.3.0",
     "esbuild": "^0.12.9",
     "glob": "^7.1.7",
     "mocha": "^9.0.3",
