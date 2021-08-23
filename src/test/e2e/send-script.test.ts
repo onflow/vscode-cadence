@@ -1,9 +1,13 @@
-import {extensionStarted, initExtension, openFile, startEmulator} from '../helpers';
+import { initExtension, openFile, stopEmulator} from '../helpers';
 
 describe('User Story test: Send Script', () => {
 
     beforeEach(() => {
         initExtension(cy)
+    })
+
+    afterEach(() => {
+        stopEmulator(cy)
     })
 
     it('Send Script using Emulator', () => {

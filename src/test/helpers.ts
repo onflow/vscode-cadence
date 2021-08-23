@@ -1,8 +1,10 @@
 
 // Helper to open a file in editor with cypress
 export function openFile (cy: Cypress.cy, name: string) {
-    cy.get('.explorer-folders-view > .monaco-list > .monaco-scrollable-element')
-        .type(`{cmd+p}${name}{enter}`)
+    cy.get('.monaco-list-row')
+        .contains(name)
+        .click({ force: true })
+
     return cy.wait(2000)
 }
 
@@ -12,6 +14,10 @@ export function startEmulator(cy: Cypress.cy) {
     cy.contains('Stop Flow Emulator', { timeout: 10000 })
 }
 
+export function stopEmulator(cy: Cypress.cy) {
+    cy.contains('Stop Flow Emulator')
+        .click({ force: true })
+}
 
 export function initExtension(cy: Cypress.cy) {
     cy.on('uncaught:exception', (err, runnable) => {

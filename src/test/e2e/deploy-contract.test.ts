@@ -1,9 +1,13 @@
-import {Accounts, initExtension, openFile, switchAccount} from '../helpers';
+import {Accounts, initExtension, openFile, stopEmulator, switchAccount} from '../helpers';
 
 describe('User Story test: Deploy Contract', () => {
 
     beforeEach(() => {
         initExtension(cy)
+    })
+
+    afterEach(() => {
+        stopEmulator(cy)
     })
 
     it('Start Emulator and Deploy Contract', () => {
@@ -21,6 +25,8 @@ describe('User Story test: Deploy Contract', () => {
             .should('be.visible')
 
         switchAccount(cy, Accounts.Service, Accounts.Alice)
+
+        cy.wait(2000)
 
         cy.contains('Deploy contract interface NonFungibleToken to Alice')
             .click({ force: true })

@@ -1,9 +1,13 @@
-import { initExtension, openFile } from '../helpers';
+import {initExtension, openFile, stopEmulator} from '../helpers';
 
 describe('User Story test: Send Transaction', () => {
 
     beforeEach(() => {
         initExtension(cy)
+    })
+
+    afterEach(() => {
+        stopEmulator(cy)
     })
 
     it('Send Transaction using Emulator', () => {
