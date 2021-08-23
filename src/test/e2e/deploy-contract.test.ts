@@ -1,39 +1,36 @@
-import {Accounts, initExtension, openFile, stopEmulator, switchAccount} from '../helpers';
+import { Accounts, initExtension, openFile, stopEmulator, switchAccount } from '../helpers'
 
 describe('User Story test: Deploy Contract', () => {
+  beforeEach(() => {
+    initExtension(cy)
+  })
 
-    beforeEach(() => {
-        initExtension(cy)
-    })
+  afterEach(() => {
+    stopEmulator(cy)
+  })
 
-    afterEach(() => {
-        stopEmulator(cy)
-    })
+  it('Start Emulator and Deploy Contract', () => {
+    openFile(cy, 'FooContract.cdc')
 
-    it('Start Emulator and Deploy Contract', () => {
-        openFile(cy, 'FooContract.cdc')
+    cy.contains(`Switched to account ${Accounts.Service}`)
 
-        cy.contains(`Switched to account ${Accounts.Service}`)
+    cy.contains('Copy Address')
+      .click({ force: true })
 
-        cy.contains('Copy Address')
-            .click({ force: true })
+    cy.contains('Deploy contract FooContract to ServiceAccount')
+      .click({ force: true })
 
-        cy.contains('Deploy contract FooContract to ServiceAccount')
-            .click({ force: true })
+    cy.contains('Deploying contract FooContract to account f8d6e0586b0a20c7')
+      .should('be.visible')
 
-        cy.contains('Deploying contract FooContract to account f8d6e0586b0a20c7')
-            .should('be.visible')
+    switchAccount(cy, Accounts.Service, Accounts.Alice)
 
-        switchAccount(cy, Accounts.Service, Accounts.Alice)
+    cy.wait(2000)
 
-        cy.wait(2000)
+    cy.contains('Deploy contract FooContract to Alice')
+      .click({ force: true })
 
-        cy.contains('Deploy contract FooContract to Alice')
-            .click({ force: true })
-
-        cy.contains('Deploying contract FooContract to account 01cf0e2f2f715450')
-            .should('be.visible')
-
-    })
-
+    cy.contains('Deploying contract FooContract to account 01cf0e2f2f715450')
+      .should('be.visible')
+  })
 })
