@@ -43,7 +43,7 @@ jobs:
       - name: "Unit Tests"
         run: npm run unit-test
       - name: "End-to-end Tests"
-        uses: cypress-io/github-action@v1
+        uses: cypress-io/github-action@v2
         with:
           build: npm run package-test
           start: npm run vscode-start
