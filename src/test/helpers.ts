@@ -12,6 +12,7 @@ export function startEmulator(cy: Cypress.cy) {
     cy.contains('Start Flow Emulator')
         .click({ force: true })
     cy.contains('Stop Flow Emulator', { timeout: 10000 })
+    cy.wait(5000)
 }
 
 export function stopEmulator(cy: Cypress.cy) {
@@ -26,6 +27,9 @@ export function initExtension(cy: Cypress.cy) {
     })
 
     cy.visit('http://localhost:8888')
+    cy.get('.monaco-list-row', { timeout: 10000 }) // wait for ide to init
+
+    openFile(cy, 'NonFungibleToken.cdc') // default file to trigger start extension
     cy.contains('Cadence language server started', { timeout: 30000 })
     return startEmulator(cy)
 }
