@@ -1,4 +1,3 @@
-import { Accounts, initExtension, openFile, stopEmulator } from '../helpers'
 
 describe('User Story test: Switch Accounts', () => {
 /* Failing test, uncomment when ready to fix this bug
