@@ -7,3 +7,4 @@ services:
       - "8888:8888"
     volumes:
       - ./src/test/fixtures/workspace:/source
+      - ./src/test/fixtures/workspace/sbin:/usr/local/sbin

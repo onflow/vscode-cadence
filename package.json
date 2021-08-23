@@ -19,9 +19,10 @@
     "package-test": "./node_modules/.bin/vsce package --out ./src/test/fixtures/workspace/test.vsix",
     "secure": "snyk protect",
     "lint": "ts-standard && snyk protect --fail-on=all",
-    "code-server-up": "docker-compose up -d && docker exec vscode /source/install-flow.sh && docker exec vscode code-server --install-extension /source/cadence.vsix",
-    "code-server-down": "docker-compose down",
-    "e2e-local": "code-server --auth none --disable-telemetry --disable-update-check --port 8888 & ./node_modules/.bin/cypress run"
+    "vscode-start": "docker-compose up -d && docker exec vscode code-server --install-extension /source/cadence.vsix",
+    "vscode-stop": "docker-compose down",
+    "cypress": "./node_modules/.bin/cypress run",
+    "e2e-test": "npm run vscode-start && npm run cypress && npm run vscode-stop"
   },
   "engines": {
     "vscode": "^1.56.0"
