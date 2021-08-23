@@ -17,8 +17,8 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
-      - run: yarn
-      - run: yarn lint
+      - run: npm
+      - run: npm lint
 
   security:
     name: "Vulnerabilities Check"
@@ -39,8 +39,8 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
-      - run: yarn --frozen-lockfile
+      - run: npm ci
       - name: "Unit Tests"
-        run: yarn run unit-test
+        run: npm run unit-test
       - name: "End-to-end Tests"
-        run: yarn run e2e-test
+        run: npm run e2e-test
