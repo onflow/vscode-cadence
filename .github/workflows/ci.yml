@@ -43,4 +43,8 @@ jobs:
       - name: "Unit Tests"
         run: npm run unit-test
       - name: "End-to-end Tests"
-        run: npm run e2e-test
+        uses: cypress-io/github-action@v1
+        with:
+          build: npm run package-test
+          start: npm run vscode-start
+          wait-on: http://localhost:8888
