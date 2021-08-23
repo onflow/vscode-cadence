@@ -42,3 +42,5 @@ jobs:
       - run: yarn --frozen-lockfile
       - name: "Unit Tests"
         run: yarn run unit-test
+      - name: "End-to-end Tests"
+        run: yarn run e2e-test
