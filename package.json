@@ -16,13 +16,13 @@
     "unit-test": "ts-mocha **/*.unit.test.ts",
     "integration-test": "npm run esbuild && tsc -p ./ && node ./out/test/run-test.js",
     "package": "./node_modules/.bin/vsce package",
-    "package-test": "./node_modules/.bin/vsce package --out ./src/test/fixtures/workspace/test.vsix",
+    "package-test": "./node_modules/.bin/vsce package --out ./src/test/fixtures/workspace/cadence.vsix",
     "secure": "snyk protect",
     "lint": "ts-standard && snyk protect --fail-on=all",
     "vscode-start": "docker-compose up -d && docker exec vscode code-server --install-extension /source/cadence.vsix",
     "vscode-stop": "docker-compose down",
     "cypress": "./node_modules/.bin/cypress run",
-    "e2e-test": "npm run vscode-start && npm run cypress && npm run vscode-stop"
+    "e2e-test": "npm run package-test && npm run vscode-start && npm run cypress && npm run vscode-stop"
   },
   "engines": {
     "vscode": "^1.56.0"
