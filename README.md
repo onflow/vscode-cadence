@@ -1,20 +1,18 @@
 <br />
 <p align="center">
   <a href="https://docs.onflow.org/flow-cli/install/">
-    <img src="./vscode-banner.png" alt="Logo" width="290" height="auto">
+    <img src="./vscode-banner.svg" alt="Logo" width="290" height="auto">
   </a>
 
   <p align="center">
-    <i>...</i>
+    <i>This extension integrates Cadence, the resource-oriented smart contract programming language of Flow, into Visual Studio Code.</i>
     <br />
-    <a href="https://docs.onflow.org/flow-cli/install/"><strong>Read the docs»</strong></a>
+    <a href="https://docs.onflow.org/vscode-extension/"><strong>Read the docs»</strong></a>
     <br />
     <br />
-    <a href="/issues">Report Bug</a>
+    <a href="https://github.com/onflow/vscode-cadence/issues">Report Bug</a>
     ·
-    <a href="/">Contribute</a>
-    ·
-    <a href="/">Read Guidelines</a>
+    <a href="https://github.com/onflow/vscode-cadence/blob/master/CONTRIBUTING.md">Contribute</a>
   </p>
 </p>
 <br />
