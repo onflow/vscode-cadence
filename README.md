@@ -18,13 +18,6 @@
 <br />
 <br />
 
-# Cadence Visual Studio Code Extension
-
-
-This extension integrates [Cadence](https://docs.onflow.org/cadence/), the resource-oriented smart 
-contract programming language of Flow, into [Visual Studio Code](https://code.visualstudio.com/).
-
-
 ## Installation
 
 ### Prerequisites
