@@ -1,7 +1,7 @@
 <br />
 <p align="center">
   <a href="https://docs.onflow.org/flow-cli/install/">
-    <img src="./vscode-banner.svg" alt="Logo" width="290" height="auto">
+    <img src="./vscode-banner.svg" alt="Logo" width="850" height="auto">
   </a>
 
   <p align="center">
