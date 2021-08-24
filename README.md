@@ -15,7 +15,7 @@ To install the extension, ensure you have:
 ### Install from marketplace
 
 Install the extension via Visual Studio Code marketplace.
-The extension can bou found here:
+The extension can be found here:
 
 **[Cadence Extension](https://marketplace.visualstudio.com/items?itemName=onflow.cadence)**
 
