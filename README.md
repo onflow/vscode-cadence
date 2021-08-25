@@ -1,6 +1,6 @@
 <br />
 <p align="center">
-  <a href="https://docs.onflow.org/flow-cli/install/">
+  <a href="https://docs.onflow.org/vscode-extension/">
     <img src="./vscode-banner.svg" alt="Logo" width="600" height="auto">
   </a>
 
