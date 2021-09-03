@@ -58,14 +58,16 @@ export function registerCommands (ext: Extension): void {
 }
 
 // Restarts the language server, updating the client in the extension object.
-const restartServer = (ext: Extension) => async () => {
+const restartServer = (ext: Extension) => async (): Promise<Extension> => {
   await ext.api.client.stop()
   const activeAccount = ext.config.getActiveAccount()
   ext.api = new LanguageServerAPI(ext.ctx, ext.config, ext.emulatorState, activeAccount)
+
+  return ext
 }
 
 // Starts the emulator in a terminal window.
-const startEmulator = (ext: Extension) => async () => {
+const startEmulator = (ext: Extension) => async (): Promise<EmulatorState> => {
   // Start the emulator with the service key we gave to the language server.
   const { configPath } = ext.config
 
@@ -79,9 +81,9 @@ const startEmulator = (ext: Extension) => async () => {
       `emulator`,
       `--config-path="${configPath}"`,
       `--verbose`,
-    ].join(" ")
+    ].join(' ')
   );
-  ext.terminal.show();
+  ext.terminal.show()
 
   try {
     await ext.api.initAccountManager()
@@ -99,10 +101,12 @@ const startEmulator = (ext: Extension) => async () => {
     ext.setEmulatorState(EmulatorState.Stopped)
     renderExtension(ext)
   }
+
+  return ext.getEmulatorState()
 }
 
 // Stops emulator, exits the terminal, and removes all config/db files.
-const stopEmulator = (ext: Extension) => async () => {
+const stopEmulator = (ext: Extension) => async (): Promise<EmulatorState> => {
   ext.terminal.dispose()
   ext.terminal = createTerminal(ext.ctx)
 
@@ -113,6 +117,8 @@ const stopEmulator = (ext: Extension) => async () => {
   renderExtension(ext)
   await ext.api.client.stop()
   ext.api = new LanguageServerAPI(ext.ctx, ext.config, ext.emulatorState, null)
+
+  return ext.getEmulatorState()
 }
 
 // Creates a new account by requesting that the Language Server submit

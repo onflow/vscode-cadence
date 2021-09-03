@@ -17,8 +17,9 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
-      - run: yarn
-      - run: yarn lint
+      - run: npm ci
+      - run: npm run lint
+
   security:
     name: "Vulnerabilities Check"
     runs-on: ubuntu-latest
@@ -28,3 +29,22 @@ jobs:
         uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  tests:
+    name: "Running Tests"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci
+      - name: "Unit Tests"
+        run: npm run unit-test
+      - name: "End-to-end Tests"
+        uses: cypress-io/github-action@v2
+        with:
+          build: npm run package-test
+          start: npm run vscode-start
+          wait-on: http://localhost:8888

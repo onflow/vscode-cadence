@@ -4,3 +4,5 @@ out
 .history
 .cache
 .vscode-test
+*.vsix
+cypress

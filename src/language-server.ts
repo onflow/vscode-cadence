@@ -50,12 +50,12 @@ export class LanguageServerAPI {
 
     this.client
       .onReady()
-      .then(() => {
-        return window.showInformationMessage('Cadence language server started')
-      })
-      .catch((err: Error) => {
-        return window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
-      })
+      .then(() =>
+        window.showInformationMessage('Cadence language server started')
+      )
+      .catch((err: Error) =>
+        window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
+      )
 
     this.client.onDidChangeState((e: StateChangeEvent) => {
       this.running = e.newState === State.Running
