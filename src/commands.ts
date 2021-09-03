@@ -76,13 +76,12 @@ const startEmulator = (ext: Extension) => async () => {
   ext.terminal.sendText(
     [
       ext.config.flowCommand,
-      'project',
-      'start-emulator',
-      `--config-path=${configPath}`,
-      '--verbose'
-    ].join(' ')
-  )
-  ext.terminal.show()
+      `emulator`,
+      `--config-path="${configPath}"`,
+      `--verbose`,
+    ].join(" ")
+  );
+  ext.terminal.show();
 
   try {
     await ext.api.initAccountManager()
