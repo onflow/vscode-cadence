@@ -12,7 +12,7 @@ export async function run (): Promise<void> {
 
   return await new Promise((resolve, reject) => {
     glob('**/**.integration.test.js', { cwd: testsRoot }, (err, files) => {
-      if (err != null) {
+      if (err !== null) {
         return reject(err)
       }
 
@@ -37,7 +37,7 @@ export async function run (): Promise<void> {
 }
 
 export async function delay (seconds: number): Promise<void> {
-  await new Promise((resolve, reject) => {
+  await new Promise<void>((resolve, reject) => {
     setTimeout(() => resolve(), seconds * 1000)
   })
 }

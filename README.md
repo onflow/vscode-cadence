@@ -1,9 +1,5 @@
-<br />
+<h1>Cadence Visual Studio Code Extension</h1>
 <p align="center">
-  <a href="https://docs.onflow.org/vscode-extension/">
-    <img src="./vscode-banner.svg" alt="Logo" width="600" height="auto">
-  </a>
-
   <p align="center">
     <i>Bringing Cadence, the resource-oriented smart contract langauge of Flow, to your VSCode Editor.</i>
     <br />
