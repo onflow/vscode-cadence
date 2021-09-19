@@ -78,11 +78,11 @@ const startEmulator = (ext: Extension) => async (): Promise<EmulatorState> => {
   ext.terminal.sendText(
     [
       ext.config.flowCommand,
-      `emulator`,
+      'emulator',
       `--config-path="${configPath}"`,
-      `--verbose`,
+      '--verbose'
     ].join(' ')
-  );
+  )
   ext.terminal.show()
 
   try {
@@ -183,7 +183,7 @@ const createNewAccount = async (ext: Extension): Promise<void> => {
 const setActiveAccount = async (ext: Extension, activeIndex: number): Promise<void> => {
   const activeAccount = ext.config.getAccount(activeIndex)
 
-  if (activeAccount == null) {
+  if (activeAccount === null) {
     window.showErrorMessage('Failed to switch account: account does not exist.')
       .then(() => {}, () => {})
     return

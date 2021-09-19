@@ -10,6 +10,7 @@
 		"rootDir": "src",
 		"strict": true,
 		"noImplicitReturns": true,
+		"useUnknownInCatchVariables": false,
 		"types": ["cypress"]
 	},
 	"exclude": [

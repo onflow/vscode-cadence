@@ -56,7 +56,7 @@ function getStoragePath (ctx: ExtensionContext): string | undefined {
       mkdirSync(storagePath)
     } catch (err) {
       console.log('Error creating storage path: ', err)
-      return
+      return undefined
     }
   }
   return storagePath

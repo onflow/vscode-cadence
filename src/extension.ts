@@ -99,12 +99,7 @@ export async function activate (ctx: ExtensionContext): Promise<void> {
 }
 
 async function promptInitializeConfig (): Promise<boolean> {
-  let rootPath: string | undefined
-  if ((workspace.workspaceFolders != null) && (workspace.workspaceFolders.length > 0)) {
-    rootPath = workspace.workspaceFolders[0].uri.fsPath
-  } else {
-    rootPath = workspace.rootPath // ref: deprecated
-  }
+  const rootPath = workspace?.workspaceFolders?.[0].uri.fsPath
   if (rootPath === undefined) {
     return false
   }

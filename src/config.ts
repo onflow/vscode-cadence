@@ -39,7 +39,7 @@ export class Config {
       return false
     }
     const configFile = file[0]
-    this.configPath = configFile.path
+    this.configPath = configFile.fsPath
     return true
   }
 
@@ -54,7 +54,7 @@ export class Config {
   }
 
   getActiveAccount (): Account | null {
-    if (this.activeAccount == null) {
+    if (this.activeAccount === null) {
       return null
     }
 

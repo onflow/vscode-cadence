@@ -22,8 +22,8 @@ export class LanguageServerAPI {
     // Init running state with false and update, when client is connected to server
     this.running = false
 
-    const activeAccountName = (activeAccount != null) ? activeAccount.name : ''
-    const activeAccountAddress = (activeAccount != null) ? activeAccount.address : ''
+    const activeAccountName = activeAccount?.name ?? ''
+    const activeAccountAddress = activeAccount?.address ?? ''
     const { configPath } = config
 
     this.client = new LanguageClient(
