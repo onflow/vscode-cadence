@@ -41,6 +41,7 @@
     "onCommand:cadence.switchActiveAccount"
   ],
   "main": "./out/main.js",
+
   "contributes": {
     "commands": [
       {
