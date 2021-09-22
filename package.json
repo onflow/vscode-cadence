@@ -41,7 +41,6 @@
     "onCommand:cadence.switchActiveAccount"
   ],
   "main": "./out/main.js",
-
   "contributes": {
     "commands": [
       {
@@ -156,7 +155,7 @@
     "glob": "^7.1.7",
     "mocha": "^8.4.0",
     "nyc": "^15.1.0",
-    "snyk": "^1.717.0",
+    "snyk": "^1.316.0",
     "ts-mocha": "^8.0.0",
     "ts-standard": "^10.0.0",
     "typescript": "^4.3.2",
