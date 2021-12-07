@@ -5,7 +5,7 @@
   </a>
 
   <p align="center">
-    <i>Bringing Cadence, the resource-oriented smart contract langauge of Flow, to your VSCode Editor.</i>
+    <i>Bringing Cadence, the resource-oriented smart contract language of Flow, to your VSCode Editor.</i>
     <br />
     <a href="https://docs.onflow.org/vscode-extension/"><strong>Read the docs»</strong></a>
     <br />
