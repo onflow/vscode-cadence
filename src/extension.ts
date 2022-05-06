@@ -99,15 +99,6 @@ export async function activate (ctx: ExtensionContext): Promise<void> {
 }
 
 async function promptInitializeConfig (): Promise<boolean> {
-  let rootPath: string | undefined
-  if ((workspace.workspaceFolders != null) && (workspace.workspaceFolders.length > 0)) {
-    rootPath = workspace.workspaceFolders[0].uri.fsPath
-  } else {
-    rootPath = workspace.rootPath // ref: deprecated
-  }
-  if (rootPath === undefined) {
-    return false
-  }
 
   const continueMessage = 'Continue'
   const selection = await window.showInformationMessage('Missing Flow CLI configuration. Create a new one?', continueMessage)
@@ -115,7 +106,7 @@ async function promptInitializeConfig (): Promise<boolean> {
     return false
   }
 
-  await exec('flow init', { cwd: rootPath })
+  await exec('flow init --global')
 
   return true
 }
