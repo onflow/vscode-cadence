@@ -63,12 +63,13 @@ export class Extension {
   }
 }
 
+let api: LanguageServerAPI
+
 // Called when the extension starts up. Reads config, starts the language
 // server, and registers command handlers.
 export async function activate (ctx: ExtensionContext): Promise<void> {
   let config: Config
   let terminal: Terminal
-  let api: LanguageServerAPI
 
   try {
     config = getConfig()
@@ -79,7 +80,7 @@ export async function activate (ctx: ExtensionContext): Promise<void> {
     terminal = createTerminal(ctx)
     api = new LanguageServerAPI(ctx, config, EmulatorState.Stopped, null)
   } catch (err) {
-    window.showErrorMessage('Failed to activate extension: ', err)
+    window.showErrorMessage('Failed to activate extension: ' + err)
       .then(() => {}, () => {})
     return
   }
@@ -120,7 +121,12 @@ async function promptInitializeConfig (): Promise<boolean> {
   return true
 }
 
-export function deactivate (): void { }
+export function deactivate(): Thenable<void> | undefined {
+	if (!api) {
+		return undefined;
+	}
+	return api.client.stop();
+}
 
 export function renderExtension (ext: Extension): void {
   updateEmulatorStatusBarItem(ext.emulatorStatusBarItem, ext.getEmulatorState())

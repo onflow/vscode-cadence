@@ -48,8 +48,7 @@ export class LanguageServerAPI {
       }
     )
 
-    this.client
-      .onReady()
+    this.client.start()
       .then(() =>
         window.showInformationMessage('Cadence language server started')
       )
@@ -60,9 +59,6 @@ export class LanguageServerAPI {
     this.client.onDidChangeState((e: StateChangeEvent) => {
       this.running = e.newState === State.Running
     })
-
-    const clientDisposable = this.client.start()
-    ctx.subscriptions.push(clientDisposable)
   }
 
   async initAccountManager (): Promise<void> {
