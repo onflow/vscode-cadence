@@ -78,11 +78,11 @@ const startEmulator = (ext: Extension) => async (): Promise<EmulatorState> => {
   ext.terminal.sendText(
     [
       ext.config.flowCommand,
-      `emulator`,
+      'emulator',
       `--config-path="${configPath}"`,
-      `--verbose`,
+      '--verbose'
     ].join(' ')
-  );
+  )
   ext.terminal.show()
 
   try {

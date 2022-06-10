@@ -24,7 +24,7 @@ suite('Extension Test Suite', () => {
 
     assert.strictEqual(ext?.isActive, true)
 
-    const extension = (await vscode.commands.executeCommand(cmd.RESTART_SERVER)) as Extension
+    const extension: Extension = await vscode.commands.executeCommand(cmd.RESTART_SERVER)
     assert.strictEqual(extension.getEmulatorState(), EmulatorState.Stopped)
 
     await delay(1)
