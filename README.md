@@ -1,7 +1,7 @@
 <br />
 <p align="center">
   <a href="https://docs.onflow.org/vscode-extension/">
-    <img src="./vscode-banner.svg" alt="Logo" width="600" height="auto">
+    <img src="./vscode-banner.png" alt="Logo" width="600" height="auto">
   </a>
 
   <p align="center">
