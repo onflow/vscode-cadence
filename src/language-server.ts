@@ -53,12 +53,12 @@ export class LanguageServerAPI {
     })
 
     this.client.start()
-    .then(() =>
-      window.showInformationMessage('Cadence language server started')
-    )
-    .catch((err: Error) =>
-      window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
-    )
+      .then(() =>
+        window.showInformationMessage('Cadence language server started')
+      )
+      .catch((err: Error) =>
+        window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
+      )
   }
 
   async initAccountManager (): Promise<void> {
