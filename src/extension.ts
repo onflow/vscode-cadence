@@ -3,7 +3,9 @@ import {
   window,
   Terminal,
   StatusBarItem,
-  workspace
+  workspace,
+  debug,
+  DebugSession
 } from 'vscode'
 import { getConfig, handleConfigChanges, Config } from './config'
 import { LanguageServerAPI } from './language-server'
@@ -17,6 +19,12 @@ import {
 } from './status-bar'
 import * as util from 'util'
 import * as cp from 'child_process'
+import {
+  CadenceDebugAdapterTrackerFactory,
+  CadenceDebugConfigurationProvider,
+  CadenceDebugAdapterDescriptorFactory
+ } from './debugger'
+
 const exec = util.promisify(cp.exec)
 
 export enum EmulatorState {
@@ -97,6 +105,22 @@ export async function activate (ctx: ExtensionContext): Promise<void> {
 
   registerCommands(ext)
   renderExtension(ext)
+
+  registerDebugger(ctx)
+}
+
+function registerDebugger(ctx: ExtensionContext) {
+  const debugOutputChannel = window.createOutputChannel('Cadence Debug')
+  ctx.subscriptions.push(debugOutputChannel)
+
+  const provider = new CadenceDebugConfigurationProvider()
+  ctx.subscriptions.push(debug.registerDebugConfigurationProvider('flow-emulator', provider))
+
+  const tracker = new CadenceDebugAdapterTrackerFactory(debugOutputChannel)
+  ctx.subscriptions.push(debug.registerDebugAdapterTrackerFactory('flow-emulator', tracker))
+
+  const factory = new CadenceDebugAdapterDescriptorFactory(debugOutputChannel)
+  ctx.subscriptions.push(debug.registerDebugAdapterDescriptorFactory('flow-emulator', factory))
 }
 
 async function promptInitializeConfig (): Promise<boolean> {
