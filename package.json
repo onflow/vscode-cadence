@@ -155,7 +155,7 @@
             "properties": {
               "program": {
                 "type": "string",
-                "description": "script or transaction to debug."
+                "description": "script/transaction to debug."
               },
               "trace": {
                 "type": "string",
@@ -178,6 +178,11 @@
                 "type": "string",
                 "description": "Host of the Flow Emulator.",
                 "default": "127.0.0.1"
+              },
+              "stopOnEntry": {
+                "type": "boolean",
+                "description": "Automatically stop script/transaction after start.",
+                "default": false
               }
             }
           }
