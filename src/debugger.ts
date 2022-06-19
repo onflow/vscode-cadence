@@ -1,3 +1,4 @@
+import { debug } from 'console';
 import {
     DebugSession,
     DebugAdapterDescriptorFactory,
@@ -30,39 +31,38 @@ import {
 
 export class CadenceDebugConfigurationProvider implements DebugConfigurationProvider {
 
-	resolveDebugConfiguration(
+    resolveDebugConfiguration(
         folder: WorkspaceFolder | undefined,
         config: DebugConfiguration,
         token?: CancellationToken
     ): ProviderResult<DebugConfiguration> {
 
-		if (!config.program) {
-			const editor = window.activeTextEditor;
-			if (editor && editor.document.languageId === 'cadence') {
-				config.program = editor.document.getText()
-			}
-		}
+        if (!config.program) {
+            const editor = window.activeTextEditor;
+            if (editor && editor.document.languageId === 'cadence') {
+                config.program = editor.document.getText()
+            }
+        }
 
-		if (!config.program) {
-			return window.showInformationMessage("Cannot find a program to debug").then(_ => {
-				return undefined
-			})
-		}
+        if (!config.program) {
+            window.showInformationMessage("Cannot find a program to debug")
+            return undefined
+        }
 
-		return config
-	}
+        return config
+    }
 }
 
 export class CadenceDebugAdapterDescriptorFactory implements DebugAdapterDescriptorFactory {
 
     constructor(private debugOutputChannel: OutputChannel) {}
 
-	public async createDebugAdapterDescriptor(
-		session: DebugSession,
-		executable: DebugAdapterExecutable | undefined
-	): Promise<DebugAdapterDescriptor> {
+    public async createDebugAdapterDescriptor(
+        session: DebugSession,
+        executable: DebugAdapterExecutable | undefined
+    ): Promise<DebugAdapterDescriptor> {
         const {port, host, program} = session.configuration
         this.debugOutputChannel.appendLine(`launch: ${host}:${port}:\n${program}`)
-		return new DebugAdapterServer(port, host)
-	}
+        return new DebugAdapterServer(port, host)
+    }
 }
