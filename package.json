@@ -144,6 +144,11 @@
         }
       }
     ],
+    "breakpoints": [
+      {
+        "language": "cadence"
+      }
+    ],
     "debuggers": [
       {
         "type": "flow-emulator",
