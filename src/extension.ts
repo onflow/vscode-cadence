@@ -73,10 +73,17 @@ export async function activate (ctx: ExtensionContext): Promise<void> {
 
   try {
     config = getConfig()
-    if (!await config.readLocalConfig()) {
-      if (!await promptInitializeConfig()) { return }
-      await config.readLocalConfig()
-    }
+    if (config.enableCustomConfigPath) {
+      if (!await config.readCustomConfig()) {
+        throw ("Could not read custom config file from path: " + config.customConfigPath)
+      }
+    } else {
+      if (!await config.readLocalConfig()) {
+        if (!await promptInitializeConfig()) { return }
+        await config.readLocalConfig()
+      }
+  }
+
     terminal = createTerminal(ctx)
     api = new LanguageServerAPI(ctx, config, EmulatorState.Stopped, null)
   } catch (err) {

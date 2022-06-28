@@ -1,7 +1,10 @@
 import { commands, window, workspace } from 'vscode'
+import fs from 'fs';
 import { Account } from './account'
 
 const CONFIG_FLOW_COMMAND = 'flowCommand'
+const CONFIG_CUSTOM_CONFIG_PATH = 'customConfigPath'
+const CONFIG_ENABLE_CUSTOM_CONFIG_PATH = 'enableCustomConfigPath'
 const CONFIG_NUM_ACCOUNTS = 'numAccounts'
 const CONFIG_ACCESS_CHECK_MODE = 'accessCheckMode'
 
@@ -9,6 +12,11 @@ const CONFIG_ACCESS_CHECK_MODE = 'accessCheckMode'
 export class Config {
   // The name of the Flow CLI executable.
   flowCommand: string
+  // Custom path to flow.json
+  customConfigPath: string
+
+  enableCustomConfigPath: boolean
+
   numAccounts: number
   // Set of created accounts for which we can submit transactions.
   // Mapping from account address to account object.
@@ -22,15 +30,27 @@ export class Config {
 
   constructor (
     flowCommand: string,
+    customConfigPath: string,
+    enableCustomConfigPath: boolean,
     numAccounts: number,
     accessCheckMode: string
   ) {
     this.flowCommand = flowCommand
+    this.customConfigPath = customConfigPath
+    this.enableCustomConfigPath = enableCustomConfigPath
     this.numAccounts = numAccounts
     this.accessCheckMode = accessCheckMode
     this.accounts = []
     this.activeAccount = null
     this.configPath = ''
+  }
+
+  async readCustomConfig (): Promise<boolean> {
+    if (fs.existsSync(this.customConfigPath)) {
+      this.configPath = this.customConfigPath
+      return true
+    }
+    return false
   }
 
   async readLocalConfig (): Promise<boolean> {
@@ -93,6 +113,20 @@ export function getConfig (): Config {
     throw new Error(`Missing ${CONFIG_FLOW_COMMAND} config`)
   }
 
+  const customConfigPath: string | undefined = cadenceConfig.get(
+    CONFIG_CUSTOM_CONFIG_PATH
+  )
+  if (customConfigPath === undefined) {
+    throw new Error(`Missing ${CONFIG_CUSTOM_CONFIG_PATH} config`)
+  }
+
+  const enableCustomConfigPath: boolean | undefined = cadenceConfig.get(
+    CONFIG_ENABLE_CUSTOM_CONFIG_PATH
+  )
+  if (enableCustomConfigPath === undefined) {
+    throw new Error(`Missing ${CONFIG_ENABLE_CUSTOM_CONFIG_PATH} config`)
+  }
+
   const numAccounts: number | undefined = cadenceConfig.get(
     CONFIG_NUM_ACCOUNTS
   )
@@ -107,7 +141,7 @@ export function getConfig (): Config {
     accessCheckMode = 'strict'
   }
 
-  return new Config(flowCommand, numAccounts, accessCheckMode)
+  return new Config(flowCommand, customConfigPath, enableCustomConfigPath, numAccounts, accessCheckMode)
 }
 
 // Adds an event handler that prompts the user to reload whenever the config
