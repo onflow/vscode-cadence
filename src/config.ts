@@ -1,5 +1,5 @@
 import { commands, window, workspace } from 'vscode'
-import fs from 'fs';
+import fs from 'fs'
 import { Account } from './account'
 
 const CONFIG_FLOW_COMMAND = 'flowCommand'
@@ -46,7 +46,8 @@ export class Config {
   }
 
   async readCustomConfig (): Promise<boolean> {
-    if (fs.existsSync(this.customConfigPath)) {
+    const fileExists: boolean = fs.existsSync(this.customConfigPath)
+    if (fileExists) {
       this.configPath = this.customConfigPath
       return true
     }
