@@ -1,5 +1,5 @@
 import { commands, window, workspace } from 'vscode'
-import fs from 'fs'
+import * as fs from 'fs';
 import { Account } from './account'
 
 const CONFIG_FLOW_COMMAND = 'flowCommand'
