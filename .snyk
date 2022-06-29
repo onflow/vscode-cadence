@@ -8,7 +8,6 @@ ignore:
       reason: Dependency Requirements
     - vsce > keytar > prebuild-install > npmlog > gauge > wide-align > string-width > strip-ansi > ansi-regex:
       reason: Dependency Requirements
-
 # patches apply the minimum changes required to fix a vulnerability
 patch:
   SNYK-JS-LODASH-567746:
