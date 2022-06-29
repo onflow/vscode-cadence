@@ -1,6 +1,9 @@
 # Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
 version: v1.14.1
-ignore: {}
+ignore:
+  SNYK-JS-ANSIREGEX-1583908:
+    - ansi-regex:
+      reason: Dependency Requirements
 # patches apply the minimum changes required to fix a vulnerability
 patch:
   SNYK-JS-LODASH-567746:
