@@ -1,7 +1,7 @@
 import * as assert from 'assert'
-import * as cmd from '../../commands'
+import * as cmd from '../../commands/command-controller'
 import * as vscode from 'vscode'
-import { Config } from '../../config'
+import { Config } from '../../emulator/local/config'
 import { EmulatorState, Extension } from '../../extension'
 import { delay } from './index'
 

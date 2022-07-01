@@ -1,134 +1,61 @@
-import {
-  ExtensionContext,
-  window,
-  Terminal,
-  StatusBarItem,
-  workspace
-} from 'vscode'
-import { getConfig, handleConfigChanges, Config } from './config'
-import { LanguageServerAPI } from './language-server'
-import { refreshCodeLenses, registerCommands } from './commands'
-import { createTerminal } from './terminal'
-import {
-  createEmulatorStatusBarItem,
-  updateEmulatorStatusBarItem,
-  createActiveAccountStatusBarItem,
-  updateActiveAccountStatusBarItem
-} from './status-bar'
-import * as util from 'util'
-import * as cp from 'child_process'
-const exec = util.promisify(cp.exec)
+/* VS Code Cadence Extension */
+import { ExtensionContext } from 'vscode'
+import { EmulatorState, EmulatorController } from './emulator/emulator-controller'
+import { CommandController } from './commands/command-controller'
+import { refreshCodeLenses } from './utils/utils'
+import { StatusBarUI } from './UI/status-bar'
+import { Account } from './emulator/account'
+import { UIController } from './UI/UI-controller'
 
-export enum EmulatorState {
-  Stopped = 0,
-  Starting,
-  Started,
+// Global extension variable to update UI
+export let ext: Extension
+
+// Called by VS Code when the extension starts up
+export async function activate (ctx: ExtensionContext): Promise<void> {
+  // Initialize the extension
+  ext = new Extension(ctx)
+}
+
+// Called by VS Code when the extension terminates
+export function deactivate (): Thenable<void> | undefined {
+  return ext.emulatorCtrl.api === undefined ? undefined : ext.emulatorCtrl.api.client.stop()
 }
 
 // The container for all data relevant to the extension.
 export class Extension {
-  config: Config
   ctx: ExtensionContext
-  api: LanguageServerAPI
-  terminal: Terminal
-  emulatorState: EmulatorState = EmulatorState.Stopped
-  emulatorStatusBarItem: StatusBarItem
-  activeAccountStatusBarItem: StatusBarItem
+  UICtrl: UIController
+  commands: CommandController
+  emulatorCtrl: EmulatorController
 
-  constructor (
-    config: Config,
-    ctx: ExtensionContext,
-    api: LanguageServerAPI,
-    terminal: Terminal,
-    emulatorStatusBarItem: StatusBarItem,
-    activeAccountStatusBarItem: StatusBarItem
-  ) {
-    this.config = config
+  constructor (ctx: ExtensionContext) {
     this.ctx = ctx
-    this.api = api
-    this.terminal = terminal
-    this.emulatorStatusBarItem = emulatorStatusBarItem
-    this.activeAccountStatusBarItem = activeAccountStatusBarItem
+  
+    // Initialize Emulator
+    this.emulatorCtrl = new EmulatorController(this.ctx.storagePath, this.ctx.globalStoragePath)
+
+   // Initialize ExtensionCommands
+   this.commands = new CommandController()
+
+   // Initialize UI
+   this.UICtrl = new UIController()
   }
 
   getEmulatorState (): EmulatorState {
-    return this.emulatorState
+    return this.emulatorCtrl.getState()
   }
 
-  setEmulatorState (state: EmulatorState): void {
-    this.emulatorState = state
-    this.api.changeEmulatorState(state)
+  getActiveAccount (): Account | null {
+    return this.emulatorCtrl.getActiveAccount() //TODO: Convert this to an Account?
+  }
+
+  emulatorStateChanged() {
+    // Update language server API with emulator state
+    this.emulatorCtrl.api.changeEmulatorState(this.getEmulatorState())
       .then(() => {}, () => {})
     refreshCodeLenses()
+
+    // Update UI
+    this.UICtrl.emulatorStateChanged()
   }
-}
-
-let api: LanguageServerAPI
-
-// Called when the extension starts up. Reads config, starts the language
-// server, and registers command handlers.
-export async function activate (ctx: ExtensionContext): Promise<void> {
-  let config: Config
-  let terminal: Terminal
-
-  try {
-    config = getConfig()
-    if (!await config.readLocalConfig()) {
-      if (!await promptInitializeConfig()) { return }
-      await config.readLocalConfig()
-    }
-    terminal = createTerminal(ctx)
-    api = new LanguageServerAPI(ctx, config, EmulatorState.Stopped, null)
-  } catch (err) {
-    window.showErrorMessage(`Failed to activate extension: ${String(err)}`)
-      .then(() => {}, () => {})
-    return
-  }
-  handleConfigChanges()
-
-  const ext = new Extension(
-    config,
-    ctx,
-    api,
-    terminal,
-    createEmulatorStatusBarItem(),
-    createActiveAccountStatusBarItem()
-  )
-
-  registerCommands(ext)
-  renderExtension(ext)
-}
-
-async function promptInitializeConfig (): Promise<boolean> {
-  let rootPath: string | undefined
-  if ((workspace.workspaceFolders != null) && (workspace.workspaceFolders.length > 0)) {
-    rootPath = workspace.workspaceFolders[0].uri.fsPath
-  } else {
-    rootPath = workspace.rootPath // ref: deprecated
-  }
-  if (rootPath === undefined) {
-    return false
-  }
-
-  const continueMessage = 'Continue'
-  const selection = await window.showInformationMessage('Missing Flow CLI configuration. Create a new one?', continueMessage)
-  if (selection !== continueMessage) {
-    return false
-  }
-
-  await exec('flow init', { cwd: rootPath })
-
-  return true
-}
-
-export function deactivate (): Thenable<void> | undefined {
-  if (typeof api === 'undefined') {
-    return undefined
-  }
-  return api.client.stop()
-}
-
-export function renderExtension (ext: Extension): void {
-  updateEmulatorStatusBarItem(ext.emulatorStatusBarItem, ext.getEmulatorState())
-  updateActiveAccountStatusBarItem(ext.activeAccountStatusBarItem, ext.config.getActiveAccount())
 }

@@ -1,36 +1,45 @@
 import { LanguageClient, State, StateChangeEvent } from 'vscode-languageclient/node'
 import { ExtensionContext, window } from 'vscode'
-import { Config } from './config'
-import {
-  CREATE_ACCOUNT_SERVER,
-  CREATE_DEFAULT_ACCOUNTS_SERVER,
-  SWITCH_ACCOUNT_SERVER,
-  CHANGE_EMULATOR_STATE,
-  INIT_ACCOUNT_MANAGER
-} from './commands'
-import { EmulatorState } from './extension'
-import { Account } from './account'
+import { Config } from '../local/config'
+import { EmulatorState } from '../emulator-controller'
+import { Account } from '../account'
+import { ext } from '../../extension'
 
 // The args to pass to the Flow CLI to start the language server.
 const START_LANGUAGE_SERVER_ARGS = ['cadence', 'language-server']
 
 export class LanguageServerAPI {
+  // Identities for commands handled by the Language server
+  static CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
+  static CREATE_DEFAULT_ACCOUNTS_SERVER = 'cadence.server.flow.createDefaultAccounts'
+  static SWITCH_ACCOUNT_SERVER = 'cadence.server.flow.switchActiveAccount'
+  static CHANGE_EMULATOR_STATE = 'cadence.server.flow.changeEmulatorState'
+  static INIT_ACCOUNT_MANAGER = 'cadence.server.flow.initAccountManager'
+
   client: LanguageClient
   running: boolean
+  configPath: string
+  accessCheckMode: string
+  flowCommand: string
 
-  constructor (ctx: ExtensionContext, config: Config, emulatorState: EmulatorState, activeAccount: Account | null) {
+  constructor (configPath: string, accessCheckMode: string, flowCommand: string, 
+      emulatorState: EmulatorState, activeAccount: Account | null) {
+    
+    this.configPath = configPath
+    this.accessCheckMode = accessCheckMode
+    this.flowCommand = flowCommand
+  
     // Init running state with false and update, when client is connected to server
     this.running = false
 
     const activeAccountName = (activeAccount != null) ? activeAccount.name : ''
     const activeAccountAddress = (activeAccount != null) ? activeAccount.address : ''
-    const { configPath } = config
 
     this.client = new LanguageClient(
       'cadence',
       'Cadence',
       {
-        command: config.flowCommand,
+        command: this.flowCommand,
         args: START_LANGUAGE_SERVER_ARGS
       },
       {
@@ -39,7 +48,7 @@ export class LanguageServerAPI {
           configurationSection: 'cadence'
         },
         initializationOptions: {
-          accessCheckMode: config.accessCheckMode,
+          accessCheckMode: this.accessCheckMode,
           configPath,
           emulatorState,
           activeAccountName,
@@ -61,16 +70,31 @@ export class LanguageServerAPI {
       )
   }
 
+  reset () {
+    this.client.stop()
+    // TODO: Implement this
+  }
+
+  // Restarts the language server, updating the client in the extension object.
+  async restartServer () {
+    // TODO: Make sure this is correct
+    await this.client.stop()
+    const activeAccount = ext.getActiveAccount() 
+    this.client.start()
+    this.switchActiveAccount(activeAccount)
+    ext.emulatorStateChanged()
+  }
+
   async initAccountManager (): Promise<void> {
     return await this.client.sendRequest('workspace/executeCommand', {
-      command: INIT_ACCOUNT_MANAGER,
+      command: LanguageServerAPI.INIT_ACCOUNT_MANAGER,
       arguments: []
     })
   }
 
   async changeEmulatorState (emulatorState: EmulatorState): Promise<void> {
     return await this.client.sendRequest('workspace/executeCommand', {
-      command: CHANGE_EMULATOR_STATE,
+      command: LanguageServerAPI.CHANGE_EMULATOR_STATE,
       arguments: [emulatorState]
     })
   }
@@ -79,7 +103,7 @@ export class LanguageServerAPI {
   async switchActiveAccount (account: Account): Promise<void> {
     const { name, address } = account
     return await this.client.sendRequest('workspace/executeCommand', {
-      command: SWITCH_ACCOUNT_SERVER,
+      command: LanguageServerAPI.SWITCH_ACCOUNT_SERVER,
       arguments: [name, address]
     })
   }
@@ -88,7 +112,7 @@ export class LanguageServerAPI {
   // account, if it was created successfully.
   async createAccount (): Promise<Account> {
     const res: any = await this.client.sendRequest('workspace/executeCommand', {
-      command: CREATE_ACCOUNT_SERVER,
+      command: LanguageServerAPI.CREATE_ACCOUNT_SERVER,
       arguments: []
     })
     const { name, address } = res
@@ -99,7 +123,7 @@ export class LanguageServerAPI {
   // accounts, if they were created successfully.
   async createDefaultAccounts (count: number): Promise<Account[]> {
     const res: [] = await this.client.sendRequest('workspace/executeCommand', {
-      command: CREATE_DEFAULT_ACCOUNTS_SERVER,
+      command: LanguageServerAPI.CREATE_DEFAULT_ACCOUNTS_SERVER,
       arguments: [count]
     })
     const accounts: Account [] = []
