@@ -1,5 +1,5 @@
 import * as path from 'path'
-import * as Mocha from 'mocha'
+//import * as Mocha from 'mocha'
 import * as glob from 'glob'
 
 export async function run (): Promise<void> {
@@ -32,12 +32,13 @@ export async function run (): Promise<void> {
         console.error(err)
         reject(err)
       }
+
     })
   })
 }
 
 export async function delay (seconds: number): Promise<void> {
   await new Promise((resolve, reject) => {
-    setTimeout(() => resolve(), seconds * 1000)
+    setTimeout(() => resolve(''), seconds * 1000)
   })
 }

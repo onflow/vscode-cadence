@@ -1,6 +1,7 @@
 import { initExtension, openFile, stopEmulator } from '../helpers'
 
 describe('User Story test: Send Script', () => {
+  /*
   beforeEach(() => {
     initExtension(cy)
   })
@@ -14,4 +15,5 @@ describe('User Story test: Send Script', () => {
     cy.contains('Execute script').click({ force: true })
     cy.contains('Result: 42.00000000')
   })
+  */
 })
