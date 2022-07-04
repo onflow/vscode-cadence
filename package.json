@@ -10,10 +10,10 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run -S esbuild-base -- --minify",
-    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
+    "esbuild-base": "esbuild ./extension/src/main.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
     "esbuild": "npm run -S esbuild-base -- --sourcemap",
     "esbuild-watch": "npm run -S esbuild-base -- --sourcemap --watch",
-    "check": "tsc src/extension.ts",
+    "check": "tsc extension/src/main.ts",
     "unit-test": "ts-mocha **/*.unit.test.ts",
     "integration-test": "npm run esbuild && tsc -p ./ && node ./out/test/run-test.js",
     "package": "./node_modules/.bin/vsce package",
@@ -31,7 +31,7 @@
   "categories": [
     "Programming Languages"
   ],
-  "icon": "icon.png",
+  "icon": "images/icon.png",
   "activationEvents": [
     "onLanguage:cadence",
     "onCommand:cadence.restartServer",

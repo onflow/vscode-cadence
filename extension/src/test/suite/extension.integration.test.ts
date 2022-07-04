@@ -2,7 +2,7 @@ import * as assert from 'assert'
 import * as cmd from '../../commands/command-controller'
 import * as vscode from 'vscode'
 import { Config } from '../../emulator/local/config'
-import { EmulatorState, Extension } from '../../extension'
+import { EmulatorState, Extension } from '../../main'
 import { delay } from './index'
 
 suite('Extension Test Suite', () => {

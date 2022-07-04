@@ -1,9 +1,11 @@
 import { LanguageClient, State, StateChangeEvent } from 'vscode-languageclient/node'
 import { ExtensionContext, window } from 'vscode'
-import { Config } from '../local/config'
 import { EmulatorState } from '../emulator-controller'
 import { Account } from '../account'
-import { ext } from '../../extension'
+import { ext } from '../../main'
+import { Config } from '../local/config'
+import { Settings } from '../../settings/settings'
+import { DEBUG_LOG } from '../../utils/debug'
 
 // The args to pass to the Flow CLI to start the language server.
 const START_LANGUAGE_SERVER_ARGS = ['cadence', 'language-server']
@@ -16,22 +18,27 @@ export class LanguageServerAPI {
   static CHANGE_EMULATOR_STATE = 'cadence.server.flow.changeEmulatorState'
   static INIT_ACCOUNT_MANAGER = 'cadence.server.flow.initAccountManager'
 
-  client: LanguageClient
+  client!: LanguageClient
   running: boolean
-  configPath: string
   accessCheckMode: string
   flowCommand: string
 
-  constructor (configPath: string, accessCheckMode: string, flowCommand: string, 
-      emulatorState: EmulatorState, activeAccount: Account | null) {
-    
-    this.configPath = configPath
-    this.accessCheckMode = accessCheckMode
-    this.flowCommand = flowCommand
-  
+  constructor () {
+    const settings = Settings.getWorkspaceSettings()
+    this.accessCheckMode = settings.accessCheckMode
+    this.flowCommand = settings.flowCommand
+
     // Init running state with false and update, when client is connected to server
     this.running = false
+    
+    this.startClient()
+  }
 
+  async startClient() {
+    const configPath = await Config.getConfigPath()
+    const emulatorState = ext.getEmulatorState()
+
+    const activeAccount = ext.getActiveAccount()
     const activeAccountName = (activeAccount != null) ? activeAccount.name : ''
     const activeAccountAddress = (activeAccount != null) ? activeAccount.address : ''
 
@@ -48,7 +55,7 @@ export class LanguageServerAPI {
           configurationSection: 'cadence'
         },
         initializationOptions: {
-          accessCheckMode: this.accessCheckMode,
+          accessCheckMode: Settings.getWorkspaceSettings().accessCheckMode,
           configPath,
           emulatorState,
           activeAccountName,
@@ -81,6 +88,8 @@ export class LanguageServerAPI {
     await this.client.stop()
     const activeAccount = ext.getActiveAccount() 
     this.client.start()
+
+    // TODO: ?
     this.switchActiveAccount(activeAccount)
     ext.emulatorStateChanged()
   }

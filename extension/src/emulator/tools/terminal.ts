@@ -1,8 +1,8 @@
 import { Terminal, window } from 'vscode'
 import { existsSync, mkdirSync, unlinkSync } from 'fs'
 import { join } from 'path'
-import { ext } from '../../extension'
-import { flow } from 'cypress/types/lodash'
+import { Settings } from '../../settings/settings'
+import { Config } from '../local/config'
 
 // Name of all Flow files stored on-disk.
 const FLOW_CONFIG_FILENAME = 'flow.json'
@@ -12,17 +12,10 @@ export class TerminalController {
 
   storagePath: string | undefined
   flowCommand: string
-  configPath: string
   #terminal: Terminal
 
-  constructor (
-    flowCommand: string,
-    configPath: string,
-    ctx_storagePath: string | undefined, 
-    ctx_globalStoragePath: string
-    ) {
-    this.flowCommand = flowCommand
-    this.configPath = configPath
+  constructor (ctx_storagePath: string | undefined, ctx_globalStoragePath: string) {
+    this.flowCommand = Settings.getWorkspaceSettings().flowCommand
     this.storagePath = this.getStoragePath(ctx_storagePath, ctx_globalStoragePath)
     this.#terminal = this.#initTerminal()
   }
@@ -50,10 +43,12 @@ export class TerminalController {
   }
   
   newTerminal() {
-    this.#terminal.dispose()
-  
     if (this.storagePath === undefined) {
       throw new Error('Missing extension storage path')
+    }
+    
+    if (this.#terminal) {
+      this.#terminal.dispose()
     }
   
     // By default, reset all files on each load.
@@ -86,12 +81,12 @@ export class TerminalController {
     }
   }
 
-  startEmulator() {
+  async startEmulator() {
     this.#terminal.sendText(
       [
           this.flowCommand,
           'emulator',
-          `--config-path="${this.configPath}"`,
+          `--config-path="${await Config.getConfigPath()}"`,
           '--verbose'
       ].join(' ')
       )

@@ -1,10 +1,11 @@
 /*  AccountManager is responsible for creating and switching accounts. 
     It deals with the local configuration and language server.
 */
-import { ext } from "../../extension"
-import { Config } from "../local/config"
+import { ext } from "../../main"
+import { AccountData } from "../local/account-data"
 import { LanguageServerAPI } from "../server/language-server"
 import { window, env } from "vscode"
+import { Account } from "../account"
 import {
     COPY_ADDRESS,
     CREATE_NEW_ACCOUNT,
@@ -14,18 +15,23 @@ import {
   } from '../../utils/strings'
 
 export class AccountManager {
-    config: Config
     api: LanguageServerAPI
-    constructor(config: Config, api: LanguageServerAPI) {
-      this.config = config,
+    accountData: AccountData
+
+    constructor(api: LanguageServerAPI) {
       this.api = api
+      this.accountData = new AccountData()
+    }
+
+    async addAccountLocal(account: Account) {
+      this.accountData.addAccount(account)
     }
 
     async createNewAccount () {
         try {
           const account = await this.api.createAccount()
-          this.config.addAccount(account)
-          const lastIndex = this.config.accounts.length - 1
+          this.accountData.addAccount(account)
+          const lastIndex = this.accountData.accounts.length - 1
           await this.setActiveAccount(lastIndex)
 
           ext.emulatorStateChanged()
@@ -35,12 +41,16 @@ export class AccountManager {
         }
     }
 
+    getNumAccounts () {
+      return this.accountData.getNumAccounts()
+    }
+
     getActiveAccount () {
-      return this.config.activeAccount
+      return this.accountData.getActiveAccount()
     }
 
     async setActiveAccount (activeIndex: number) {
-        const activeAccount = this.config.getAccount(activeIndex)
+        const activeAccount = this.accountData.getAccount(activeIndex)
       
         if (activeAccount == null) {
           window.showErrorMessage('Failed to switch account: account does not exist.')
@@ -50,7 +60,7 @@ export class AccountManager {
       
         try {
           await this.api.switchActiveAccount(activeAccount)
-          this.config.setActiveAccount(activeIndex)
+          this.accountData.setActiveAccount(activeIndex)
 
           window.showInformationMessage(
             `Switched to account ${activeAccount.fullName()}`,
@@ -73,11 +83,11 @@ export class AccountManager {
     // is propagated to the Language Server.
     switchActiveAccount () {
         // Create the options (mark the active account with an 'active' prefix)
-        const accountOptions = Object.values(this.config.accounts)
+        const accountOptions = Object.values(this.accountData.accounts)
         // Mark the active account with a `*` in the dialog
         .map((account) => {
             const prefix: string =
-            account.index === this.config.activeAccount ? ACTIVE_PREFIX : INACTIVE_PREFIX
+            account.index === this.accountData.activeAccount ? ACTIVE_PREFIX : INACTIVE_PREFIX
             const label = `${prefix} ${account.fullName()}`
     
             return {
@@ -106,5 +116,9 @@ export class AccountManager {
         await this.setActiveAccount(selected.target)
         ext.emulatorStateChanged()
         }, () => {})
+  }
+
+  resetAccounts() {
+    this.accountData.resetAccounts()
   }
 }

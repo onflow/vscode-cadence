@@ -4,6 +4,8 @@ import {
     window
 } from 'vscode'
 
+export const FILE_PATH_EMPTY = ''
+
 // This method will add and then remove a space on the last line to trick codelens to be updated
 export const refreshCodeLenses = (): void => {
     window.visibleTextEditors.forEach((editor) => {
