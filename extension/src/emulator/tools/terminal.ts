@@ -2,29 +2,27 @@ import { Terminal, window } from 'vscode'
 import { existsSync, mkdirSync, unlinkSync } from 'fs'
 import { join } from 'path'
 import { Settings } from '../../settings/settings'
-import { Config } from '../local/config'
+import * as Config from '../local/config'
 
 // Name of all Flow files stored on-disk.
 const FLOW_CONFIG_FILENAME = 'flow.json'
 const FLOW_DB_FILENAME = 'flowdb'
 
 export class TerminalController {
-
   storagePath: string | undefined
   flowCommand: string
-  #terminal: Terminal
+  #terminal: Terminal | null
 
-  constructor (ctx_storagePath: string | undefined, ctx_globalStoragePath: string) {
+  constructor (ctxStoragePath: string | undefined, ctxGlobalStoragePath: string) {
     this.flowCommand = Settings.getWorkspaceSettings().flowCommand
-    this.storagePath = this.getStoragePath(ctx_storagePath, ctx_globalStoragePath)
+    this.storagePath = this.getStoragePath(ctxStoragePath, ctxGlobalStoragePath)
     this.#terminal = this.#initTerminal()
   }
 
   // Returns a path to a directory that can be used for persistent storage.
   // Creates the directory if it doesn't already exist.
-  getStoragePath (ctx_storagePath: string | undefined, ctx_globalStoragePath: string) {
-    let path: string
-    path = (ctx_storagePath !== undefined ? ctx_storagePath : ctx_globalStoragePath)
+  getStoragePath (ctxStoragePath: string | undefined, ctxGlobalStoragePath: string): string | undefined {
+    const path: string = (ctxStoragePath !== undefined ? ctxStoragePath : ctxGlobalStoragePath)
     console.log('Storage path: ', path)
     if (!existsSync(path)) {
       try {
@@ -37,23 +35,26 @@ export class TerminalController {
     return path
   }
 
-  #initTerminal(): Terminal {
+  #initTerminal (): Terminal {
     this.newTerminal()
-    return this.#terminal
+    if (this.#terminal != null) {
+      return this.#terminal
+    }
+    throw (Error('Terminal could not be initialized'))
   }
-  
-  newTerminal() {
+
+  newTerminal (): void {
     if (this.storagePath === undefined) {
       throw new Error('Missing extension storage path')
     }
-    
-    if (this.#terminal) {
+
+    if (this.#terminal != null) {
       this.#terminal.dispose()
     }
-  
+
     // By default, reset all files on each load.
     this.resetStorage()
-  
+
     // Set new terminal
     this.#terminal = window.createTerminal({
       name: 'Flow Emulator',
@@ -81,16 +82,18 @@ export class TerminalController {
     }
   }
 
-  async startEmulator() {
+  async startEmulator (): Promise<void> {
+    if (this.#terminal == null) {
+      throw (Error('Terminal not initialized'))
+    }
     this.#terminal.sendText(
       [
-          this.flowCommand,
-          'emulator',
+        this.flowCommand,
+        'emulator',
           `--config-path="${await Config.getConfigPath()}"`,
           '--verbose'
       ].join(' ')
-      )
-      this.#terminal.show()
+    )
+    this.#terminal.show()
   }
-
 }

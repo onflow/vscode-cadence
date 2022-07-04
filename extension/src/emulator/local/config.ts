@@ -1,40 +1,90 @@
-/* TODO: Make local data deal with account data, and configs.ts just deal with the initial configs that
-         everything else needs like flowCommand, accessCheckMode, etc? */
-import { commands, window, workspace } from 'vscode'
-import { Account } from '../account'
+/* Handle flow.json config file */
+import { window, workspace } from 'vscode'
 import * as util from 'util'
 import * as cp from 'child_process'
 import { FILE_PATH_EMPTY } from '../../utils/utils'
 
 const exec = util.promisify(cp.exec)
 
-// The flow.json configuration file used by the extension.
+// Path to flow.json file
+let configPath: string | undefined
 
-// TODO: Where does HangleConfigChanges() go?
+// Call this function to get the path to flow.json
+export async function getConfigPath (): Promise<string> {
+  if (configPath === undefined) {
+    configPath = await retrieveConfigPath()
+  }
+  return configPath
+}
 
+async function retrieveConfigPath (): Promise<string> {
+  // Try to search for config file
+  let configPath = await readLocalConfig()
+  if (configPath === FILE_PATH_EMPTY) {
+    // Couldn't find config file, prompt user
+    if (!await promptInitializeConfig()) { throw Error('No valid config path') }
+    configPath = await readLocalConfig()
+  }
+  return configPath
+}
+
+// Prompt the user to create a new config file
+async function promptInitializeConfig (): Promise<boolean> {
+  let rootPath: string | undefined
+  if ((workspace.workspaceFolders != null) && (workspace.workspaceFolders.length > 0)) {
+    rootPath = workspace.workspaceFolders[0].uri.fsPath
+  } else {
+    rootPath = workspace.rootPath // ref: deprecated
+  }
+  if (rootPath === undefined) {
+    return false
+  }
+
+  const continueMessage = 'Continue'
+  const selection = await window.showInformationMessage('Missing Flow CLI configuration. Create a new one?', continueMessage)
+  if (selection !== continueMessage) {
+    return false
+  }
+
+  await exec('flow init', { cwd: rootPath })
+
+  return true
+}
+
+// Search for config file in workspace
+async function readLocalConfig (): Promise<string> {
+  const file = await workspace.findFiles('flow.json')
+  if (file.length !== 1) {
+    return FILE_PATH_EMPTY
+  }
+  return file[0].path
+}
+
+// TODO: HandleConfigChanges()?
+
+/*
 export class Config {
   // Full path to flow.json file
   static configPath: string
 
-  private constructor() {}
+  private constructor () {}
 
-  static async getConfigPath() {
+  static async getConfigPath (): Promise<string> {
     if (!Config.configPath) {
       Config.configPath = await Config.#retrieveConfigPath()
     }
     return Config.configPath
   }
 
-  static async #retrieveConfigPath() {
+  static async #retrieveConfigPath (): Promise<string> {
     // Configuration File
     let configPath = await Config.#readLocalConfig()
     if (configPath === FILE_PATH_EMPTY) {
-      if (!Config.#promptInitializeConfig()) { throw Error("No valid config path") }
+      if (!Config.#promptInitializeConfig()) { throw Error('No valid config path') }
       configPath = await Config.#readLocalConfig()
     }
     return configPath
   }
-
 
   static async #promptInitializeConfig (): Promise<boolean> {
     let rootPath: string | undefined
@@ -46,19 +96,19 @@ export class Config {
     if (rootPath === undefined) {
       return false
     }
-  
+
     const continueMessage = 'Continue'
     const selection = await window.showInformationMessage('Missing Flow CLI configuration. Create a new one?', continueMessage)
     if (selection !== continueMessage) {
       return false
     }
-  
+
     await exec('flow init', { cwd: rootPath })
 
     return true
   }
 
-  static async #readLocalConfig () : Promise<string> {
+  static async #readLocalConfig (): Promise<string> {
     const file = await workspace.findFiles('flow.json')
     if (file.length !== 1) {
       return FILE_PATH_EMPTY
@@ -97,3 +147,4 @@ export class Config {
     })
   }
 }
+*/

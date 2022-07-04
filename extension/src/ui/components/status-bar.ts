@@ -5,7 +5,7 @@ import {
   StatusBarAlignment
 } from 'vscode'
 import { Account } from '../../emulator/account'
-import { commandID } from '../../commands/command-constants'
+import * as commandID from '../../commands/command-constants'
 import { EmulatorState } from '../../emulator/emulator-controller'
 import { DEBUG_LOG } from '../../utils/debug'
 
@@ -15,19 +15,19 @@ export class StatusBarUI {
 
   constructor (initEmulatorState: EmulatorState, initActiveAccount: Account | null) {
     // Initialize emulator status item
-    DEBUG_LOG("init status item")
+    DEBUG_LOG('init status item')
     this.#emulatorStatusItem = this.#createEmulatorStatusBarItem()
     this.#updateEmulatorStatusBarItem(initEmulatorState)
 
     // Initialize active account item
-    DEBUG_LOG("init active account item")
+    DEBUG_LOG('init active account item')
     this.#accountActiveItem = this.#createActiveAccountStatusBarItem()
     this.#updateActiveAccountStatusBarItem(initActiveAccount)
-    DEBUG_LOG("Status bar initialized")
+    DEBUG_LOG('Status bar initialized')
   }
 
   // Updates the UI based on new emulator state
-  emulatorStateChanged (emulatorState: EmulatorState, activeAccount: Account | null) {
+  emulatorStateChanged (emulatorState: EmulatorState, activeAccount: Account | null): void {
     this.#updateEmulatorStatusBarItem(emulatorState)
     this.#updateActiveAccountStatusBarItem(activeAccount)
   }
@@ -51,7 +51,7 @@ export class StatusBarUI {
         this.#emulatorStatusItem.text = '$(debug-stop) Stop Flow Emulator'
         break
     }
-  
+
     this.#emulatorStatusItem.show()
   }
 
@@ -66,17 +66,17 @@ export class StatusBarUI {
       this.#accountActiveItem.hide()
       return
     }
-  
+
     this.#accountActiveItem.text = `$(key) Active account: ${activeAccount.fullName()}`
     this.#accountActiveItem.show()
   }
 
-  showStatusBar() {
+  showStatusBar (): void {
     this.#emulatorStatusItem.show()
     this.#accountActiveItem.show()
   }
 
-  hideStatusBar() {
+  hideStatusBar (): void {
     this.#emulatorStatusItem.hide()
     this.#accountActiveItem.hide()
   }

@@ -1,6 +1,6 @@
 /* Local data for accounts/ etc */
 
-import { Account } from "../account"
+import { Account } from '../account'
 
 export class AccountData {
   // Set of created accounts for which we can submit transactions.
@@ -15,10 +15,9 @@ export class AccountData {
     this.activeAccount = null
   }
 
-  getNumAccounts () {
+  getNumAccounts (): number {
     return this.accounts.length
   }
-
 
   addAccount (account: Account): void {
     const index = this.accounts.length

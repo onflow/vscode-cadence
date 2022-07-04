@@ -1,11 +1,10 @@
 import { LanguageClient, State, StateChangeEvent } from 'vscode-languageclient/node'
-import { ExtensionContext, window } from 'vscode'
+import { window } from 'vscode'
 import { EmulatorState } from '../emulator-controller'
 import { Account } from '../account'
 import { ext } from '../../main'
-import { Config } from '../local/config'
+import * as Config from '../local/config'
 import { Settings } from '../../settings/settings'
-import { DEBUG_LOG } from '../../utils/debug'
 
 // The args to pass to the Flow CLI to start the language server.
 const START_LANGUAGE_SERVER_ARGS = ['cadence', 'language-server']
@@ -30,11 +29,11 @@ export class LanguageServerAPI {
 
     // Init running state with false and update, when client is connected to server
     this.running = false
-    
-    this.startClient()
+
+    void this.startClient()
   }
 
-  async startClient() {
+  async startClient (): Promise<void> {
     const configPath = await Config.getConfigPath()
     const emulatorState = ext.getEmulatorState()
 
@@ -77,20 +76,21 @@ export class LanguageServerAPI {
       )
   }
 
-  reset () {
-    this.client.stop()
+  reset (): void {
+    void this.client.stop()
     // TODO: Implement this
   }
 
   // Restarts the language server, updating the client in the extension object.
-  async restartServer () {
+  async restartServer (): Promise<void> {
     // TODO: Make sure this is correct
     await this.client.stop()
-    const activeAccount = ext.getActiveAccount() 
-    this.client.start()
+    const activeAccount = ext.getActiveAccount()
+    void this.client.start()
 
-    // TODO: ?
-    this.switchActiveAccount(activeAccount)
+    if (activeAccount !== null) {
+      void this.switchActiveAccount(activeAccount)
+    }
     ext.emulatorStateChanged()
   }
 
