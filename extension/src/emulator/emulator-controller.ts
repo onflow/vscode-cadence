@@ -91,8 +91,8 @@ export class EmulatorController {
       ext.emulatorStateChanged()
       await this.api.client.stop()
 
-      // Initialize new language server
-      this.api.reset() // TODO: Implement this
+      // Reset the language server
+      this.api.reset()
     }
 
     /* Language Server Interface */

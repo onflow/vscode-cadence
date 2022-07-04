@@ -6,11 +6,10 @@ import { Account } from './emulator/account'
 import { UIController } from './ui/ui-controller'
 import { ExtensionContext } from 'vscode'
 import { DEBUG_LOG } from './utils/debug'
-import { ext } from './main'
 
 // The container for all data relevant to the extension.
 export class Extension {
-  // The extension
+  // The extension singleton
   static #instance: Extension
 
   static initialize (ctx: ExtensionContext): Extension {
@@ -26,8 +25,7 @@ export class Extension {
   private constructor (ctx: ExtensionContext) {
     this.ctx = ctx
 
-    // Initialize Language Server Client
-    // TODO: Language Server should be here instead? Seperate from the emulator.. but needs to communicate still
+    // Note: Language Server Client should be initialized here when we remove client-side emulator
 
     // Initialize Emulator
     this.emulatorCtrl = new EmulatorController(this.ctx.storagePath, this.ctx.globalStoragePath)
@@ -43,9 +41,7 @@ export class Extension {
   }
 
   getEmulatorState (): EmulatorState {
-    return ext.emulatorCtrl.getState()
-    // const ext = Extension.getInstance()
-    // return ext ? ext.emulatorCtrl.getState() : EmulatorState.Stopped
+    return this.emulatorCtrl.getState()
   }
 
   getActiveAccount (): Account | null {

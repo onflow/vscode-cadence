@@ -78,16 +78,18 @@ export class LanguageServerAPI {
 
   reset (): void {
     void this.client.stop()
-    // TODO: Implement this
+    this.running = false
+    void this.startClient()
   }
 
-  // Restarts the language server, updating the client in the extension object.
+  // Restarts the language server
   async restartServer (): Promise<void> {
-    // TODO: Make sure this is correct
-    await this.client.stop()
+    // Stop server
     const activeAccount = ext.getActiveAccount()
-    void this.client.start()
+    await this.client.stop()
 
+    // Reboot server
+    void this.client.start()
     if (activeAccount !== null) {
       void this.switchActiveAccount(activeAccount)
     }

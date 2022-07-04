@@ -121,18 +121,18 @@
         "extensions": [
           ".cdc"
         ],
-        "configuration": "./language-configuration.json"
+        "configuration": "./language/language-configuration.json"
       }
     ],
     "grammars": [
       {
         "language": "cadence",
         "scopeName": "source.cadence",
-        "path": "./syntaxes/cadence.tmGrammar.json"
+        "path": "./extension/language/syntaxes/cadence.tmGrammar.json"
       },
       {
         "scopeName": "markdown.cadence.codeblock",
-        "path": "./syntaxes/codeblock.json",
+        "path": "./extension/language/syntaxes/codeblock.json",
         "injectTo": [
           "text.html.markdown"
         ],

@@ -1,4 +1,4 @@
-import { Account } from '../../emulator/account'
+import { Account } from '../../src/emulator/account'
 import * as assert from 'assert'
 
 describe('AccountUnitTest', () => {
