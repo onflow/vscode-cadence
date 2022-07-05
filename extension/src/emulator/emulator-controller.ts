@@ -29,7 +29,7 @@ export class EmulatorController {
     // Initialize the language server api
     this.api = new LanguageServerAPI()
 
-    // Initialize AccountManager TODO: Needs to create local Account Data from settings
+    // Initialize AccountManager
     this.#accountManager = new AccountManager(this.api)
 
     // Initialize a terminal
