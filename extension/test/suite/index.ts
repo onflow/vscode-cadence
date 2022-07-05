@@ -7,20 +7,24 @@ export async function run (): Promise<void> {
   const mocha = new Mocha({
     ui: 'tdd'
   })
+  console.log("INDEX.TS RUN")
 
   const testsRoot = path.resolve(__dirname, '..')
 
   return await new Promise((resolve, reject) => {
+    console.log("GLOB INTEGRATION TEST...")
     glob('**/**.integration.test.js', { cwd: testsRoot }, (err, files) => {
       if (err != null) {
         return reject(err)
       }
 
       // Add files to the test suite
+      console.log("ADDING FILES TO TEST SUITE...")
       files.forEach(f => mocha.addFile(path.resolve(testsRoot, f)))
 
       try {
         // Run the mocha test
+        console.log("RUNNING MOCHA TEST...")
         mocha.run(failures => {
           if (failures > 0) {
             reject(new Error(`${failures} tests failed.`))

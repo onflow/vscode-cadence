@@ -8,6 +8,12 @@ export function openFile (cy: Cypress.cy, name: string): void {
   cy.wait(2000)
 }
 
+export function trustAuthors(cy: Cypress.cy): void {
+  cy.contains('Trust folder')
+    .click({ force: true })
+  cy.wait(5000)
+}
+
 export function startEmulator (cy: Cypress.cy): void {
   cy.contains('Start Flow Emulator')
     .click({ force: true })
@@ -28,6 +34,13 @@ export function initExtension (cy: Cypress.cy): void {
 
   cy.visit('http://localhost:8888')
   cy.get('.monaco-list-row', { timeout: 10000 }) // wait for ide to init
+  cy.get('. ')
+
+  /*
+  cy.wait(20000)
+  trustAuthors(cy)
+  cy.get('. ')
+  */
 
   openFile(cy, 'NonFungibleToken.cdc') // default file to trigger start extension
   cy.contains('Cadence language server started', { timeout: 30000 })

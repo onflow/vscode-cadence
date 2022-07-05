@@ -14,7 +14,7 @@ export class Settings {
   accessCheckMode!: string
 
   static getWorkspaceSettings (): Settings {
-    if (Settings.#instance == null) {
+    if (Settings.#instance === undefined) {
       try {
         Settings.#instance = new Settings()
       } catch (err) {

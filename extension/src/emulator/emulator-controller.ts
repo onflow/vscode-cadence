@@ -18,102 +18,102 @@ export enum EmulatorState {
 }
 
 export class EmulatorController {
-    #accountManager: AccountManager
-    #terminalCtrl: TerminalController
-    api: LanguageServerAPI
-    #state: EmulatorState
+  #accountManager: AccountManager
+  #terminalCtrl: TerminalController
+  api: LanguageServerAPI
+  #state: EmulatorState
 
-    constructor (storagePath: string | undefined, globalStoragePath: string) {
-      // Initialize state
-      this.#state = EmulatorState.Stopped
+  constructor (storagePath: string | undefined, globalStoragePath: string) {
+    // Initialize state
+    this.#state = EmulatorState.Stopped
 
-      // Initialize the language server api
-      this.api = new LanguageServerAPI()
-      DEBUG_LOG('Api Initialized')
+    // Initialize the language server api
+    this.api = new LanguageServerAPI()
+    DEBUG_LOG('Api Initialized')
 
-      // Initialize AccountManager TODO: Needs to create local Account Data from settings
-      this.#accountManager = new AccountManager(this.api)
-      DEBUG_LOG('Account Manager Initialized')
+    // Initialize AccountManager TODO: Needs to create local Account Data from settings
+    this.#accountManager = new AccountManager(this.api)
+    DEBUG_LOG('Account Manager Initialized')
 
-      // Initialize a terminal
-      this.#terminalCtrl = new TerminalController(storagePath, globalStoragePath)
-      DEBUG_LOG('Terminal Initialized')
-    }
+    // Initialize a terminal
+    this.#terminalCtrl = new TerminalController(storagePath, globalStoragePath)
+    DEBUG_LOG('Terminal Initialized')
+  }
 
-    #setState (state: EmulatorState): void {
-      this.#state = state
-      ext.emulatorStateChanged()
-    }
+  #setState (state: EmulatorState): void {
+    this.#state = state
+    ext.emulatorStateChanged()
+  }
 
-    getState (): EmulatorState {
-      return this.#state
-    }
+  getState (): EmulatorState {
+    return this.#state
+  }
 
-    async startEmulator (): Promise<void> {
-      // Start the emulator with the service key we gave to the language server.
-      this.#setState(EmulatorState.Starting)
-      ext.emulatorStateChanged()
+  async startEmulator (): Promise<void> {
+    // Start the emulator with the service key we gave to the language server.
+    this.#setState(EmulatorState.Starting)
+    ext.emulatorStateChanged()
 
-      // Start emulator in terminal window
-      void this.#terminalCtrl.startEmulator()
+    // Start emulator in terminal window
+    void this.#terminalCtrl.startEmulator()
 
-      try {
-        await this.api.initAccountManager() // Note: seperate from AccountManager class
+    try {
+      await this.api.initAccountManager() // Note: seperate from AccountManager class
 
-        const settings = Settings.getWorkspaceSettings()
+      const settings = Settings.getWorkspaceSettings()
 
-        const accounts = await this.api.createDefaultAccounts(settings.numAccounts)
+      const accounts = await this.api.createDefaultAccounts(settings.numAccounts)
 
-        // Add accounts to local data
-        for (const account of accounts) {
-          void this.#accountManager.addAccountLocal(account)
-        }
-
-        await this.#accountManager.setActiveAccount(0)
-
-        this.#setState(EmulatorState.Started)
-        ext.emulatorStateChanged()
-      } catch (err) {
-        console.log('Failed to start emulator')
-        this.#setState(EmulatorState.Stopped)
-        ext.emulatorStateChanged()
+      // Add accounts to local data
+      for (const account of accounts) {
+        void this.#accountManager.addAccountLocal(account)
       }
-    }
 
-    // Stops emulator, exits the terminal, and removes all config/db files.
-    async stopEmulator (): Promise<void> {
-      this.#terminalCtrl.newTerminal()
+      await this.#accountManager.setActiveAccount(0)
 
-      this.#setState(EmulatorState.Stopped)
-
-      // Clear accounts and restart language server to ensure account state is in sync.
-      this.#accountManager.resetAccounts()
+      this.#setState(EmulatorState.Started)
       ext.emulatorStateChanged()
-      await this.api.client.stop()
-
-      // Reset the language server
-      this.api.reset()
+    } catch (err) {
+      console.log('Failed to start emulator')
+      this.#setState(EmulatorState.Stopped)
+      ext.emulatorStateChanged()
     }
+  }
 
-    /* Language Server Interface */
-    restartServer (): void {
-      void this.api.restartServer()
-    }
+  // Stops emulator, exits the terminal, and removes all config/db files.
+  async stopEmulator (): Promise<void> {
+    this.#terminalCtrl.newTerminal()
 
-    /* Account Manager Interface */
-    createNewAccount (): void {
-      void this.#accountManager.createNewAccount()
-    }
+    this.#setState(EmulatorState.Stopped)
 
-    setActiveAccount (activeIndex: number): void {
-      void this.#accountManager.setActiveAccount(activeIndex)
-    }
+    // Clear accounts and restart language server to ensure account state is in sync.
+    this.#accountManager.resetAccounts()
+    ext.emulatorStateChanged()
+    await this.api.client.stop()
 
-    switchActiveAccount (): void {
-      this.#accountManager.switchActiveAccount()
-    }
+    // Reset the language server
+    this.api.reset()
+  }
 
-    getActiveAccount (): Account | null {
-      return this.#accountManager.getActiveAccount()
-    }
+  /* Language Server Interface */
+  restartServer (): void {
+    void this.api.restartServer()
+  }
+
+  /* Account Manager Interface */
+  createNewAccount (): void {
+    void this.#accountManager.createNewAccount()
+  }
+
+  setActiveAccount (activeIndex: number): void {
+    void this.#accountManager.setActiveAccount(activeIndex)
+  }
+
+  switchActiveAccount (): void {
+    this.#accountManager.switchActiveAccount()
+  }
+
+  getActiveAccount (): Account | null {
+    return this.#accountManager.getActiveAccount()
+  }
 }
