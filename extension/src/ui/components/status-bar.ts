@@ -7,7 +7,6 @@ import {
 import { Account } from '../../emulator/account'
 import * as commandID from '../../commands/command-constants'
 import { EmulatorState } from '../../emulator/emulator-controller'
-import { DEBUG_LOG } from '../../utils/debug'
 
 export class StatusBarUI {
   #emulatorStatusItem: StatusBarItem
@@ -15,15 +14,12 @@ export class StatusBarUI {
 
   constructor (initEmulatorState: EmulatorState, initActiveAccount: Account | null) {
     // Initialize emulator status item
-    DEBUG_LOG('init status item')
     this.#emulatorStatusItem = this.#createEmulatorStatusBarItem()
     this.#updateEmulatorStatusBarItem(initEmulatorState)
 
     // Initialize active account item
-    DEBUG_LOG('init active account item')
     this.#accountActiveItem = this.#createActiveAccountStatusBarItem()
     this.#updateActiveAccountStatusBarItem(initActiveAccount)
-    DEBUG_LOG('Status bar initialized')
   }
 
   // Updates the UI based on new emulator state

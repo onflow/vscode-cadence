@@ -7,7 +7,6 @@ import { ext } from '../main'
 import { TerminalController } from './tools/terminal'
 import { AccountManager } from './tools/account-manager'
 import { LanguageServerAPI } from './server/language-server'
-import { DEBUG_LOG } from '../utils/debug'
 import { Settings } from '../settings/settings'
 import { Account } from './account'
 
@@ -29,15 +28,12 @@ export class EmulatorController {
 
     // Initialize the language server api
     this.api = new LanguageServerAPI()
-    DEBUG_LOG('Api Initialized')
 
     // Initialize AccountManager TODO: Needs to create local Account Data from settings
     this.#accountManager = new AccountManager(this.api)
-    DEBUG_LOG('Account Manager Initialized')
 
     // Initialize a terminal
     this.#terminalCtrl = new TerminalController(storagePath, globalStoragePath)
-    DEBUG_LOG('Terminal Initialized')
   }
 
   #setState (state: EmulatorState): void {

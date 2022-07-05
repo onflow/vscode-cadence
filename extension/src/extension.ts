@@ -5,7 +5,6 @@ import { refreshCodeLenses } from './utils/utils'
 import { Account } from './emulator/account'
 import { UIController } from './ui/ui-controller'
 import { ExtensionContext } from 'vscode'
-import { DEBUG_LOG } from './utils/debug'
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -29,15 +28,12 @@ export class Extension {
 
     // Initialize Emulator
     this.emulatorCtrl = new EmulatorController(this.ctx.storagePath, this.ctx.globalStoragePath)
-    DEBUG_LOG('EmulatorCtrl Initialized')
 
     // Initialize UI
     this.UICtrl = new UIController()
-    DEBUG_LOG('UIController Initialized')
 
     // Initialize ExtensionCommands
     this.commands = new CommandController()
-    DEBUG_LOG('Commands Initialized')
   }
 
   getEmulatorState (): EmulatorState {

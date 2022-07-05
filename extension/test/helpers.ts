@@ -8,7 +8,7 @@ export function openFile (cy: Cypress.cy, name: string): void {
   cy.wait(2000)
 }
 
-export function trustAuthors(cy: Cypress.cy): void {
+export function trustAuthors (cy: Cypress.cy): void {
   cy.contains('Trust folder')
     .click({ force: true })
   cy.wait(5000)
