@@ -20,6 +20,7 @@
 		"install-extension": "code --install-extension cadence-*.vsix",
 		"package-test": "./node_modules/.bin/vsce package --out ./extension/test/fixtures/workspace/cadence.vsix",
 		"lint": "ts-standard",
+		"lint-fix": "ts-standard --fix",
 		"vscode-start": "docker-compose up -d && docker exec vscode code-server --install-extension /source/cadence.vsix",
 		"vscode-stop": "docker-compose down",
 		"cypress": "./node_modules/.bin/cypress run",

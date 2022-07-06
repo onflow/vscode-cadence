@@ -1,4 +1,3 @@
-
 // Helper to open a file in editor with cypress
 export function openFile (cy: Cypress.cy, name: string): void {
   cy.get('.monaco-list-row')
@@ -33,17 +32,15 @@ export function initExtension (cy: Cypress.cy): void {
   })
 
   cy.visit('http://localhost:8888')
-  cy.get('.monaco-list-row', { timeout: 10000 }) // wait for ide to init
-  cy.get('. ')
 
-  /*
-  cy.wait(20000)
   trustAuthors(cy)
-  cy.get('. ')
-  */
+  cy.wait(5000)
+
+  // cy.get('.monaco-list-row', { timeout: 10000 }) // wait for ide to init
+  // cy.get('. ')
 
   openFile(cy, 'NonFungibleToken.cdc') // default file to trigger start extension
-  cy.contains('Cadence language server started', { timeout: 30000 })
+  cy.contains('Cadence language server started', { timeout: 50000 })
   startEmulator(cy)
 }
 

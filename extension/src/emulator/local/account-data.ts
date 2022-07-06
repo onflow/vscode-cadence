@@ -26,21 +26,23 @@ export class AccountData {
   }
 
   setActiveAccount (index: number): void {
+    if (index < 0 || index >= this.accounts.length) {
+      return
+    }
     this.activeAccount = index
   }
 
   getActiveAccount (): Account | null {
-    if (this.activeAccount == null) {
+    if (this.activeAccount === null) {
       return null
     }
-    return this.accounts[this.activeAccount]
+    return this.getAccount(this.activeAccount)
   }
 
   getAccount (index: number): Account | null {
     if (index < 0 || index >= this.accounts.length) {
       return null
     }
-
     return this.accounts[index]
   }
 
@@ -53,6 +55,6 @@ export class AccountData {
   // Resets account state
   resetAccounts (): void {
     this.accounts = []
-    this.activeAccount = -1
+    this.activeAccount = null
   }
 }

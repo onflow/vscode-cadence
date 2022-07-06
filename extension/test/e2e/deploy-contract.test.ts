@@ -1,4 +1,4 @@
-import { Accounts, initExtension, openFile, stopEmulator, switchAccount } from '../helpers'
+import { Accounts, initExtension, openFile, stopEmulator, switchAccount } from '../cypress-helpers'
 
 describe('User Story test: Deploy Contract', () => {
   beforeEach(() => {

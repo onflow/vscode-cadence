@@ -1,22 +1,22 @@
 import { Account } from '../../src/emulator/account'
-import * as assert from 'assert'
+import { ASSERT_EQUAL } from './test-utils'
 
-describe('AccountUnitTest', () => {
-  it('creates an account', () => {
+describe('Account Unit Test', () => {
+  it('Tests creation new accounts', () => {
     const a1 = new Account('Foo', '0x1')
     a1.setIndex(2)
 
-    assert.strictEqual(a1.address, '0x1')
-    assert.strictEqual(a1.name, 'Foo')
-    assert.strictEqual(a1.getName(), a1.name)
-    assert.strictEqual(a1.fullName(), `${a1.name} (${a1.address})`)
-    assert.strictEqual(a1.index, 2)
+    ASSERT_EQUAL(a1.address, '0x1')
+    ASSERT_EQUAL(a1.name, 'Foo')
+    ASSERT_EQUAL(a1.getName(), a1.name)
+    ASSERT_EQUAL(a1.fullName(), `${a1.name} (${a1.address})`)
+    ASSERT_EQUAL(a1.index, 2)
 
-    assert.strictEqual(a1.getAddress(), '0x1')
-    assert.strictEqual(a1.getAddress(false), '1')
+    ASSERT_EQUAL(a1.getAddress(), '0x1')
+    ASSERT_EQUAL(a1.getAddress(false), '1')
 
     a1.address = '1'
-    assert.strictEqual(a1.getAddress(), '0x1')
-    assert.strictEqual(a1.getAddress(false), '1')
+    ASSERT_EQUAL(a1.getAddress(), '0x1')
+    ASSERT_EQUAL(a1.getAddress(false), '1')
   })
 })
