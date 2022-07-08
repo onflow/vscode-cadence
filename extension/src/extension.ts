@@ -5,6 +5,7 @@ import { refreshCodeLenses } from './utils/utils'
 import { Account } from './emulator/account'
 import { UIController } from './ui/ui-controller'
 import { ExtensionContext } from 'vscode'
+import { Telemetry } from './telemetry'
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -41,16 +42,25 @@ export class Extension {
   }
 
   getActiveAccount (): Account | null {
-    return this.emulatorCtrl.getActiveAccount()
+    try {
+      return this.emulatorCtrl.getActiveAccount()
+    } catch (e) {
+      Telemetry.captureException(e)
+      return null
+    }
   }
 
   emulatorStateChanged (): void {
-    // Update language server API with emulator state
-    this.emulatorCtrl.api.changeEmulatorState(this.getEmulatorState())
-      .then(() => {}, () => {})
-    refreshCodeLenses()
+    try {
+      // Update language server API with emulator state
+      this.emulatorCtrl.api.changeEmulatorState(this.getEmulatorState())
+        .then(() => {}, () => {})
+      refreshCodeLenses()
 
-    // Update UI
-    this.UICtrl.emulatorStateChanged()
+      // Update UI
+      this.UICtrl.emulatorStateChanged()
+    } catch (e) {
+      Telemetry.captureException(e)
+    }
   }
 }

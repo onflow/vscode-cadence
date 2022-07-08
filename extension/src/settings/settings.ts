@@ -5,6 +5,7 @@ export class Settings {
   static CONFIG_FLOW_COMMAND = 'flowCommand'
   static CONFIG_NUM_ACCOUNTS = 'numAccounts'
   static CONFIG_ACCESS_CHECK_MODE = 'accessCheckMode'
+  static ACTIVATE_TELEMETRY = 'activateTelemetry'
 
   // Workspace settings singleton
   static #instance: Settings | undefined
@@ -12,6 +13,7 @@ export class Settings {
   flowCommand!: string // The name of the Flow CLI executable.
   numAccounts!: number
   accessCheckMode!: string
+  activateTelemetry!: boolean
 
   static getWorkspaceSettings (): Settings {
     if (Settings.#instance === undefined) {
@@ -53,5 +55,13 @@ export class Settings {
       accessCheckMode = 'strict'
     }
     this.accessCheckMode = accessCheckMode
+
+    let activateTelemetry: boolean | undefined = cadenceConfig.get(
+      Settings.ACTIVATE_TELEMETRY
+    )
+    if (activateTelemetry === undefined) {
+      activateTelemetry = true
+    }
+    this.activateTelemetry = activateTelemetry
   }
 }

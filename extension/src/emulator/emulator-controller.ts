@@ -9,6 +9,8 @@ import { AccountManager } from './tools/account-manager'
 import { LanguageServerAPI } from './server/language-server'
 import { Settings } from '../settings/settings'
 import { Account } from './account'
+import { window } from 'vscode'
+import { Telemetry } from '../telemetry'
 
 export enum EmulatorState {
   Stopped = 0,
@@ -70,7 +72,8 @@ export class EmulatorController {
       this.#setState(EmulatorState.Started)
       ext.emulatorStateChanged()
     } catch (err) {
-      console.log('Failed to start emulator')
+      Telemetry.captureException(err)
+      void window.showErrorMessage('Flow emulator failed to start')
       this.#setState(EmulatorState.Stopped)
       ext.emulatorStateChanged()
     }
@@ -78,17 +81,21 @@ export class EmulatorController {
 
   // Stops emulator, exits the terminal, and removes all config/db files.
   async stopEmulator (): Promise<void> {
-    this.#terminalCtrl.newTerminal()
+    try {
+      this.#terminalCtrl.newTerminal()
 
-    this.#setState(EmulatorState.Stopped)
+      this.#setState(EmulatorState.Stopped)
 
-    // Clear accounts and restart language server to ensure account state is in sync.
-    this.#accountManager.resetAccounts()
-    ext.emulatorStateChanged()
-    await this.api.client.stop()
+      // Clear accounts and restart language server to ensure account state is in sync.
+      this.#accountManager.resetAccounts()
+      ext.emulatorStateChanged()
+      await this.api.client.stop()
 
-    // Reset the language server
-    this.api.reset()
+      // Reset the language server
+      this.api.reset()
+    } catch (err) {
+      Telemetry.captureException(err)
+    }
   }
 
   /* Language Server Interface */

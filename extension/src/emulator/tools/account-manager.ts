@@ -13,6 +13,7 @@ import {
   INACTIVE_PREFIX,
   ADD_NEW_PREFIX
 } from '../../utils/strings'
+import { Telemetry } from '../../telemetry'
 
 export class AccountManager {
   api: LanguageServerAPI
@@ -35,7 +36,8 @@ export class AccountManager {
       await this.setActiveAccount(lastIndex)
 
       ext.emulatorStateChanged()
-    } catch (err) { // ref: is error handling necessary here?
+    } catch (err) {
+      Telemetry.captureException(err)
       window.showErrorMessage(`Failed to create account: ${err.message as string}`)
         .then(() => {}, () => {})
     }
@@ -53,6 +55,7 @@ export class AccountManager {
     const activeAccount = this.accountData.getAccount(activeIndex)
 
     if (activeAccount == null) {
+      Telemetry.captureException(new Error('Failed to switch account: account does not exist.'))
       window.showErrorMessage('Failed to switch account: account does not exist.')
         .then(() => {}, () => {})
       return
@@ -74,6 +77,7 @@ export class AccountManager {
 
       ext.emulatorStateChanged()
     } catch (err) {
+      Telemetry.captureException(err)
       window.showErrorMessage(`Failed to switch account: ${err.message as string}`)
         .then(() => {}, () => {})
     }
@@ -82,40 +86,44 @@ export class AccountManager {
   // Switches the active account to the option selected by the user. The selection
   // is propagated to the Language Server.
   switchActiveAccount (): void {
-    // Create the options (mark the active account with an 'active' prefix)
-    const accountOptions = Object.values(this.accountData.accounts)
-    // Mark the active account with a `*` in the dialog
-      .map((account) => {
-        const prefix: string =
-            account.index === this.accountData.activeAccount ? ACTIVE_PREFIX : INACTIVE_PREFIX
-        const label = `${prefix} ${account.fullName()}`
+    try {
+      // Create the options (mark the active account with an 'active' prefix)
+      const accountOptions = Object.values(this.accountData.accounts)
+      // Mark the active account with a `*` in the dialog
+        .map((account) => {
+          const prefix: string =
+              account.index === this.accountData.activeAccount ? ACTIVE_PREFIX : INACTIVE_PREFIX
+          const label = `${prefix} ${account.fullName()}`
 
-        return {
-          label: label,
-          target: account.index
-        }
+          return {
+            label: label,
+            target: account.index
+          }
+        })
+
+      accountOptions.push({
+        label: `${ADD_NEW_PREFIX} ${CREATE_NEW_ACCOUNT}`,
+        target: accountOptions.length
       })
 
-    accountOptions.push({
-      label: `${ADD_NEW_PREFIX} ${CREATE_NEW_ACCOUNT}`,
-      target: accountOptions.length
-    })
+      window.showQuickPick(accountOptions).then(async (selected) => {
+        // `selected` is undefined if the QuickPick is dismissed, and the
+        // string value of the selected option otherwise.
+        if (selected === undefined) {
+          return
+        }
 
-    window.showQuickPick(accountOptions).then(async (selected) => {
-      // `selected` is undefined if the QuickPick is dismissed, and the
-      // string value of the selected option otherwise.
-      if (selected === undefined) {
-        return
-      }
+        if (selected.target === accountOptions.length - 1) {
+          await this.createNewAccount()
+          return
+        }
 
-      if (selected.target === accountOptions.length - 1) {
-        await this.createNewAccount()
-        return
-      }
-
-      await this.setActiveAccount(selected.target)
-      ext.emulatorStateChanged()
-    }, () => {})
+        await this.setActiveAccount(selected.target)
+        ext.emulatorStateChanged()
+      }, () => {})
+    } catch (err) {
+      Telemetry.captureException(err)
+    }
   }
 
   resetAccounts (): void {
