@@ -30,9 +30,8 @@ export class AccountManager {
   async createNewAccount (): Promise<void> {
     try {
       const account = await this.api.createAccount()
-      this.accountData.addAccount(account)
-      const lastIndex = this.accountData.accounts.length - 1
-      await this.setActiveAccount(lastIndex)
+      const index = this.accountData.addAccount(account)
+      await this.setActiveAccount(index)
 
       ext.emulatorStateChanged()
     } catch (err) { // ref: is error handling necessary here?
@@ -87,7 +86,7 @@ export class AccountManager {
     // Mark the active account with a `*` in the dialog
       .map((account) => {
         const prefix: string =
-            account.index === this.accountData.activeAccount ? ACTIVE_PREFIX : INACTIVE_PREFIX
+            account.index === this.accountData.activeAccountIndex ? ACTIVE_PREFIX : INACTIVE_PREFIX
         const label = `${prefix} ${account.fullName()}`
 
         return {

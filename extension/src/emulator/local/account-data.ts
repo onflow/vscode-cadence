@@ -8,35 +8,36 @@ export class AccountData {
   accounts: Account[]
 
   // Index of the currently active account.
-  activeAccount: number | null
+  activeAccountIndex: number | null
 
   constructor () {
     this.accounts = []
-    this.activeAccount = null
+    this.activeAccountIndex = null
   }
 
   getNumAccounts (): number {
     return this.accounts.length
   }
 
-  addAccount (account: Account): void {
+  addAccount (account: Account): number {
     const index = this.accounts.length
     account.setIndex(index)
     this.accounts.push(account)
+    return index
   }
 
   setActiveAccount (index: number): void {
     if (index < 0 || index >= this.accounts.length) {
       return
     }
-    this.activeAccount = index
+    this.activeAccountIndex = index
   }
 
   getActiveAccount (): Account | null {
-    if (this.activeAccount === null) {
+    if (this.activeAccountIndex === null) {
       return null
     }
-    return this.getAccount(this.activeAccount)
+    return this.getAccount(this.activeAccountIndex)
   }
 
   getAccount (index: number): Account | null {
@@ -47,14 +48,14 @@ export class AccountData {
   }
 
   accountExists (name: string): boolean {
-    return this.accounts.filter(acc => {
+    return this.accounts.findIndex(acc => {
       return acc.name === name
-    }).length > 0
+    }) !== -1
   }
 
   // Resets account state
   resetAccounts (): void {
     this.accounts = []
-    this.activeAccount = null
+    this.activeAccountIndex = null
   }
 }

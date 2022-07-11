@@ -36,14 +36,14 @@ export class TerminalController {
   }
 
   #initTerminal (): Terminal {
-    this.newTerminal()
+    this.resetTerminal()
     if (this.#terminal != null) {
       return this.#terminal
     }
     throw (Error('Terminal could not be initialized'))
   }
 
-  newTerminal (): void {
+  resetTerminal (): void {
     if (this.storagePath === undefined) {
       throw new Error('Missing extension storage path')
     }
