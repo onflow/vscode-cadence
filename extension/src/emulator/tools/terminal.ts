@@ -97,7 +97,9 @@ export class TerminalController {
       )
       this.#terminal.show()
     } catch (err) {
-      void window.showErrorMessage('Terminal emulator failed to start')
+      if (err instanceof Error) {
+        void window.showErrorMessage(`Terminal emulator failed to start ${err.message}`)
+      }
       throw err
     }
   }
