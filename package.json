@@ -35,11 +35,14 @@
 	"icon": "images/icon.png",
 	"activationEvents": [
 		"onLanguage:cadence",
+		"workspaceContains:**/*.cdc",
 		"onCommand:cadence.restartServer",
 		"onCommand:cadence.runEmulator",
 		"onCommand:cadence.stopEmulator",
 		"onCommand:cadence.createAccount",
-		"onCommand:cadence.switchActiveAccount"
+    "onCommand:cadence.switchActiveAccount",
+    "onDebug",
+    "onDebugResolve:flow-emulator"
 	],
 	"main": "./out/main.js",
 	"contributes": {
@@ -141,6 +144,68 @@
 					"meta.embedded.block.cadence": "cadence"
 				}
 			}
+		],
+		"breakpoints": [
+      {
+        "language": "cadence"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "flow-emulator",
+        "label": "Flow Emulator",
+        "languages": ["cadence"],
+        "configurationAttributes": {
+          "launch": {
+            "required": ["program"],
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "script/transaction to debug."
+              },
+              "trace": {
+                "type": "string",
+                "enum": [
+                  "verbose",
+                  "trace",
+                  "log",
+                  "info",
+                  "warn",
+                  "error"
+                ],
+                "default": "error"
+              },
+              "port": {
+                "type": "number",
+                "description": "Debug port of the Flow Emulator.",
+                "default": 2345
+              },
+              "host": {
+                "type": "string",
+                "description": "Host of the Flow Emulator.",
+                "default": "127.0.0.1"
+              },
+              "stopOnEntry": {
+                "type": "boolean",
+                "description": "Automatically stop script/transaction after start.",
+                "default": false
+              }
+            }
+          }
+        },
+        "configurationSnippets": [
+          {
+            "label": "Flow Emulator: Run Script/Transaction Configuration",
+            "body": {
+              "type": "flow-emulator",
+              "request": "launch",
+              "name": "${2:Run script/transaction}",
+              "port": 2345,
+              "host": "127.0.0.1"
+            }
+          }
+        ]
+      }
 		]
 	},
 	"devDependencies": {

@@ -5,6 +5,7 @@ import { refreshCodeLenses } from './utils/utils'
 import { Account } from './emulator/account'
 import { UIController } from './ui/ui-controller'
 import { ExtensionContext } from 'vscode'
+import { CadenceDebugger } from './utils/debugger'
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -17,6 +18,7 @@ export class Extension {
   }
 
   ctx: ExtensionContext
+  debugger: CadenceDebugger
   uiCtrl: UIController
   commands: CommandController
   emulatorCtrl: EmulatorController
@@ -25,6 +27,9 @@ export class Extension {
     this.ctx = ctx
 
     // Note: Language Server Client should be initialized here when we remove client-side emulator
+
+    // Initialize Cadence Debugger
+    this.debugger = new CadenceDebugger(this.ctx)
 
     // Initialize Emulator
     this.emulatorCtrl = new EmulatorController(this.ctx.storagePath, this.ctx.globalStoragePath)
