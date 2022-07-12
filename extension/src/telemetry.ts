@@ -20,7 +20,7 @@ export class Telemetry {
     if (!Telemetry.#activated) return
     Sentry.init({
       // vscode-cadence
-      dsn: "https://4d98c4d4ac7e4892850f8e3d2e61c733@o114654.ingest.sentry.io/6568410",
+      dsn: 'https://4d98c4d4ac7e4892850f8e3d2e61c733@o114654.ingest.sentry.io/6568410',
       tracesSampleRate: 1.0,
       attachStacktrace: true
     })
