@@ -18,7 +18,7 @@ export class Extension {
   }
 
   ctx: ExtensionContext
-  UICtrl: UIController
+  uiCtrl: UIController
   commands: CommandController
   emulatorCtrl: EmulatorController
 
@@ -31,7 +31,7 @@ export class Extension {
     this.emulatorCtrl = new EmulatorController(this.ctx.storagePath, this.ctx.globalStoragePath)
 
     // Initialize UI
-    this.UICtrl = new UIController()
+    this.uiCtrl = new UIController()
 
     // Initialize ExtensionCommands
     this.commands = new CommandController()
@@ -58,7 +58,7 @@ export class Extension {
       refreshCodeLenses()
 
       // Update UI
-      this.UICtrl.emulatorStateChanged()
+      this.uiCtrl.emulatorStateChanged()
     } catch (e) {
       Telemetry.captureException(e)
     }

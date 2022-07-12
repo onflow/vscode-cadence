@@ -1,5 +1,5 @@
 /*
-EmulatorController is used to execute commands on the emulation
+EmulatorController is used to execute commands on the Flow emulator
 Contains an account manager to manage active accounts
 Communicates with local configs and language-server data
 */
@@ -82,7 +82,7 @@ export class EmulatorController {
   // Stops emulator, exits the terminal, and removes all config/db files.
   async stopEmulator (): Promise<void> {
     try {
-      this.#terminalCtrl.newTerminal()
+      this.#terminalCtrl.resetTerminal()
 
       this.#setState(EmulatorState.Stopped)
 

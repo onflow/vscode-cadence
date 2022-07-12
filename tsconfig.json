@@ -7,7 +7,6 @@
 			"es6", "dom"
 		],
 		"sourceMap": true,
-		//"rootDir": "extension/src",
 		"strict": true,
 		"noImplicitReturns": true,
 		"types": ["cypress"]

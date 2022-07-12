@@ -76,6 +76,8 @@ Install the packaged extension.
 code --install-extension cadence-*.vsix
 ```
 
+You can also run compile-install.sh instead.
+
 Restart VS Code and the extension should be installed!
 
 ## FAQ
