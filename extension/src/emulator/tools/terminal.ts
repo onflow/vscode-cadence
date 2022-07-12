@@ -83,17 +83,21 @@ export class TerminalController {
   }
 
   async startEmulator (): Promise<void> {
-    if (this.#terminal == null) {
-      throw (Error('Terminal not initialized'))
+    try {
+      if (this.#terminal == null) {
+        throw (Error('Terminal not initialized'))
+      }
+      this.#terminal.sendText(
+        [
+          this.flowCommand,
+          'emulator',
+            `--config-path="${await Config.getConfigPath()}"`,
+            '--verbose'
+        ].join(' ')
+      )
+      this.#terminal.show()
+    } catch(err) {
+      window.showErrorMessage(`Terminal emulator failed to start: ${err.message}`)
     }
-    this.#terminal.sendText(
-      [
-        this.flowCommand,
-        'emulator',
-          `--config-path="${await Config.getConfigPath()}"`,
-          '--verbose'
-      ].join(' ')
-    )
-    this.#terminal.show()
   }
 }

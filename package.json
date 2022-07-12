@@ -113,6 +113,18 @@
 					],
 					"default": "off",
 					"description": "Traces the communication between VS Code and the Cadence language server."
+				},
+				"cadence.customConfigPath": {
+					"type": "string",
+					"default": "",
+					"description": "Custom flow.json path.",
+					"scope": "resource"
+				},
+				"cadence.enableCustomConfigPath": {
+					"type": "boolean",
+					"default": false,
+					"description": "Enable custom flow.json path.",
+					"scope": "resource"
 				}
 			}
 		},
