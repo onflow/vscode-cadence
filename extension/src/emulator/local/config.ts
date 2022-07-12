@@ -3,6 +3,7 @@ import { window, workspace, commands } from 'vscode'
 import * as util from 'util'
 import * as cp from 'child_process'
 import { FILE_PATH_EMPTY } from '../../utils/utils'
+import { Settings } from '../../settings/settings'
 
 const exec = util.promisify(cp.exec)
 
@@ -54,6 +55,13 @@ async function promptInitializeConfig (): Promise<boolean> {
 
 // Search for config file in workspace
 async function readLocalConfig (): Promise<string> {
+  // Check for custom flow.json path
+  const settings = Settings.getWorkspaceSettings()
+  if (settings.enableCustomConfigPath) {
+    return settings.customConfigPath
+  }
+
+  // Default search for flow.json in workspace
   const file = await workspace.findFiles('flow.json')
   if (file.length !== 1) {
     return FILE_PATH_EMPTY
