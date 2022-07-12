@@ -48,14 +48,14 @@ export class EmulatorController {
   }
 
   async startEmulator (): Promise<void> {
-    // Start the emulator with the service key we gave to the language server.
-    this.#setState(EmulatorState.Starting)
-    ext.emulatorStateChanged()
-
-    // Start emulator in terminal window
-    void this.#terminalCtrl.startEmulator()
-
     try {
+      // Start the emulator with the service key we gave to the language server.
+      this.#setState(EmulatorState.Starting)
+      ext.emulatorStateChanged()
+
+      // Start emulator in terminal window
+      void this.#terminalCtrl.startEmulator()
+
       await this.api.initAccountManager() // Note: seperate from AccountManager class
 
       const settings = Settings.getWorkspaceSettings()
