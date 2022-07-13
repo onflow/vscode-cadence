@@ -60,7 +60,7 @@ export class Settings {
       Settings.ACTIVATE_TELEMETRY
     )
     if (activateTelemetry === undefined) {
-      activateTelemetry = true
+      activateTelemetry = false
     }
     this.activateTelemetry = activateTelemetry
   }
