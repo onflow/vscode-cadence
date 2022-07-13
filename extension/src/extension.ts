@@ -28,14 +28,12 @@ export class Extension {
 
     // Initialize Emulator
     this.emulatorCtrl = new EmulatorController(this.ctx.storagePath, this.ctx.globalStoragePath)
-    console.log('initialized emulator controller')
 
     // Initialize UI
     this.uiCtrl = new UIController()
 
     // Initialize ExtensionCommands
     this.commands = new CommandController()
-    console.log('initialized commands')
   }
 
   getEmulatorState (): EmulatorState {
