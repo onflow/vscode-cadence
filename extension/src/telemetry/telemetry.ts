@@ -7,10 +7,10 @@ import { env } from 'vscode'
 export function initialize (): void {
   // Check if user is allowing telemetry for our extension and vscode globally
   const settings = Settings.getWorkspaceSettings()
-  const activated: boolean = settings.activateTelemetry && env.isTelemetryEnabled
+  const activate: boolean = settings.activateTelemetry && env.isTelemetryEnabled
 
   // Initialize Sentry
-  sentry.sentryInit(activated)
+  sentry.sentryInit(activate)
 }
 
 // Called in main to deactivate telemetry
