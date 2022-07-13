@@ -5,7 +5,6 @@ import { refreshCodeLenses } from './utils/utils'
 import { Account } from './emulator/account'
 import { UIController } from './ui/ui-controller'
 import { ExtensionContext } from 'vscode'
-import { Telemetry } from './telemetry'
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -29,12 +28,14 @@ export class Extension {
 
     // Initialize Emulator
     this.emulatorCtrl = new EmulatorController(this.ctx.storagePath, this.ctx.globalStoragePath)
+    console.log('initialized emulator controller')
 
     // Initialize UI
     this.uiCtrl = new UIController()
 
     // Initialize ExtensionCommands
     this.commands = new CommandController()
+    console.log('initialized commands')
   }
 
   getEmulatorState (): EmulatorState {
@@ -42,25 +43,16 @@ export class Extension {
   }
 
   getActiveAccount (): Account | null {
-    try {
-      return this.emulatorCtrl.getActiveAccount()
-    } catch (e) {
-      Telemetry.captureException(e)
-      return null
-    }
+    return this.emulatorCtrl.getActiveAccount()
   }
 
   emulatorStateChanged (): void {
-    try {
-      // Update language server API with emulator state
-      this.emulatorCtrl.api.changeEmulatorState(this.getEmulatorState())
-        .then(() => {}, () => {})
-      refreshCodeLenses()
+    // Update language server API with emulator state
+    this.emulatorCtrl.api.changeEmulatorState(this.getEmulatorState())
+      .then(() => {}, () => {})
+    refreshCodeLenses()
 
-      // Update UI
-      this.uiCtrl.emulatorStateChanged()
-    } catch (e) {
-      Telemetry.captureException(e)
-    }
+    // Update UI
+    this.uiCtrl.emulatorStateChanged()
   }
 }

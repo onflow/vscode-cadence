@@ -4,32 +4,21 @@ import { commands } from 'vscode'
 import { ext } from '../main'
 import * as commandID from './command-constants'
 import { Disposable } from 'vscode-languageclient'
-import { Telemetry } from '../telemetry'
+import * as Telemetry from '../telemetry/telemetry'
 
 export class CommandController {
   cmds: Disposable[] // Hold onto commands
 
   constructor () {
     this.cmds = []
-    this.#registerCommands()
+    Telemetry.withTelemetry(this.#registerCommands.bind(this))
   }
 
   // Registers a command with VS Code so it can be invoked by the user.
   #registerCommand (command: string, callback: (...args: any[]) => any): void {
-    try {
-      // DEBUG_LOG('Start Registering command ' + command)
-
-      const cmd: Disposable = commands.registerCommand(command, callback)
-
-      // ext.ctx.subscriptions.push(commands.registerCommand(command, callback))
-
-      this.cmds.push(cmd)
-
-      // ext.ctx.subscriptions.push(cmd)
-      // DEBUG_LOG('Registered command ' + command)
-    } catch (err) {
-      Telemetry.captureException(err)
-    }
+    const commandCallback = (): void => { Telemetry.withTelemetry(callback.bind(this)) }
+    const cmd: Disposable = commands.registerCommand(command, commandCallback)
+    this.cmds.push(cmd)
   }
 
   // Registers all commands that are handled by the extension (as opposed to
@@ -43,47 +32,22 @@ export class CommandController {
   }
 
   #restartServer (): void {
-    try {
-      ext.emulatorCtrl.restartServer()
-    } catch (err) {
-      Telemetry.captureException(err)
-      throw err
-    }
+    ext.emulatorCtrl.restartServer()
   }
 
   #startEmulator (): void {
-    try {
-      void ext.emulatorCtrl.startEmulator()
-    } catch (err) {
-      Telemetry.captureException(err)
-      throw err
-    }
+    void ext.emulatorCtrl.startEmulator()
   }
 
   #stopEmulator (): void {
-    try {
-      void ext.emulatorCtrl.stopEmulator()
-    } catch (err) {
-      Telemetry.captureException(err)
-      throw err
-    }
+    void ext.emulatorCtrl.stopEmulator()
   }
 
   #createAccount (): void {
-    try {
-      void ext.emulatorCtrl.createNewAccount()
-    } catch (err) {
-      Telemetry.captureException(err)
-      throw err
-    }
+    void ext.emulatorCtrl.createNewAccount()
   }
 
   #switchActiveAccount (): void {
-    try {
-      void ext.emulatorCtrl.switchActiveAccount()
-    } catch (err) {
-      Telemetry.captureException(err)
-      throw err
-    }
+    void ext.emulatorCtrl.switchActiveAccount()
   }
 }
