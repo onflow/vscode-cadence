@@ -6,7 +6,6 @@ export class Settings {
   static CONFIG_NUM_ACCOUNTS = 'numAccounts'
   static CONFIG_ACCESS_CHECK_MODE = 'accessCheckMode'
   static CONFIG_CUSTOM_CONFIG_PATH = 'customConfigPath'
-  static CONFIG_ENABLE_CUSTOM_CONFIG_PATH = 'enableCustomConfigPath'
 
   // Workspace settings singleton
   static #instance: Settings | undefined
@@ -14,8 +13,7 @@ export class Settings {
   flowCommand!: string // The name of the Flow CLI executable.
   numAccounts!: number
   accessCheckMode!: string
-  customConfigPath!: string
-  enableCustomConfigPath!: boolean
+  customConfigPath!: string // If empty then search the workspace for flow.json
 
   static getWorkspaceSettings (): Settings {
     if (Settings.#instance === undefined) {
@@ -58,20 +56,11 @@ export class Settings {
     }
     this.accessCheckMode = accessCheckMode
 
-    let enableCustomConfigPath: boolean | undefined = cadenceConfig.get(
-      Settings.CONFIG_ENABLE_CUSTOM_CONFIG_PATH
-    )
-    if (enableCustomConfigPath === undefined) {
-      enableCustomConfigPath = false
-    }
-    this.enableCustomConfigPath = enableCustomConfigPath
-
     let customConfigPath: string | undefined = cadenceConfig.get(
       Settings.CONFIG_CUSTOM_CONFIG_PATH
     )
     if (customConfigPath === undefined) {
       customConfigPath = ''
-      this.enableCustomConfigPath = false
     }
     this.customConfigPath = customConfigPath
   }

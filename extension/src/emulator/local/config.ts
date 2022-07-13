@@ -59,15 +59,15 @@ async function readLocalConfig (): Promise<string> {
   const settings = Settings.getWorkspaceSettings()
   let configFilePath: string
 
-  if (settings.enableCustomConfigPath) {
-    // Check for custom flow.json path
+  if (settings.customConfigPath !== '') {
+    // Check custom flow.json path
     const file = settings.customConfigPath
     if (!fs.existsSync(file)) {
       throw new Error('Can\'t access custom flow.json file: ' + file)
     }
     configFilePath = file
   } else {
-    // Default search for flow.json in workspace
+    // Default config search for flow.json in workspace
     const file = await workspace.findFiles('flow.json')
     if (file.length !== 1) {
       return FILE_PATH_EMPTY

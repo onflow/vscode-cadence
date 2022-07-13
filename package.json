@@ -117,13 +117,7 @@
 				"cadence.customConfigPath": {
 					"type": "string",
 					"default": "",
-					"description": "Custom flow.json path.",
-					"scope": "resource"
-				},
-				"cadence.enableCustomConfigPath": {
-					"type": "boolean",
-					"default": false,
-					"description": "Enable custom flow.json path.",
+					"description": "Enter a custom flow.json path, or leave empty for the default config search.",
 					"scope": "resource"
 				}
 			}
