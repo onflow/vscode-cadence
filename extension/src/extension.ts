@@ -5,7 +5,7 @@ import { refreshCodeLenses } from './utils/utils'
 import { Account } from './emulator/account'
 import { UIController } from './ui/ui-controller'
 import { ExtensionContext } from 'vscode'
-import { CadenceDebugger } from './utils/debugger'
+import { CadenceDebugger } from './debugger/cadence-debugger'
 
 // The container for all data relevant to the extension.
 export class Extension {

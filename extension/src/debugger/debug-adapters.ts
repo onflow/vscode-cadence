@@ -1,5 +1,5 @@
+/* Classes required to implement a vscode debugger */
 import {
-  debug,
   DebugSession,
   DebugAdapterDescriptorFactory,
   DebugAdapterTrackerFactory,
@@ -12,31 +12,10 @@ import {
   WorkspaceFolder,
   DebugConfiguration,
   CancellationToken,
-  ProviderResult,
-  ExtensionContext
+  ProviderResult
 } from 'vscode'
 
-export class CadenceDebugger {
-  constructor (ctx: ExtensionContext) {
-    this.registerDebugger(ctx)
-  }
-
-  registerDebugger (ctx: ExtensionContext): void {
-    const debugOutputChannel = window.createOutputChannel('Cadence Debug')
-    ctx.subscriptions.push(debugOutputChannel)
-
-    const provider = new CadenceDebugConfigurationProvider()
-    ctx.subscriptions.push(debug.registerDebugConfigurationProvider('flow-emulator', provider))
-
-    const tracker = new CadenceDebugAdapterTrackerFactory(debugOutputChannel)
-    ctx.subscriptions.push(debug.registerDebugAdapterTrackerFactory('flow-emulator', tracker))
-
-    const factory = new CadenceDebugAdapterDescriptorFactory(debugOutputChannel)
-    ctx.subscriptions.push(debug.registerDebugAdapterDescriptorFactory('flow-emulator', factory))
-  }
-}
-
-class CadenceDebugAdapterTrackerFactory implements DebugAdapterTrackerFactory {
+export class CadenceDebugAdapterTrackerFactory implements DebugAdapterTrackerFactory {
   constructor (private readonly debugOutputChannel: OutputChannel) {}
 
   createDebugAdapterTracker (session: DebugSession): {
@@ -51,7 +30,7 @@ class CadenceDebugAdapterTrackerFactory implements DebugAdapterTrackerFactory {
   }
 }
 
-class CadenceDebugConfigurationProvider implements DebugConfigurationProvider {
+export class CadenceDebugConfigurationProvider implements DebugConfigurationProvider {
   resolveDebugConfiguration (
     folder: WorkspaceFolder | undefined,
     config: DebugConfiguration,
@@ -73,7 +52,7 @@ class CadenceDebugConfigurationProvider implements DebugConfigurationProvider {
   }
 }
 
-class CadenceDebugAdapterDescriptorFactory implements DebugAdapterDescriptorFactory {
+export class CadenceDebugAdapterDescriptorFactory implements DebugAdapterDescriptorFactory {
   constructor (private readonly debugOutputChannel: OutputChannel) {}
 
   public async createDebugAdapterDescriptor (
@@ -81,8 +60,7 @@ class CadenceDebugAdapterDescriptorFactory implements DebugAdapterDescriptorFact
     executable: DebugAdapterExecutable | undefined
   ): Promise<DebugAdapterDescriptor> {
     const { port, host, program } = session.configuration
-    // TODO: Fix linting: @typescript-eslint/restrict-template-expressions 
-    this.debugOutputChannel.appendLine(`launch: ${host}:${port}:\n${program}`)
+    this.debugOutputChannel.appendLine(`launch: ${host as string}:${port as string}:\n${program as string}`)
     return new DebugAdapterServer(port, host)
   }
 }

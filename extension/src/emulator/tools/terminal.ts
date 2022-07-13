@@ -91,7 +91,11 @@ export class TerminalController {
         this.flowCommand,
         'emulator',
           `--config-path="${await Config.getConfigPath()}"`,
-          '--verbose'
+          '--verbose',
+          // TODO: Maybe you can choose to enable/ disable these in settings?
+          '--trace',      //TODO: Do we want to enable trace logging?
+          '--grpc-debug', // TODO: Do we need to enable grpc-debug and/ or rest-debug?
+          '--rest-debug'  // Note: Default debug port is "2345"
       ].join(' ')
     )
     this.#terminal.show()
