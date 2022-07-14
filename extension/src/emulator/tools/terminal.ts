@@ -95,5 +95,6 @@ export class TerminalController {
       ].join(' ')
     )
     this.#terminal.show()
+    // TODO: Can we check the return code of our send text?? Would allow us to catch errors here!
   }
 }

@@ -36,7 +36,9 @@ describe('User Story test: Switch Accounts', () => {
 
         cy.contains(`Switched to account ${Accounts.Dave}`, { timeout: 10000, matchCase: false })
         cy.contains(`Active account: ${Accounts.Dave}`, { timeout: 10000, matchCase: false })
-        cy.contains('Deploy contract interface NonFungibleToken to Dave')
+        //TODO: need to click on the screen to update UI :)
+        //TODO: Is refreshCodeLense() suppost to make this work???
+        cy.contains('Deploy contract interface NonFungibleToken to Dave') 
     })
 */
 })

@@ -25,7 +25,11 @@ describe('User Story test: Deploy Contract', () => {
 
     switchAccount(cy, Accounts.Service, Accounts.Alice)
 
-    cy.wait(2000)
+    // Click to update UI
+    cy.contains('FooContract {}')
+      .click({ force: true })
+
+    cy.wait(5000)
 
     cy.contains('Deploy contract FooContract to Alice')
       .click({ force: true })

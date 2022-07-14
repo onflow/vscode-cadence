@@ -1,7 +1,6 @@
-// import { initExtension, openFile, stopEmulator } from '../helpers'
+import { initExtension, openFile, stopEmulator } from '../cypress-helpers'
 
 describe('User Story test: Send Transaction', () => {
-  /*
   beforeEach(() => {
     initExtension(cy)
   })
@@ -16,5 +15,4 @@ describe('User Story test: Send Transaction', () => {
     cy.contains('Send signed by ServiceAccount').click({ force: true })
     cy.contains('Transaction status: SEALED')
   })
-  */
 })
