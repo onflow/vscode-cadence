@@ -50,10 +50,10 @@ export class EmulatorController {
     this.#setState(EmulatorState.Starting)
     ext.emulatorStateChanged()
 
-    // Start emulator in terminal window
-    void this.#terminalCtrl.startEmulator()
-
     try {
+      // Start emulator in terminal window
+      void this.#terminalCtrl.startEmulator()
+
       await this.api.initAccountManager() // Note: seperate from AccountManager class
 
       const settings = Settings.getWorkspaceSettings()
