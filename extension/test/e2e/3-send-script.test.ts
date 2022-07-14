@@ -1,8 +1,8 @@
-import { initExtension, openFile, stopEmulator } from '../cypress-helpers'
+import { initTest, initExtension, openFile, stopEmulator } from '../cypress-helpers'
 
 describe('User Story test: Send Script', () => {
-
   beforeEach(() => {
+    initTest(cy)
     initExtension(cy)
   })
 
@@ -15,5 +15,4 @@ describe('User Story test: Send Script', () => {
     cy.contains('Execute script').click({ force: true })
     cy.contains('Result: 42.00000000')
   })
-
 })

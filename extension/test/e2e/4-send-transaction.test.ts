@@ -1,7 +1,8 @@
-import { initExtension, openFile, stopEmulator } from '../cypress-helpers'
+import { initTest, initExtension, openFile, stopEmulator } from '../cypress-helpers'
 
 describe('User Story test: Send Transaction', () => {
   beforeEach(() => {
+    initTest(cy)
     initExtension(cy)
   })
 

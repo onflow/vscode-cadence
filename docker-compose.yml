@@ -1,7 +1,7 @@
 services:
   test:
     image: codercom/code-server:latest
-    command: /source --auth none --disable-workspace-trust --disable-telemetry --disable-update-check --port 8888
+    command: /source --auth none --disable-telemetry --disable-update-check --port 8888
     container_name: vscode
     ports:
       - "8888:8888"
