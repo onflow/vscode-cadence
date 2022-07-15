@@ -20,7 +20,7 @@ jobs:
       - run: npm ci
       - name: "Unit Tests"
         run: npm run unit-test
-      -name: "Integration Tests"
+      - name: "Integration Tests"
         run: npm run integration-test
       - name: "End-to-end Tests"
         run: npm run e2e-test
