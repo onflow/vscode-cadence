@@ -27,7 +27,5 @@ describe('User Story test: Switch Accounts', () => {
   it('Switch accounts by click', () => {
     openFile(cy, 'NonFungibleToken.cdc')
     switchAccount(cy, Accounts.Service, Accounts.Bob)
-    cy.wait(5000)
-    switchAccount(cy, Accounts.Bob, Accounts.Charlie)
   })
 })
