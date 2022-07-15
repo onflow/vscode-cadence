@@ -34,9 +34,10 @@ export class AccountManager {
       await this.setActiveAccount(index)
 
       ext.emulatorStateChanged()
-    } catch (err) { // ref: is error handling necessary here?
+    } catch (err) {
       window.showErrorMessage(`Failed to create account: ${err.message as string}`)
         .then(() => {}, () => {})
+      throw err
     }
   }
 
@@ -75,6 +76,7 @@ export class AccountManager {
     } catch (err) {
       window.showErrorMessage(`Failed to switch account: ${err.message as string}`)
         .then(() => {}, () => {})
+      throw err
     }
   }
 

@@ -77,13 +77,13 @@
 				"cadence.flowCommand": {
 					"type": "string",
 					"default": "flow",
-					"description": "The command to invoke the Flow CLI",
+					"description": "The command to invoke the Flow CLI.",
 					"scope": "resource"
 				},
 				"cadence.numAccounts": {
 					"type": "number",
 					"default": 3,
-					"description": "The number of default accounts to create",
+					"description": "The number of default accounts to create.",
 					"scope": "resource"
 				},
 				"cadence.accessCheckMode": {
@@ -101,7 +101,7 @@
 						"Access modifiers are optional. Access is assumed public if not specified",
 						"Access modifiers are optional and ignored"
 					],
-					"description": "Configures if access modifiers are required and how they are are enforced",
+					"description": "Configures if access modifiers are required and how they are are enforced.",
 					"scope": "resource"
 				},
 				"cadence.trace.server": {

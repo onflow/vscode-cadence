@@ -85,7 +85,7 @@ export class TerminalController {
   async startEmulator (): Promise<void> {
     try {
       if (this.#terminal == null) {
-        throw (Error('Terminal not initialized'))
+        throw new Error('Terminal not initialized')
       }
       this.#terminal.sendText(
         [

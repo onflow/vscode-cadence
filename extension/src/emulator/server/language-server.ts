@@ -71,9 +71,9 @@ export class LanguageServerAPI {
       .then(() =>
         window.showInformationMessage('Cadence language server started')
       )
-      .catch((err: Error) =>
-        window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
-      )
+      .catch((err: Error) => {
+        void window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
+      })
   }
 
   reset (): void {
