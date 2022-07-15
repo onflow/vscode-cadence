@@ -1,14 +1,19 @@
 /* Contains cypress code to initialize the workspace before any other testing takes place */
 import { initTest } from '../cypress-helpers'
-import * as fs from 'fs'
 
 describe('Initialize Workspace Settings', () => {
+
   beforeEach(() => {
     initTest(cy)
   })
 
   afterEach(() => {
     cy.wait(5000)
+  })
+
+  it('Check flow-cli', () => {
+    //cy.exec('chmod +x /usr/local/bin/flow')
+    cy.exec('flow')
   })
 
   // Trust the workspace folder and close pop-up in vscode
