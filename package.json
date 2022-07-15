@@ -21,7 +21,8 @@
 		"package-test": "./node_modules/.bin/vsce package --out ./extension/test/fixtures/workspace/cadence.vsix",
 		"lint": "ts-standard",
 		"lint-fix": "ts-standard --fix",
-		"vscode-start": "docker-compose up -d && docker exec vscode code-server --install-extension /source/cadence.vsix",
+		"docker-check-flow": "docker exec vscode chmod +x /usr/local/bin/flow",
+		"vscode-start": "docker-compose up -d && docker exec vscode code-server --install-extension /source/cadence.vsix && npm run docker-check-flow",
 		"vscode-stop": "docker-compose down",
 		"cypress": "./node_modules/.bin/cypress run",
 		"e2e-test": "npm run package-test && npm run vscode-start && npm run cypress && npm run vscode-stop"

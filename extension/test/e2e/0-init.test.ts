@@ -2,7 +2,6 @@
 import { initTest } from '../cypress-helpers'
 
 describe('Initialize Workspace Settings', () => {
-
   beforeEach(() => {
     initTest(cy)
   })
@@ -12,7 +11,6 @@ describe('Initialize Workspace Settings', () => {
   })
 
   it('Check flow-cli', () => {
-    //cy.exec('chmod +x /usr/local/bin/flow')
     cy.exec('flow')
   })
 
