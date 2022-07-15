@@ -22,8 +22,8 @@
 		"lint": "ts-standard",
 		"lint-fix": "ts-standard --fix",
 		"docker-install-extension": "docker exec vscode code-server --install-extension /source/cadence.vsix",
-		"vscode-start": "docker compose up -d && npm run docker-install-extension",
-		"vscode-stop": "docker compose down",
+		"vscode-start": "docker-compose up -d && npm run docker-install-extension",
+		"vscode-stop": "docker-compose down",
 		"cypress": "./node_modules/.bin/cypress run",
 		"e2e-test": "npm run package-test && npm run vscode-start && npm run cypress && npm run vscode-stop"
 	},

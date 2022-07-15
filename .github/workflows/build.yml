@@ -20,7 +20,7 @@ jobs:
       - run: npm ci
       - run: npm run lint
 
-  Compile:
+  compile:
     name: "Build Package"
     runs-on: ubuntu-latest
     steps:
