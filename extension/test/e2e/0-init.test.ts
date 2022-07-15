@@ -10,9 +10,10 @@ describe('Initialize Workspace Settings', () => {
     cy.wait(5000)
   })
 
+  // Add execute permissions to flow-cli
   it('Check flow-cli', () => {
     cy.exec('docker exec vscode sudo chmod +x /usr/local/bin/flow')
-    cy.exec('docker exec vscode flow')
+    cy.exec('docker exec sudo vscode flow')
   })
 
   // Trust the workspace folder and close pop-up in vscode
