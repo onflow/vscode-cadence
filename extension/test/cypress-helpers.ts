@@ -3,7 +3,8 @@ export const Accounts = {
   Service: 'ServiceAccount (0xf8d6e0586b0a20c7)',
   Alice: 'Alice (0x01cf0e2f2f715450)',
   Bob: 'Bob (0x179b6b1cb6755e31)',
-  Charlie: 'Charlie (0xf3fcd2c1a78f5eee)'
+  Charlie: 'Charlie (0xf3fcd2c1a78f5eee)',
+  Dave: 'Dave (0xe03daebed8ca0615)' // First new account created
 }
 
 export function initTest (cy: Cypress.cy): void {

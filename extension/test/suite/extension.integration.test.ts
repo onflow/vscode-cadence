@@ -25,6 +25,5 @@ suite('Extension Test Suite', () => {
 
     await vscode.commands.executeCommand(cmd.CREATE_ACCOUNT)
     assert.strictEqual(ext.getActiveAccount()?.address, 'e03daebed8ca0615')
-    // assert.strictEqual(extension.config.getAccount(1)?.address, '01cf0e2f2f715450')
   }).timeout(10000)
 })
