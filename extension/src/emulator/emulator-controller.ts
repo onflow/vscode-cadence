@@ -9,6 +9,7 @@ import { AccountManager } from './tools/account-manager'
 import { LanguageServerAPI } from './server/language-server'
 import { Settings } from '../settings/settings'
 import { Account } from './account'
+import { window } from 'vscode'
 
 export enum EmulatorState {
   Stopped = 0,
@@ -46,11 +47,11 @@ export class EmulatorController {
   }
 
   async startEmulator (): Promise<void> {
-    // Start the emulator with the service key we gave to the language server.
-    this.#setState(EmulatorState.Starting)
-    ext.emulatorStateChanged()
-
     try {
+      // Start the emulator with the service key we gave to the language server.
+      this.#setState(EmulatorState.Starting)
+      ext.emulatorStateChanged()
+
       // Start emulator in terminal window
       void this.#terminalCtrl.startEmulator()
 
@@ -70,9 +71,10 @@ export class EmulatorController {
       this.#setState(EmulatorState.Started)
       ext.emulatorStateChanged()
     } catch (err) {
-      console.log('Failed to start emulator')
+      void window.showErrorMessage('Flow emulator failed to start')
       this.#setState(EmulatorState.Stopped)
       ext.emulatorStateChanged()
+      throw err
     }
   }
 
