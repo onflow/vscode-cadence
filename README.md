@@ -1,4 +1,7 @@
-[![Build](https://github.com/onflow/vscode-cadence/actions/workflows/build.yml/badge.svg)](https://github.com/onflow/vscode-cadence/actions/workflows/build.yml) [![CI](https://github.com/onflow/vscode-cadence/actions/workflows/ci.yml/badge.svg)](https://github.com/onflow/vscode-cadence/actions/workflows/ci.yml)
+[![Build](https://github.com/onflow/vscode-cadence/actions/workflows/build.yml/badge.svg)](https://github.com/onflow/vscode-cadence/actions/workflows/build.yml)
+[![CI](https://github.com/onflow/vscode-cadence/actions/workflows/ci.yml/badge.svg)](https://github.com/onflow/vscode-cadence/actions/workflows/ci.yml)
+[![Docs](https://img.shields.io/badge/Docs-see%20latest-blue?logo=flow)](https://docs.onflow.org/vscode-extension/)
+
 <br />
 <p align="center">
   <a href="https://docs.onflow.org/vscode-extension/">
