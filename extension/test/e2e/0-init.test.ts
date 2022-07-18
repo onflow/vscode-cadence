@@ -9,7 +9,7 @@ describe('Initialize Workspace Settings', () => {
   afterEach(() => {
     cy.wait(5000)
   })
-  
+
   it('Check flow-cli', () => {
     // Add execute permissions to flow-cli
     cy.exec('docker exec vscode sudo chmod +x /usr/local/bin/flow')
