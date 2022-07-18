@@ -10,12 +10,13 @@ import {
 } from './commands'
 import { EmulatorState } from './extension'
 import { Account } from './account'
+import { captureException } from './sentry-wrapper'
 
 // The args to pass to the Flow CLI to start the language server.
 const START_LANGUAGE_SERVER_ARGS = ['cadence', 'language-server']
 
 export class LanguageServerAPI {
-  client: LanguageClient
+  client!: LanguageClient
   running: boolean
 
   constructor (ctx: ExtensionContext, config: Config, emulatorState: EmulatorState, activeAccount: Account | null) {
@@ -26,39 +27,44 @@ export class LanguageServerAPI {
     const activeAccountAddress = (activeAccount != null) ? activeAccount.address : ''
     const { configPath } = config
 
-    this.client = new LanguageClient(
-      'cadence',
-      'Cadence',
-      {
-        command: config.flowCommand,
-        args: START_LANGUAGE_SERVER_ARGS
-      },
-      {
-        documentSelector: [{ scheme: 'file', language: 'cadence' }],
-        synchronize: {
-          configurationSection: 'cadence'
+    try {
+      this.client = new LanguageClient(
+        'cadence',
+        'Cadence',
+        {
+          command: config.flowCommand,
+          args: START_LANGUAGE_SERVER_ARGS
         },
-        initializationOptions: {
-          accessCheckMode: config.accessCheckMode,
-          configPath,
-          emulatorState,
-          activeAccountName,
-          activeAccountAddress
+        {
+          documentSelector: [{ scheme: 'file', language: 'cadence' }],
+          synchronize: {
+            configurationSection: 'cadence'
+          },
+          initializationOptions: {
+            accessCheckMode: config.accessCheckMode,
+            configPath,
+            emulatorState,
+            activeAccountName,
+            activeAccountAddress
+          }
         }
-      }
-    )
-
-    this.client.onDidChangeState((e: StateChangeEvent) => {
-      this.running = e.newState === State.Running
-    })
-
-    this.client.start()
-      .then(() =>
-        window.showInformationMessage('Cadence language server started')
       )
-      .catch((err: Error) =>
-        window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
-      )
+
+      this.client.onDidChangeState((e: StateChangeEvent) => {
+        this.running = e.newState === State.Running
+      })
+
+      this.client.start()
+        .then(() =>
+          window.showInformationMessage('Cadence language server started')
+        )
+        .catch((err: Error) => {
+          captureException(err)
+          void window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
+        })
+    } catch (err) {
+      captureException(err)
+    }
   }
 
   async initAccountManager (): Promise<void> {

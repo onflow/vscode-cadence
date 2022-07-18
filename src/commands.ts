@@ -6,7 +6,6 @@ import {
   window,
   env
 } from 'vscode'
-
 import { Extension, renderExtension, EmulatorState } from './extension'
 import { LanguageServerAPI } from './language-server'
 import { createTerminal } from './terminal'
@@ -17,6 +16,8 @@ import {
   INACTIVE_PREFIX,
   ADD_NEW_PREFIX
 } from './strings'
+import * as Telemetry from './telemetry'
+import { captureException } from './sentry-wrapper'
 
 // Command identifiers for locally handled commands
 export const RESTART_SERVER = 'cadence.restartServer'
@@ -44,7 +45,8 @@ function registerCommand (
   command: string,
   callback: (...args: any[]) => any
 ): void {
-  ctx.subscriptions.push(commands.registerCommand(command, callback))
+  const commandCallback = (): void => { Telemetry.withTelemetry(callback) }
+  ctx.subscriptions.push(commands.registerCommand(command, commandCallback))
 }
 
 // Registers all commands that are handled by the extension (as opposed to
@@ -98,6 +100,7 @@ const startEmulator = (ext: Extension) => async (): Promise<EmulatorState> => {
     ext.setEmulatorState(EmulatorState.Started)
     renderExtension(ext)
   } catch (err) {
+    captureException(err)
     ext.setEmulatorState(EmulatorState.Stopped)
     renderExtension(ext)
   }
@@ -175,6 +178,7 @@ const createNewAccount = async (ext: Extension): Promise<void> => {
     await setActiveAccount(ext, lastIndex)
     renderExtension(ext)
   } catch (err) { // ref: is error handling necessary here?
+    captureException(err)
     window.showErrorMessage(`Failed to create account: ${err.message as string}`)
       .then(() => {}, () => {})
   }
@@ -184,6 +188,7 @@ const setActiveAccount = async (ext: Extension, activeIndex: number): Promise<vo
   const activeAccount = ext.config.getAccount(activeIndex)
 
   if (activeAccount == null) {
+    captureException(new Error('Failed to switch account: account does not exist'))
     window.showErrorMessage('Failed to switch account: account does not exist.')
       .then(() => {}, () => {})
     return
@@ -205,6 +210,7 @@ const setActiveAccount = async (ext: Extension, activeIndex: number): Promise<vo
 
     renderExtension(ext)
   } catch (err) {
+    captureException(err)
     window.showErrorMessage(`Failed to switch account: ${err.message as string}`)
       .then(() => {}, () => {})
   }

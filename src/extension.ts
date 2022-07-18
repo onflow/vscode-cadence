@@ -15,6 +15,7 @@ import {
   createActiveAccountStatusBarItem,
   updateActiveAccountStatusBarItem
 } from './status-bar'
+import { captureException } from './sentry-wrapper'
 import * as util from 'util'
 import * as cp from 'child_process'
 const exec = util.promisify(cp.exec)
@@ -80,23 +81,27 @@ export async function activate (ctx: ExtensionContext): Promise<void> {
     terminal = createTerminal(ctx)
     api = new LanguageServerAPI(ctx, config, EmulatorState.Stopped, null)
   } catch (err) {
+    captureException(err)
     window.showErrorMessage(`Failed to activate extension: ${String(err)}`)
       .then(() => {}, () => {})
     return
   }
   handleConfigChanges()
 
-  const ext = new Extension(
-    config,
-    ctx,
-    api,
-    terminal,
-    createEmulatorStatusBarItem(),
-    createActiveAccountStatusBarItem()
-  )
-
-  registerCommands(ext)
-  renderExtension(ext)
+  try {
+    const ext = new Extension(
+      config,
+      ctx,
+      api,
+      terminal,
+      createEmulatorStatusBarItem(),
+      createActiveAccountStatusBarItem()
+    )
+    registerCommands(ext)
+    renderExtension(ext)
+  } catch (err) {
+    captureException(err)
+  }
 }
 
 async function promptInitializeConfig (): Promise<boolean> {
@@ -129,6 +134,10 @@ export function deactivate (): Thenable<void> | undefined {
 }
 
 export function renderExtension (ext: Extension): void {
-  updateEmulatorStatusBarItem(ext.emulatorStatusBarItem, ext.getEmulatorState())
-  updateActiveAccountStatusBarItem(ext.activeAccountStatusBarItem, ext.config.getActiveAccount())
+  try {
+    updateEmulatorStatusBarItem(ext.emulatorStatusBarItem, ext.getEmulatorState())
+    updateActiveAccountStatusBarItem(ext.activeAccountStatusBarItem, ext.config.getActiveAccount())
+  } catch (err) {
+    captureException(err)
+  }
 }

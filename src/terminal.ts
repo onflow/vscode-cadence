@@ -1,6 +1,7 @@
 import { ExtensionContext, Terminal, window } from 'vscode'
 import { existsSync, mkdirSync, unlinkSync } from 'fs'
 import { join } from 'path'
+import { captureException } from './sentry-wrapper'
 
 // Name of all Flow files stored on-disk.
 const FLOW_CONFIG_FILENAME = 'flow.json'
@@ -36,6 +37,7 @@ export function resetStorage (ctx: ExtensionContext): void {
     unlinkSync(join(storagePath, FLOW_CONFIG_FILENAME))
     unlinkSync(join(storagePath, FLOW_DB_FILENAME))
   } catch (err) {
+    captureException(err)
     if (err.code === 'ENOENT') {
       return
     }
@@ -55,6 +57,7 @@ function getStoragePath (ctx: ExtensionContext): string | undefined {
     try {
       mkdirSync(storagePath)
     } catch (err) {
+      captureException(err)
       console.log('Error creating storage path: ', err)
       return
     }
