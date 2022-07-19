@@ -39,7 +39,7 @@ export class Config {
       return false
     }
     const configFile = file[0]
-    this.configPath = configFile.path
+    this.configPath = configFile.fsPath
     return true
   }
 
