@@ -17,6 +17,7 @@
 		"unit-test": "ts-mocha **/*.unit.test.ts",
 		"integration-test": "npm run esbuild && tsc -p ./ && node ./out/test/run-test.js",
 		"package": "./node_modules/.bin/vsce package",
+		"package-windows": ".\\node_modules\\.bin\\vsce.cmd package",
 		"install-extension": "code --install-extension cadence-*.vsix",
 		"package-test": "./node_modules/.bin/vsce package --out ./extension/test/fixtures/workspace/cadence.vsix",
 		"lint": "ts-standard",
