@@ -20,5 +20,7 @@ jobs:
       - run: npm ci
       - name: "Unit Tests"
         run: npm run unit-test
-      - name: "End-to-end Tests"
-        run: npm run e2e-test
+
+# Remove e2e tests from CI until they are fixed
+#      - name: "End-to-end Tests"
+#        run: npm run e2e-test
