@@ -36,7 +36,12 @@ export class EmulatorController {
     this.api = new LanguageServerAPI()
   }
 
-  // Called whenever emulator is updated
+  deactivate (): void {
+    // Disconnect from language server
+    this.api.deactivate()
+  }
+
+  // Called whenever the emulator is updated
   async syncAccountData (): Promise<void> {
     this.#accountData = await this.api.listAllAccounts()
   }

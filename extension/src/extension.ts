@@ -17,39 +17,45 @@ export class Extension {
   }
 
   ctx: ExtensionContext
-  uiCtrl: UIController
-  commands: CommandController
+  #uiCtrl: UIController
+  #commands: CommandController
   emulatorCtrl: EmulatorController
 
   private constructor (ctx: ExtensionContext) {
     this.ctx = ctx
 
-    // Note: Language Server Client should be initialized here when we remove client-side emulator
-
     // Initialize Emulator
     this.emulatorCtrl = new EmulatorController()
 
     // Initialize UI
-    this.uiCtrl = new UIController()
+    this.#uiCtrl = new UIController()
 
     // Initialize ExtensionCommands
-    this.commands = new CommandController()
+    this.#commands = new CommandController()
+  }
+
+  // Called on exit
+  deactivate (): void {
+    this.emulatorCtrl.deactivate()
+    this.#commands.deactivate()
   }
 
   getEmulatorState (): EmulatorState {
     return this.emulatorCtrl.getState()
   }
 
-  getActiveAccount (): Account | null {
+  getActiveAccount (): Account {
     return this.emulatorCtrl.getActiveAccount()
   }
 
   emulatorStateChanged (): void {
     // Sync account data with LS
-    void this.emulatorCtrl.syncAccountData()
+    if (this.getEmulatorState() === EmulatorState.Started) {
+      void this.emulatorCtrl.syncAccountData()
+    }
 
     // Update UI
-    this.uiCtrl.emulatorStateChanged()
+    this.#uiCtrl.emulatorStateChanged()
     refreshCodeLenses()
   }
 }

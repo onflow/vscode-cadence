@@ -1,5 +1,4 @@
 /* CommandController is responsible for registering possible commands */
-
 import { commands } from 'vscode'
 import { ext } from '../main'
 import * as commandID from './command-constants'
@@ -7,18 +6,22 @@ import { Disposable } from 'vscode-languageclient'
 import * as Telemetry from '../telemetry/telemetry'
 
 export class CommandController {
-  cmds: Disposable[] // Hold onto commands
+  #cmds: Disposable[] // Hold onto commands
 
   constructor () {
-    this.cmds = []
+    this.#cmds = []
     Telemetry.withTelemetry(this.#registerCommands.bind(this))
+  }
+
+  deactivate (): void {
+    this.#cmds = [] // Release commands
   }
 
   // Registers a command with VS Code so it can be invoked by the user.
   #registerCommand (command: string, callback: (...args: any[]) => any): void {
     const commandCallback = (): void => { Telemetry.withTelemetry(callback.bind(this)) }
     const cmd: Disposable = commands.registerCommand(command, commandCallback)
-    this.cmds.push(cmd)
+    this.#cmds.push(cmd)
   }
 
   // Registers all commands that are handled by the extension (as opposed to

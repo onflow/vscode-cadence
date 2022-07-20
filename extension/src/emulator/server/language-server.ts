@@ -31,6 +31,11 @@ export class LanguageServerAPI {
     void this.startClient()
   }
 
+  deactivate (): void {
+    void this.client.stop()
+      .catch((err) => { void err })
+  }
+
   async startClient (): Promise<void> {
     const configPath = await Config.getConfigPath()
     const emulatorState = ext.getEmulatorState()

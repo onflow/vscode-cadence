@@ -19,8 +19,12 @@ export async function activate (ctx: ExtensionContext): Promise<void> {
 // Called by VS Code when the extension terminates
 export function deactivate (): Thenable<void> | undefined {
   void Telemetry.deactivate()
-  if (ext === undefined) {
-    return undefined
+
+  if (ext !== undefined) {
+    try {
+      ext.deactivate()
+    } catch (err) { void err }
+    return
   }
-  return ext.emulatorCtrl.api === undefined ? undefined : ext.emulatorCtrl.api.client.stop()
+  return undefined
 }
