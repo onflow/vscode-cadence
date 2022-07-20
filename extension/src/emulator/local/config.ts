@@ -72,7 +72,7 @@ async function readLocalConfig (): Promise<string> {
     if (file.length !== 1) {
       return FILE_PATH_EMPTY
     }
-    configFilePath = file[0].path
+    configFilePath = file[0].fsPath
   }
 
   return configFilePath

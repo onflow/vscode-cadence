@@ -1,7 +1,9 @@
+[![Build](https://github.com/onflow/vscode-cadence/actions/workflows/build.yml/badge.svg)](https://github.com/onflow/vscode-cadence/actions/workflows/build.yml)
+![Sentry](https://img.shields.io/badge/Sentry-reporting-blue?logo=sentry)
 <br />
 <p align="center">
   <a href="https://docs.onflow.org/vscode-extension/">
-    <img src="./vscode-banner.png" alt="Logo" width="600" height="auto">
+    <img src="./images/vscode-banner.png" alt="Logo" width="600" height="auto">
   </a>
 
   <p align="center">
