@@ -1,10 +1,10 @@
 import { LanguageClient, State, StateChangeEvent } from 'vscode-languageclient/node'
 import { window } from 'vscode'
-import { EmulatorState } from '../emulator-controller'
 import { Account } from '../account'
 import { ext } from '../../main'
 import * as Config from '../local/config'
 import { Settings } from '../../settings/settings'
+import * as response from './responses'
 
 // The args to pass to the Flow CLI to start the language server.
 const START_LANGUAGE_SERVER_ARGS = ['cadence', 'language-server']
@@ -12,10 +12,8 @@ const START_LANGUAGE_SERVER_ARGS = ['cadence', 'language-server']
 export class LanguageServerAPI {
   // Identities for commands handled by the Language server
   static CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
-  static CREATE_DEFAULT_ACCOUNTS_SERVER = 'cadence.server.flow.createDefaultAccounts'
   static SWITCH_ACCOUNT_SERVER = 'cadence.server.flow.switchActiveAccount'
-  static CHANGE_EMULATOR_STATE = 'cadence.server.flow.changeEmulatorState'
-  static INIT_ACCOUNT_MANAGER = 'cadence.server.flow.initAccountManager'
+  static LIST_ALL_ACCOUNTS = 'cadence.server.flow.getAccounts'
 
   client!: LanguageClient
   running: boolean
@@ -67,6 +65,7 @@ export class LanguageServerAPI {
       this.running = e.newState === State.Running
     })
 
+    // This also starts the hosted emulator
     this.client.start()
       .then(() =>
         window.showInformationMessage('Cadence language server started')
@@ -96,20 +95,6 @@ export class LanguageServerAPI {
     ext.emulatorStateChanged()
   }
 
-  async initAccountManager (): Promise<void> {
-    return await this.client.sendRequest('workspace/executeCommand', {
-      command: LanguageServerAPI.INIT_ACCOUNT_MANAGER,
-      arguments: []
-    })
-  }
-
-  async changeEmulatorState (emulatorState: EmulatorState): Promise<void> {
-    return await this.client.sendRequest('workspace/executeCommand', {
-      command: LanguageServerAPI.CHANGE_EMULATOR_STATE,
-      arguments: [emulatorState]
-    })
-  }
-
   // Sends a request to switch the currently active account.
   async switchActiveAccount (account: Account): Promise<void> {
     const { name, address } = account
@@ -122,26 +107,28 @@ export class LanguageServerAPI {
   // Sends a request to create a new account. Returns the address of the new
   // account, if it was created successfully.
   async createAccount (): Promise<Account> {
-    const res: any = await this.client.sendRequest('workspace/executeCommand', {
-      command: LanguageServerAPI.CREATE_ACCOUNT_SERVER,
-      arguments: []
-    })
-    const { name, address } = res
-    return new Account(name, address)
+    try {
+      const res: any = await this.client.sendRequest('workspace/executeCommand', {
+        command: LanguageServerAPI.CREATE_ACCOUNT_SERVER,
+        arguments: []
+      })
+
+      const { name, address } = res
+      return new Account(name, address)
+    } catch (err) {
+      window.showErrorMessage(`Failed to create account: ${err.message as string}`)
+        .then(() => {}, () => {})
+      throw err
+    }
   }
 
-  // Sends a request to create a set of default accounts. Returns the addresses of the new
-  // accounts, if they were created successfully.
-  async createDefaultAccounts (count: number): Promise<Account[]> {
-    const res: [] = await this.client.sendRequest('workspace/executeCommand', {
-      command: LanguageServerAPI.CREATE_DEFAULT_ACCOUNTS_SERVER,
-      arguments: [count]
+  // Sends a request to obtain all account mappings, addresses, names, and active status
+  async listAllAccounts (): Promise<response.ListAccountsReponse> {
+    const res: any = await this.client.sendRequest('workspace/executeCommand', {
+      command: LanguageServerAPI.LIST_ALL_ACCOUNTS,
+      arguments: []
     })
-    const accounts: Account [] = []
-    for (const account of res) {
-      const { name, address } = account
-      accounts.push(new Account(name, address))
-    }
-    return accounts
+
+    return new response.ListAccountsReponse(res)
   }
 }

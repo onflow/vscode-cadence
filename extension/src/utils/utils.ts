@@ -2,9 +2,25 @@ import {
   Position,
   Range,
   window
+  , env
 } from 'vscode'
+import { Account } from '../emulator/account'
+import { COPY_ADDRESS } from './strings'
 
 export const FILE_PATH_EMPTY = ''
+
+export function promptCopyAccountAddress (account: Account): void {
+  // Allow user to copy the active account address to clipboard
+  window.showInformationMessage(
+    `Switched to account ${account.fullName()}`,
+    COPY_ADDRESS
+  ).then((choice) => {
+    if (choice === COPY_ADDRESS) {
+      env.clipboard.writeText(`0x${account.address}`)
+        .then(() => {}, () => {})
+    }
+  }, () => {})
+}
 
 // This method will add and then remove a space on the last line to trick codelens to be updated
 export const refreshCodeLenses = (): void => {

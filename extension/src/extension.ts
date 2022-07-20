@@ -27,7 +27,7 @@ export class Extension {
     // Note: Language Server Client should be initialized here when we remove client-side emulator
 
     // Initialize Emulator
-    this.emulatorCtrl = new EmulatorController(this.ctx.storagePath, this.ctx.globalStoragePath)
+    this.emulatorCtrl = new EmulatorController()
 
     // Initialize UI
     this.uiCtrl = new UIController()
@@ -45,12 +45,11 @@ export class Extension {
   }
 
   emulatorStateChanged (): void {
-    // Update language server API with emulator state
-    this.emulatorCtrl.api.changeEmulatorState(this.getEmulatorState())
-      .then(() => {}, () => {})
-    refreshCodeLenses()
+    // Sync account data with LS
+    void this.emulatorCtrl.syncAccountData()
 
     // Update UI
     this.uiCtrl.emulatorStateChanged()
+    refreshCodeLenses()
   }
 }
