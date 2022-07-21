@@ -37,7 +37,6 @@ export class Extension {
   // Called on exit
   deactivate (): void {
     this.emulatorCtrl.deactivate()
-    this.#commands.deactivate()
   }
 
   getEmulatorState (): EmulatorState {

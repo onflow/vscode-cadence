@@ -13,10 +13,6 @@ export class CommandController {
     Telemetry.withTelemetry(this.#registerCommands.bind(this))
   }
 
-  deactivate (): void {
-    this.#cmds = [] // Release commands
-  }
-
   // Registers a command with VS Code so it can be invoked by the user.
   #registerCommand (command: string, callback: (...args: any[]) => any): void {
     const commandCallback = (): void => { Telemetry.withTelemetry(callback.bind(this)) }
