@@ -13,7 +13,7 @@ export class LanguageServerAPI {
   // Identities for commands handled by the Language server
   static CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
   static SWITCH_ACCOUNT_SERVER = 'cadence.server.flow.switchActiveAccount'
-  static LIST_ALL_ACCOUNTS = 'cadence.server.flow.getAccounts'
+  static GET_ACCOUNTS = 'cadence.server.flow.getAccounts'
 
   client!: LanguageClient
   running: boolean
@@ -40,9 +40,9 @@ export class LanguageServerAPI {
     const configPath = await Config.getConfigPath()
     const emulatorState = ext.getEmulatorState()
 
-    const activeAccount = ext.getActiveAccount()
-    const activeAccountName = (activeAccount != null) ? activeAccount.name : ''
-    const activeAccountAddress = (activeAccount != null) ? activeAccount.address : ''
+    // const activeAccount = ext.getActiveAccount() // TODO: Can't have this because no active account from LS yet
+    const activeAccountName = '' // (activeAccount != null) ? activeAccount.name : ''
+    const activeAccountAddress = '' // (activeAccount != null) ? activeAccount.address : ''
 
     this.client = new LanguageClient(
       'cadence',
@@ -59,9 +59,9 @@ export class LanguageServerAPI {
         initializationOptions: {
           accessCheckMode: Settings.getWorkspaceSettings().accessCheckMode,
           configPath,
-          emulatorState,
-          activeAccountName,
-          activeAccountAddress
+          emulatorState, // Do we need these initialization options anymore??
+          activeAccountName, // ?
+          activeAccountAddress // ?
         }
       }
     )
@@ -92,6 +92,9 @@ export class LanguageServerAPI {
     const activeAccount = ext.getActiveAccount()
     await this.client.stop()
 
+    // TODO: Will we want to keep the state of the emulator?
+    // Will need to save the state and then restore it
+
     // Reboot server
     void this.client.start()
     if (activeAccount !== null) {
@@ -121,19 +124,21 @@ export class LanguageServerAPI {
       const { name, address } = res
       return new Account(name, address)
     } catch (err) {
-      window.showErrorMessage(`Failed to create account: ${err.message as string}`)
-        .then(() => {}, () => {})
+      if (err instanceof Error) {
+        window.showErrorMessage(`Failed to create account: ${err.message}`)
+          .then(() => {}, () => {})
+      }
       throw err
     }
   }
 
   // Sends a request to obtain all account mappings, addresses, names, and active status
-  async listAllAccounts (): Promise<response.ListAccountsReponse> {
+  async getAccounts (): Promise<response.GetAccountsReponse> {
     const res: any = await this.client.sendRequest('workspace/executeCommand', {
-      command: LanguageServerAPI.LIST_ALL_ACCOUNTS,
+      command: LanguageServerAPI.GET_ACCOUNTS,
       arguments: []
     })
 
-    return new response.ListAccountsReponse(res)
+    return new response.GetAccountsReponse(res)
   }
 }

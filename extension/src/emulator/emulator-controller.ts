@@ -1,6 +1,5 @@
 /*
 EmulatorController is used to execute commands on the Flow emulator
-Contains an account manager to manage active accounts
 Communicates with local configs and language-server data
 */
 import { ext } from '../main'
@@ -13,7 +12,7 @@ import {
 } from '../utils/strings'
 import { Account } from './account'
 import { window } from 'vscode'
-import { ListAccountsReponse } from './server/responses'
+import { GetAccountsReponse } from './server/responses'
 import { promptCopyAccountAddress } from '../utils/utils'
 
 export enum EmulatorState {
@@ -26,7 +25,7 @@ export class EmulatorController {
   api: LanguageServerAPI
   #state: EmulatorState
   // Syncronized account data with the LS
-  #accountData!: ListAccountsReponse
+  #accountData!: GetAccountsReponse
 
   constructor () {
     // Initialize state
@@ -43,7 +42,7 @@ export class EmulatorController {
 
   // Called whenever the emulator is updated
   async syncAccountData (): Promise<void> {
-    this.#accountData = await this.api.listAllAccounts()
+    this.#accountData = await this.api.getAccounts()
   }
 
   #setState (state: EmulatorState): void {
@@ -53,6 +52,10 @@ export class EmulatorController {
 
   getState (): EmulatorState {
     return this.#state
+  }
+
+  getActiveAccount (): Account {
+    return this.#accountData.getActiveAccount()
   }
 
   async startEmulator (): Promise<void> {
@@ -143,9 +146,5 @@ export class EmulatorController {
 
       ext.emulatorStateChanged()
     }, () => {})
-  }
-
-  getActiveAccount (): Account {
-    return this.#accountData.getActiveAccount()
   }
 }

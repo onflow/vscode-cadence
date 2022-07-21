@@ -5,6 +5,7 @@ import { refreshCodeLenses } from './utils/utils'
 import { Account } from './emulator/account'
 import { UIController } from './ui/ui-controller'
 import { ExtensionContext } from 'vscode'
+import { DEBUG_LOG } from './utils/debug'
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -35,8 +36,15 @@ export class Extension {
   }
 
   // Called on exit
-  deactivate (): void {
-    this.emulatorCtrl.deactivate()
+  async deactivate (): Promise<void> {
+    try {
+      this.emulatorCtrl.deactivate()
+    } catch (err) {
+      if (err instanceof Error) {
+        DEBUG_LOG('Extension deactivate error: ' + err.message)
+      }
+      DEBUG_LOG('Extension deactivate error: unknown')
+    }
   }
 
   getEmulatorState (): EmulatorState {

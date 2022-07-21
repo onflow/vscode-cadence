@@ -1,6 +1,6 @@
 import { Account } from '../account'
 
-export class ListAccountsReponse {
+export class GetAccountsReponse {
   #accounts: Account[]
   #activeAccountIndex: number
   #activeAccount: Account
