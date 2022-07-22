@@ -1,9 +1,10 @@
+import { window } from 'vscode'
 import { InstallFlowCLI } from './installers/flow-cli-installer'
 import { Installer, InstallError } from './installers/installer'
 
-// Installers for each dependency
 const INSTALLERS = [
   InstallFlowCLI
+  // Add other dependency installers here
 ]
 
 export class DependencyInstaller {
@@ -58,7 +59,7 @@ export class DependencyInstaller {
         installer.runInstall()
       } catch (err) {
         if (err instanceof InstallError) {
-          // Ignore failed to install errors
+          void window.showErrorMessage(err.message)
         } else {
           throw err
         }

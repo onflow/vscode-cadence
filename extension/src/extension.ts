@@ -46,18 +46,12 @@ export class Extension {
       const missing: string[] = dependencyInstaller.getMissingDependenciesList()
 
       // Prompt user to install missing dependencies
-      window.showInformationMessage(
+      window.showErrorMessage(
         'Not all dependencies are installed: ' + missing.join(', '),
         INSTALL_MISSING_DEPENDENCIES
       ).then((choice) => {
         if (choice === INSTALL_MISSING_DEPENDENCIES) {
           dependencyInstaller.installMissingDependencies()
-          if (!dependencyInstaller.allInstalled()) {
-            const missing: string[] = dependencyInstaller.getMissingDependenciesList()
-            void window.showErrorMessage('Failed to install dependencies: ' + missing.join(', '))
-          } else {
-            void window.showInformationMessage('All dependencies are now installed.')
-          }
         }
       }, () => {})
     }

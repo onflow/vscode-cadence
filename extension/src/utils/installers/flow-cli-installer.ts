@@ -1,9 +1,8 @@
 /* Installer for Flow CLI */
 import { window } from 'vscode'
-import { VISIT_HOMEBREW_WEBSITE } from '../strings'
+import { INSTALL_FLOW_CLI_HOMEBREW, INSTALL_HOMEBREW } from '../strings'
 import { execDefault, execPowerShell } from '../utils'
 import { Installer } from './installer'
-import open = require('open')
 
 // Command to check flow-cli
 const CHECK_FLOW_CLI_CMD = 'flow'
@@ -26,6 +25,7 @@ export class InstallFlowCLI extends Installer {
     const OS_TYPE = process.platform
     switch (OS_TYPE) {
       case 'darwin':
+      case 'linux':
         this.#install_macos()
         break
       case 'win32':
@@ -38,24 +38,48 @@ export class InstallFlowCLI extends Installer {
   }
 
   #install_macos (): void {
-    // Install Flow CLI using homebrew
     if (!this.#checkHomebrew()) {
-      this.#installHomebrew()
-      if (!this.#checkHomebrew()) {
-        // Failed to install homebrew
-        window.showErrorMessage(
-          'Please install Homebrew so Flow CLI can be installed',
-          VISIT_HOMEBREW_WEBSITE
-        ).then((choice) => {
-          if (choice === VISIT_HOMEBREW_WEBSITE) {
-            void open('https://docs.brew.sh/Installation')
-          }
-        }, () => {})
-        return
-      }
+      // Prompt install Homebrew
+      window.showInformationMessage(
+        'Please install Homebrew to allow for the installation of Flow CLI',
+        INSTALL_HOMEBREW
+      ).then((choice) => {
+        if (choice === INSTALL_HOMEBREW) {
+          this.#installHomebrew()
+        }
+      }, () => {})
+    } else {
+      this.#brewInstallFlowCLI()
     }
+  }
 
-    void execDefault(BREW_INSTALL_FLOW_CLI)
+  #installHomebrew (): void {
+    // Help user install homebrew in a terminal
+    const term = window.createTerminal({
+      name: 'Install Homebrew',
+      hideFromUser: true
+    })
+    term.sendText(BASH_INSTALL_HOMEBREW)
+    term.show()
+    this.#brewInstallFlowCLI(true)
+  }
+
+  #brewInstallFlowCLI (prompt: boolean = false): void {
+    if (prompt) {
+      // Prompt install Flow CLI using homebrew
+      window.showInformationMessage(
+        'Install Flow CLI using Homebrew',
+        INSTALL_FLOW_CLI_HOMEBREW
+      ).then((choice) => {
+        if (choice === INSTALL_FLOW_CLI_HOMEBREW) {
+          void execDefault(BREW_INSTALL_FLOW_CLI)
+        }
+      }, () => {})
+    } else {
+      // Install Flow CLI using homebrew
+      void window.showInformationMessage('Installing Flow CLI')
+      void execDefault(BREW_INSTALL_FLOW_CLI)
+    }
   }
 
   #install_windows (): void {
@@ -68,10 +92,6 @@ export class InstallFlowCLI extends Installer {
 
   #checkHomebrew (): boolean {
     return execDefault(CHECK_HOMEBREW_CMD)
-  }
-
-  #installHomebrew (): void {
-    execDefault(BASH_INSTALL_HOMEBREW)
   }
 
   verifyInstall (): boolean {
