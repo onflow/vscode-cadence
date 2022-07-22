@@ -5,6 +5,7 @@ import { ext } from '../../main'
 import * as Config from '../local/config'
 import { Settings } from '../../settings/settings'
 import * as response from './responses'
+import { DEBUG_LOG } from '../../utils/debug'
 
 // The args to pass to the Flow CLI to start the language server.
 const START_LANGUAGE_SERVER_ARGS = ['cadence', 'language-server']
@@ -38,11 +39,9 @@ export class LanguageServerAPI {
 
   async startClient (): Promise<void> {
     const configPath = await Config.getConfigPath()
-    const emulatorState = ext.getEmulatorState()
+    const numAccounts = Settings.getWorkspaceSettings().numAccounts
 
-    // const activeAccount = ext.getActiveAccount() // TODO: Can't have this because no active account from LS yet
-    const activeAccountName = '' // (activeAccount != null) ? activeAccount.name : ''
-    const activeAccountAddress = '' // (activeAccount != null) ? activeAccount.address : ''
+    DEBUG_LOG("CONFIG PATH: " + configPath)
 
     this.client = new LanguageClient(
       'cadence',
@@ -56,12 +55,9 @@ export class LanguageServerAPI {
         synchronize: {
           configurationSection: 'cadence'
         },
-        initializationOptions: {
-          accessCheckMode: Settings.getWorkspaceSettings().accessCheckMode,
+        initializationOptions: {          
           configPath,
-          emulatorState, // Do we need these initialization options anymore??
-          activeAccountName, // ?
-          activeAccountAddress // ?
+          numAccounts
         }
       }
     )
