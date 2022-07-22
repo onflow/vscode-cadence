@@ -1,6 +1,7 @@
 import { window } from 'vscode'
 import { InstallFlowCLI } from './installers/flow-cli-installer'
-import { Installer, InstallError } from './installers/installer'
+import { Installer, InstallError } from './installer'
+import { promptUserErrorMessage } from '../utils/utils'
 
 const INSTALLERS = [
   InstallFlowCLI
@@ -12,6 +13,22 @@ export class DependencyInstaller {
 
   constructor () {
     this.#registerInstallers()
+    this.checkDependencies()
+  }
+
+  checkDependencies (): void {
+    if (!this.#allInstalled()) {
+      const missing: string[] = this.#getMissingDependenciesList()
+
+      // Prompt user to install missing dependencies
+      promptUserErrorMessage(
+        'Not all dependencies are installed: ' + missing.join(', '),
+        'Install Missing Dependencies',
+        () => { this.#installMissingDependencies() }
+      )
+    } else {
+      void window.showInformationMessage('All dependencies are installed')
+    }
   }
 
   prettyPrintDepencencies (): void {
@@ -33,7 +50,7 @@ export class DependencyInstaller {
     })
   }
 
-  getMissingDependenciesList (): string[] {
+  #getMissingDependenciesList (): string[] {
     const missingDependencies: string[] = []
     this.registeredInstallers.forEach((installer) => {
       if (!installer.isInstalled()) {
@@ -43,7 +60,7 @@ export class DependencyInstaller {
     return missingDependencies
   }
 
-  allInstalled (): boolean {
+  #allInstalled (): boolean {
     let installed: boolean = true
     this.registeredInstallers.forEach((installer) => {
       if (!installer.isInstalled()) {
@@ -53,7 +70,7 @@ export class DependencyInstaller {
     return installed
   }
 
-  installMissingDependencies (): void {
+  #installMissingDependencies (): void {
     this.registeredInstallers.forEach((installer) => {
       try {
         installer.runInstall()

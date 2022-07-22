@@ -7,6 +7,28 @@ import {
 
 export const FILE_PATH_EMPTY = ''
 
+export function promptUserInfoMessage (message: string, buttonText: string, callback: Function): void {
+  window.showInformationMessage(
+    message,
+    buttonText
+  ).then((choice) => {
+    if (choice === buttonText) {
+      callback()
+    }
+  }, () => {})
+}
+
+export function promptUserErrorMessage (message: string, buttonText: string, callback: Function): void {
+  window.showErrorMessage(
+    message,
+    buttonText
+  ).then((choice) => {
+    if (choice === buttonText) {
+      callback()
+    }
+  }, () => {})
+}
+
 // This method will add and then remove a space on the last line to trick codelens to be updated
 export const refreshCodeLenses = (): void => {
   window.visibleTextEditors.forEach((editor) => {

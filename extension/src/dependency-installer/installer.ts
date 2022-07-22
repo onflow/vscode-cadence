@@ -1,5 +1,5 @@
 /* Abstract Installer class */
-import { DEBUG_LOG } from '../debug'
+import { DEBUG_LOG } from '../utils/debug'
 
 // InstallError is thrown if install fails
 export class InstallError extends Error {}

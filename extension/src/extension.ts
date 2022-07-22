@@ -4,9 +4,8 @@ import { CommandController } from './commands/command-controller'
 import { refreshCodeLenses } from './utils/utils'
 import { Account } from './emulator/account'
 import { UIController } from './ui/ui-controller'
-import { ExtensionContext, window } from 'vscode'
-import { DependencyInstaller } from './utils/dependency-installer'
-import { INSTALL_MISSING_DEPENDENCIES } from './utils/strings'
+import { ExtensionContext } from 'vscode'
+import { DependencyInstaller } from './dependency-installer/dependency-installer'
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -19,6 +18,7 @@ export class Extension {
   }
 
   ctx: ExtensionContext
+  #dependencyInstaller: DependencyInstaller
   uiCtrl: UIController
   commands: CommandController
   emulatorCtrl: EmulatorController
@@ -27,7 +27,7 @@ export class Extension {
     this.ctx = ctx
 
     // Check for any missing dependencies
-    this.#checkDependencies()
+    this.#dependencyInstaller = new DependencyInstaller()
 
     // Initialize Emulator
     this.emulatorCtrl = new EmulatorController(this.ctx.storagePath, this.ctx.globalStoragePath)
@@ -37,24 +37,6 @@ export class Extension {
 
     // Initialize ExtensionCommands
     this.commands = new CommandController()
-  }
-
-  #checkDependencies (): void {
-    const dependencyInstaller = new DependencyInstaller()
-
-    if (!dependencyInstaller.allInstalled()) {
-      const missing: string[] = dependencyInstaller.getMissingDependenciesList()
-
-      // Prompt user to install missing dependencies
-      window.showErrorMessage(
-        'Not all dependencies are installed: ' + missing.join(', '),
-        INSTALL_MISSING_DEPENDENCIES
-      ).then((choice) => {
-        if (choice === INSTALL_MISSING_DEPENDENCIES) {
-          dependencyInstaller.installMissingDependencies()
-        }
-      }, () => {})
-    }
   }
 
   getEmulatorState (): EmulatorState {
@@ -73,5 +55,9 @@ export class Extension {
 
     // Update UI
     this.uiCtrl.emulatorStateChanged()
+  }
+
+  checkDependencies (): void {
+    this.#dependencyInstaller.checkDependencies()
   }
 }

@@ -1,8 +1,7 @@
 /* Installer for Flow CLI */
 import { window } from 'vscode'
-import { INSTALL_FLOW_CLI_HOMEBREW, INSTALL_HOMEBREW } from '../strings'
-import { execDefault, execPowerShell } from '../utils'
-import { Installer } from './installer'
+import { execDefault, execPowerShell, promptUserInfoMessage } from '../../utils/utils'
+import { Installer } from '../installer'
 
 // Command to check flow-cli
 const CHECK_FLOW_CLI_CMD = 'flow'
@@ -40,14 +39,11 @@ export class InstallFlowCLI extends Installer {
   #install_macos (): void {
     if (!this.#checkHomebrew()) {
       // Prompt install Homebrew
-      window.showInformationMessage(
+      promptUserInfoMessage(
         'Please install Homebrew to allow for the installation of Flow CLI',
-        INSTALL_HOMEBREW
-      ).then((choice) => {
-        if (choice === INSTALL_HOMEBREW) {
-          this.#installHomebrew()
-        }
-      }, () => {})
+        'Install Hombrew in terminal',
+        () => { this.#installHomebrew() }
+      )
     } else {
       this.#brewInstallFlowCLI()
     }
@@ -67,14 +63,11 @@ export class InstallFlowCLI extends Installer {
   #brewInstallFlowCLI (prompt: boolean = false): void {
     if (prompt) {
       // Prompt install Flow CLI using homebrew
-      window.showInformationMessage(
+      promptUserInfoMessage(
         'Install Flow CLI using Homebrew',
-        INSTALL_FLOW_CLI_HOMEBREW
-      ).then((choice) => {
-        if (choice === INSTALL_FLOW_CLI_HOMEBREW) {
-          void execDefault(BREW_INSTALL_FLOW_CLI)
-        }
-      }, () => {})
+        'Install Flow CLI',
+        () => { void execDefault(BREW_INSTALL_FLOW_CLI) }
+      )
     } else {
       // Install Flow CLI using homebrew
       void window.showInformationMessage('Installing Flow CLI')
