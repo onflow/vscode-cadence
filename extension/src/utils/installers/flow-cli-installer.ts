@@ -1,18 +1,17 @@
-// import { exec } from 'child_process'
-import { exec } from 'child_process'
 import { DEBUG_LOG } from '../debug'
 import { Installer } from './installer'
 
-const BASH_INSTALL_FLOW_CLI = 'sh -ci "$(curl -fsSL https://storage.googleapis.com/flow-cli/install.sh)"'
+// Command to check flow-cli
+const CHECK_FLOW_CLI_CMD = 'flow'
 
 // Flow CLI with homebrew
 const CHECK_HOMEBREW_CMD = 'brew help help' // Run this to check if brew is executable
 const BASH_INSTALL_HOMEBREW = '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+
+// Shell install commands
 const BREW_INSTALL_FLOW_CLI = 'brew install flow-cli'
-
-const CHECK_FLOW_CLI_CMD = 'flow'
-
 const WINDOWS_POWERSHELL_INSTALL_CMD = 'iex \"& { $(irm \'https://storage.googleapis.com/flow-cli/install.ps1\') }\"'
+const BASH_INSTALL_FLOW_CLI = 'sh -ci "$(curl -fsSL https://storage.googleapis.com/flow-cli/install.sh)"'
 
 export class InstallFlowCLI extends Installer {
   constructor () {
