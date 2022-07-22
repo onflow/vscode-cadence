@@ -5,7 +5,7 @@ import { refreshCodeLenses } from './utils/utils'
 import { Account } from './emulator/account'
 import { UIController } from './ui/ui-controller'
 import { ExtensionContext } from 'vscode'
-import { installDependencies } from './utils/dependency-installer'
+import { DependencyInstaller } from './utils/dependency-installer'
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -25,7 +25,8 @@ export class Extension {
   private constructor (ctx: ExtensionContext) {
     this.ctx = ctx
 
-    this.#installDependencies()
+    // Prompt install of any missing dependencies
+    this.#checkDependencies()
 
     // Initialize Emulator
     this.emulatorCtrl = new EmulatorController(this.ctx.storagePath, this.ctx.globalStoragePath)
@@ -37,8 +38,17 @@ export class Extension {
     this.commands = new CommandController()
   }
 
-  #installDependencies(): void {
-    installDependencies()
+  #checkDependencies (): void {
+    const dependencyInstaller = new DependencyInstaller()
+
+    dependencyInstaller.prettyPrintDepencencies()
+
+    // TODO: Give a pop up to ask if they want to install dependencies
+    // And list which ones they are missing!
+
+    dependencyInstaller.installMissingDependencies()
+    dependencyInstaller.prettyPrintDepencencies()
+
   }
 
   getEmulatorState (): EmulatorState {
