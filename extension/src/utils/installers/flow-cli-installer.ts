@@ -55,6 +55,7 @@ export class InstallFlowCLI extends Installer {
   }
 
   #install_macos (): void {
+    DEBUG_LOG('Running MacOS Flow CLI Installer')
     // Install Flow CLI using homebrew
     if (!this.#checkHomebrew()) {
       this.#installHomebrew()
@@ -68,10 +69,12 @@ export class InstallFlowCLI extends Installer {
   }
 
   #install_windows (): void {
+    DEBUG_LOG('Running Windows Flow CLI Installer')
     this.execPowerShell(WINDOWS_POWERSHELL_INSTALL_CMD)
   }
 
   #install_bash_cmd (): void {
+    DEBUG_LOG('Running Bash Flow CLI Installer')
     this.execBash(BASH_INSTALL_FLOW_CLI)
   }
 
@@ -85,6 +88,6 @@ export class InstallFlowCLI extends Installer {
 
   verifyInstall (): boolean {
     // Check if flow-cli is executable
-    return false// this.execBash(CHECK_FLOW_CLI_CMD)
+    return this.execBash(CHECK_FLOW_CLI_CMD)
   }
 }

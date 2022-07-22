@@ -1,6 +1,5 @@
 /* Installer class */
-
-import { exec, execSync } from 'child_process'
+import { execSync } from 'child_process'
 
 export class InstallError extends Error {}
 
@@ -10,7 +9,7 @@ export abstract class Installer {
 
   constructor (name: string) {
     this.#installerName = name
-    this.#installed = this.verifyInstall()
+    this.#installed = false //this.verifyInstall()
   }
 
   getName (): string {
@@ -51,6 +50,6 @@ export abstract class Installer {
   // Installation logic
   abstract install (): void
 
-  // Verifies if dependency is installed and must set this.#installed
+  // Returns true if the dependency is installed
   abstract verifyInstall (): boolean
 }
