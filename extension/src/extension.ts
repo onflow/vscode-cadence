@@ -48,7 +48,6 @@ export class Extension {
 
     dependencyInstaller.installMissingDependencies()
     dependencyInstaller.prettyPrintDepencencies()
-
   }
 
   getEmulatorState (): EmulatorState {

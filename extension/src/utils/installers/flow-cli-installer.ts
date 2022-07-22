@@ -1,4 +1,5 @@
 // import { exec } from 'child_process'
+import { exec } from 'child_process'
 import { DEBUG_LOG } from '../debug'
 import { Installer } from './installer'
 
@@ -11,6 +12,8 @@ const BREW_INSTALL_FLOW_CLI = 'brew install flow-cli'
 
 const CHECK_FLOW_CLI_CMD = 'flow'
 
+const WINDOWS_POWERSHELL_INSTALL_CMD = 'iex \"& { $(irm \'https://storage.googleapis.com/flow-cli/install.ps1\') }\"'
+
 export class InstallFlowCLI extends Installer {
   constructor () {
     super('Flow CLI')
@@ -18,6 +21,21 @@ export class InstallFlowCLI extends Installer {
 
   install (): void {
     DEBUG_LOG('Running Flow CLI Installer...')
+
+    const OS_TYPE = process.platform
+    switch (OS_TYPE) {
+      case 'darwin':
+        this.#install_macos()
+        break
+      case 'win32':
+        this.#install_windows()
+        break
+      default:
+        this.#install_bash_cmd()
+        break
+    }
+
+    /* // TODO: Do I need this? Probably? lol.
     const CPU_TYPE = process.arch
     switch (CPU_TYPE) {
       case 'x86_64':
@@ -33,13 +51,10 @@ export class InstallFlowCLI extends Installer {
       default:
       // Unknown CPU Type
     }
+    */
   }
 
-  #install_x64 (): void {
-    this.execBash(BASH_INSTALL_FLOW_CLI)
-  }
-
-  #install_arm (): void {
+  #install_macos (): void {
     // Install Flow CLI using homebrew
     if (!this.#checkHomebrew()) {
       this.#installHomebrew()
@@ -52,6 +67,14 @@ export class InstallFlowCLI extends Installer {
     void this.execBash(BREW_INSTALL_FLOW_CLI)
   }
 
+  #install_windows (): void {
+    this.execPowerShell(WINDOWS_POWERSHELL_INSTALL_CMD)
+  }
+
+  #install_bash_cmd (): void {
+    this.execBash(BASH_INSTALL_FLOW_CLI)
+  }
+
   #checkHomebrew (): boolean {
     return this.execBash(CHECK_HOMEBREW_CMD)
   }
@@ -62,6 +85,6 @@ export class InstallFlowCLI extends Installer {
 
   verifyInstall (): boolean {
     // Check if flow-cli is executable
-    return this.execBash(CHECK_FLOW_CLI_CMD)
+    return false// this.execBash(CHECK_FLOW_CLI_CMD)
   }
 }

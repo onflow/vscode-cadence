@@ -30,6 +30,15 @@ export abstract class Installer {
     this.#installed = true
   }
 
+  execPowerShell (cmd: string): boolean {
+    try {
+      execSync(cmd, { shell: 'powershell.exe' })
+    } catch (err) {
+      return false
+    }
+    return true
+  }
+
   execBash (cmd: string): boolean {
     try {
       execSync(cmd)
