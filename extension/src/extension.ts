@@ -5,6 +5,7 @@ import { refreshCodeLenses } from './utils/utils'
 import { Account } from './emulator/account'
 import { UIController } from './ui/ui-controller'
 import { ExtensionContext } from 'vscode'
+import { installDependencies } from './utils/dependency-installer'
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -24,7 +25,7 @@ export class Extension {
   private constructor (ctx: ExtensionContext) {
     this.ctx = ctx
 
-    // Note: Language Server Client should be initialized here when we remove client-side emulator
+    this.#installDependencies()
 
     // Initialize Emulator
     this.emulatorCtrl = new EmulatorController(this.ctx.storagePath, this.ctx.globalStoragePath)
@@ -34,6 +35,10 @@ export class Extension {
 
     // Initialize ExtensionCommands
     this.commands = new CommandController()
+  }
+
+  #installDependencies(): void {
+    installDependencies()
   }
 
   getEmulatorState (): EmulatorState {
