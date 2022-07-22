@@ -1,6 +1,7 @@
-/* Installer class */
-import { execSync } from 'child_process'
+/* Abstract Installer class */
+import { DEBUG_LOG } from '../debug'
 
+// InstallError is thrown if install fails
 export class InstallError extends Error {}
 
 export abstract class Installer {
@@ -9,11 +10,15 @@ export abstract class Installer {
 
   constructor (name: string) {
     this.#installerName = name
-    this.#installed = false //this.verifyInstall()
+    this.#installed = this.verifyInstall()
   }
 
   getName (): string {
     return this.#installerName
+  }
+
+  isInstalled (): boolean {
+    return this.#installed
   }
 
   runInstall (): void {
@@ -21,6 +26,7 @@ export abstract class Installer {
       return
     }
 
+    DEBUG_LOG('Running ' + this.#installerName + ' installer...')
     this.install()
 
     if (!this.verifyInstall()) {
@@ -29,27 +35,9 @@ export abstract class Installer {
     this.#installed = true
   }
 
-  execPowerShell (cmd: string): boolean {
-    try {
-      execSync(cmd, { shell: 'powershell.exe' })
-    } catch (err) {
-      return false
-    }
-    return true
-  }
-
-  execBash (cmd: string): boolean {
-    try {
-      execSync(cmd)
-    } catch (err) {
-      return false
-    }
-    return true
-  }
-
   // Installation logic
-  abstract install (): void
+  protected abstract install (): void
 
-  // Returns true if the dependency is installed
-  abstract verifyInstall (): boolean
+  // Logic to check if dependency is installed
+  protected abstract verifyInstall (): boolean
 }

@@ -4,8 +4,9 @@ import { CommandController } from './commands/command-controller'
 import { refreshCodeLenses } from './utils/utils'
 import { Account } from './emulator/account'
 import { UIController } from './ui/ui-controller'
-import { ExtensionContext } from 'vscode'
+import { ExtensionContext, window } from 'vscode'
 import { DependencyInstaller } from './utils/dependency-installer'
+import { INSTALL_MISSING_DEPENDENCIES } from './utils/strings'
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -25,7 +26,7 @@ export class Extension {
   private constructor (ctx: ExtensionContext) {
     this.ctx = ctx
 
-    // Prompt install of any missing dependencies
+    // Check for any missing dependencies
     this.#checkDependencies()
 
     // Initialize Emulator
@@ -41,13 +42,25 @@ export class Extension {
   #checkDependencies (): void {
     const dependencyInstaller = new DependencyInstaller()
 
-    dependencyInstaller.prettyPrintDepencencies()
+    if (!dependencyInstaller.allInstalled()) {
+      const missing: string[] = dependencyInstaller.getMissingDependenciesList()
 
-    // TODO: Give a pop up to ask if they want to install dependencies
-    // And list which ones they are missing!
-
-    dependencyInstaller.installMissingDependencies()
-    dependencyInstaller.prettyPrintDepencencies()
+      // Prompt user to install missing dependencies
+      window.showInformationMessage(
+        'Not all dependencies are installed: ' + missing.join(', '),
+        INSTALL_MISSING_DEPENDENCIES
+      ).then((choice) => {
+        if (choice === INSTALL_MISSING_DEPENDENCIES) {
+          dependencyInstaller.installMissingDependencies()
+          if (!dependencyInstaller.allInstalled()) {
+            const missing: string[] = dependencyInstaller.getMissingDependenciesList()
+            void window.showErrorMessage('Failed to install dependencies: ' + missing.join(', '))
+          } else {
+            void window.showInformationMessage('All dependencies are now installed.')
+          }
+        }
+      }, () => {})
+    }
   }
 
   getEmulatorState (): EmulatorState {

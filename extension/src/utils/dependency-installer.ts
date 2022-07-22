@@ -1,44 +1,55 @@
 import { InstallFlowCLI } from './installers/flow-cli-installer'
-import { Installer } from './installers/installer'
+import { Installer, InstallError } from './installers/installer'
 
 // Installers for each dependency
-const installers = [
+const INSTALLERS = [
   InstallFlowCLI
 ]
 
 export class DependencyInstaller {
   registeredInstallers: Installer[] = []
-  // Map dependency name to corresponding installed state
-  dependencies: { [name: string]: boolean } = {}
 
   constructor () {
     this.#registerInstallers()
-    this.#checkDependencies()
   }
 
   prettyPrintDepencencies (): void {
     console.log('Dependencies:')
-    for (const key in this.dependencies) {
-      const value = this.dependencies[key]
-      if (value) {
-        console.log('  ' + key + ' ✓')
+    this.registeredInstallers.forEach((installer) => {
+      const installerName = installer.getName()
+      if (installer.isInstalled()) {
+        console.log('  ' + installerName + ' ✓')
       } else {
-        console.log('  ' + key + ' x')
+        console.log('  ' + installerName + ' x')
       }
-    }
+    })
   }
 
   #registerInstallers (): void {
-    installers.forEach((_installer) => {
+    INSTALLERS.forEach((_installer) => {
       const installer = new _installer()
       this.registeredInstallers.push(installer)
     })
   }
 
-  #checkDependencies (): void {
+  getMissingDependenciesList (): string[] {
+    const missingDependencies: string[] = []
     this.registeredInstallers.forEach((installer) => {
-      this.dependencies[installer.getName()] = installer.verifyInstall()
+      if (!installer.isInstalled()) {
+        missingDependencies.push(installer.getName())
+      }
     })
+    return missingDependencies
+  }
+
+  allInstalled (): boolean {
+    let installed: boolean = true
+    this.registeredInstallers.forEach((installer) => {
+      if (!installer.isInstalled()) {
+        installed = false
+      }
+    })
+    return installed
   }
 
   installMissingDependencies (): void {
@@ -46,9 +57,12 @@ export class DependencyInstaller {
       try {
         installer.runInstall()
       } catch (err) {
-        // Handle failed to install errors
+        if (err instanceof InstallError) {
+          // Ignore failed to install errors
+        } else {
+          throw err
+        }
       }
     })
-    this.#checkDependencies()
   }
 }

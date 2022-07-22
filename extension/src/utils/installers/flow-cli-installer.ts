@@ -1,5 +1,9 @@
-import { DEBUG_LOG } from '../debug'
+/* Installer for Flow CLI */
+import { window } from 'vscode'
+import { VISIT_HOMEBREW_WEBSITE } from '../strings'
+import { execDefault, execPowerShell } from '../utils'
 import { Installer } from './installer'
+import open = require('open')
 
 // Command to check flow-cli
 const CHECK_FLOW_CLI_CMD = 'flow'
@@ -10,7 +14,7 @@ const BASH_INSTALL_HOMEBREW = '/bin/bash -c "$(curl -fsSL https://raw.githubuser
 
 // Shell install commands
 const BREW_INSTALL_FLOW_CLI = 'brew install flow-cli'
-const WINDOWS_POWERSHELL_INSTALL_CMD = 'iex \"& { $(irm \'https://storage.googleapis.com/flow-cli/install.ps1\') }\"'
+const WINDOWS_POWERSHELL_INSTALL_CMD = 'iex "& { $(irm \'https://storage.googleapis.com/flow-cli/install.ps1\') }"'
 const BASH_INSTALL_FLOW_CLI = 'sh -ci "$(curl -fsSL https://storage.googleapis.com/flow-cli/install.sh)"'
 
 export class InstallFlowCLI extends Installer {
@@ -19,8 +23,6 @@ export class InstallFlowCLI extends Installer {
   }
 
   install (): void {
-    DEBUG_LOG('Running Flow CLI Installer...')
-
     const OS_TYPE = process.platform
     switch (OS_TYPE) {
       case 'darwin':
@@ -33,60 +35,47 @@ export class InstallFlowCLI extends Installer {
         this.#install_bash_cmd()
         break
     }
-
-    /* // TODO: Do I need this? Probably? lol.
-    const CPU_TYPE = process.arch
-    switch (CPU_TYPE) {
-      case 'x86_64':
-      case 'x86-64':
-      case 'x64':
-      case 'amd64':
-        this.#install_x64()
-        break
-      case 'arm':
-      case 'arm64':
-        this.#install_arm()
-        break
-      default:
-      // Unknown CPU Type
-    }
-    */
   }
 
   #install_macos (): void {
-    DEBUG_LOG('Running MacOS Flow CLI Installer')
     // Install Flow CLI using homebrew
     if (!this.#checkHomebrew()) {
       this.#installHomebrew()
       if (!this.#checkHomebrew()) {
         // Failed to install homebrew
+        window.showErrorMessage(
+          'Please install Homebrew so Flow CLI can be installed',
+          VISIT_HOMEBREW_WEBSITE
+        ).then((choice) => {
+          if (choice === VISIT_HOMEBREW_WEBSITE) {
+            void open('https://docs.brew.sh/Installation')
+          }
+        }, () => {})
         return
       }
     }
 
-    void this.execBash(BREW_INSTALL_FLOW_CLI)
+    void execDefault(BREW_INSTALL_FLOW_CLI)
   }
 
   #install_windows (): void {
-    DEBUG_LOG('Running Windows Flow CLI Installer')
-    this.execPowerShell(WINDOWS_POWERSHELL_INSTALL_CMD)
+    execPowerShell(WINDOWS_POWERSHELL_INSTALL_CMD)
   }
 
   #install_bash_cmd (): void {
-    DEBUG_LOG('Running Bash Flow CLI Installer')
-    this.execBash(BASH_INSTALL_FLOW_CLI)
+    execDefault(BASH_INSTALL_FLOW_CLI)
   }
 
   #checkHomebrew (): boolean {
-    return this.execBash(CHECK_HOMEBREW_CMD)
+    return execDefault(CHECK_HOMEBREW_CMD)
   }
 
   #installHomebrew (): void {
-    this.execBash(BASH_INSTALL_HOMEBREW)
+    execDefault(BASH_INSTALL_HOMEBREW)
   }
 
   verifyInstall (): boolean {
     // Check if flow-cli is executable
-    return this.execBash(CHECK_FLOW_CLI_CMD)
+    return execDefault(CHECK_FLOW_CLI_CMD)
   }
 }
