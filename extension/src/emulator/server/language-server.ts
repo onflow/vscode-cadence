@@ -39,7 +39,7 @@ export class LanguageServerAPI {
 
   async startClient (): Promise<void> {
     const configPath = await Config.getConfigPath()
-    const numAccounts = Settings.getWorkspaceSettings().numAccounts
+    const numberOfAccounts = Settings.getWorkspaceSettings().numAccounts
 
     DEBUG_LOG('CONFIG PATH: ' + configPath)
 
@@ -57,7 +57,7 @@ export class LanguageServerAPI {
         },
         initializationOptions: {
           configPath,
-          numAccounts
+          numberOfAccounts
         }
       }
     )
