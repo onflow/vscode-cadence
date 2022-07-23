@@ -41,7 +41,7 @@ export class LanguageServerAPI {
     const configPath = await Config.getConfigPath()
     const numAccounts = Settings.getWorkspaceSettings().numAccounts
 
-    DEBUG_LOG("CONFIG PATH: " + configPath)
+    DEBUG_LOG('CONFIG PATH: ' + configPath)
 
     this.client = new LanguageClient(
       'cadence',
@@ -55,7 +55,7 @@ export class LanguageServerAPI {
         synchronize: {
           configurationSection: 'cadence'
         },
-        initializationOptions: {          
+        initializationOptions: {
           configPath,
           numAccounts
         }
