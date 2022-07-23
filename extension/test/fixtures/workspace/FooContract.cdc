@@ -1,2 +1,1 @@
 pub contract FooContract {}
- 

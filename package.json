@@ -17,11 +17,13 @@
 		"unit-test": "ts-mocha **/*.unit.test.ts",
 		"integration-test": "npm run esbuild && tsc -p ./ && node ./out/test/run-test.js",
 		"package": "./node_modules/.bin/vsce package",
+		"package-windows": ".\\node_modules\\.bin\\vsce.cmd package",
 		"install-extension": "code --install-extension cadence-*.vsix",
 		"package-test": "./node_modules/.bin/vsce package --out ./extension/test/fixtures/workspace/cadence.vsix",
 		"lint": "ts-standard",
 		"lint-fix": "ts-standard --fix",
-		"vscode-start": "docker-compose up -d && docker exec vscode code-server --install-extension /source/cadence.vsix",
+		"docker-install-extension": "docker exec vscode code-server --install-extension /source/cadence.vsix",
+		"vscode-start": "docker-compose up -d && npm run docker-install-extension",
 		"vscode-stop": "docker-compose down",
 		"cypress": "./node_modules/.bin/cypress run",
 		"e2e-test": "npm run package-test && npm run vscode-start && npm run cypress && npm run vscode-stop"
@@ -79,13 +81,13 @@
 				"cadence.flowCommand": {
 					"type": "string",
 					"default": "flow",
-					"description": "The command to invoke the Flow CLI",
+					"description": "The command to invoke the Flow CLI.",
 					"scope": "resource"
 				},
 				"cadence.numAccounts": {
 					"type": "number",
 					"default": 3,
-					"description": "The number of default accounts to create",
+					"description": "The number of default accounts to create.",
 					"scope": "resource"
 				},
 				"cadence.accessCheckMode": {
@@ -103,7 +105,7 @@
 						"Access modifiers are optional. Access is assumed public if not specified",
 						"Access modifiers are optional and ignored"
 					],
-					"description": "Configures if access modifiers are required and how they are are enforced",
+					"description": "Configures if access modifiers are required and how they are are enforced.",
 					"scope": "resource"
 				},
 				"cadence.trace.server": {
@@ -116,6 +118,12 @@
 					],
 					"default": "off",
 					"description": "Traces the communication between VS Code and the Cadence language server."
+				},
+				"cadence.customConfigPath": {
+					"type": "string",
+					"default": "",
+					"description": "Enter a custom flow.json path, or leave empty for the default config search.",
+					"scope": "resource"
 				}
 			}
 		},
@@ -227,6 +235,7 @@
 	"dependencies": {
 		"-": "^0.0.1",
 		"@onflow/decode": "0.0.11",
+		"@sentry/node": "^7.6.0",
 		"ansi-regex": "^6.0.1",
 		"vsce": "^2.9.1",
 		"vscode-languageclient": "^8.0.1"
