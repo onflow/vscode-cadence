@@ -28,6 +28,7 @@ export class CommandController {
     this.#registerCommand(commandID.RESTART_SERVER, this.#restartServer)
     this.#registerCommand(commandID.CREATE_ACCOUNT, this.#createAccount)
     this.#registerCommand(commandID.SWITCH_ACCOUNT, this.#switchActiveAccount)
+    this.#registerCommand(commandID.CHECK_DEPENDENCIES, this.#checkDependencies)
   }
 
   #restartServer (): void {
@@ -48,5 +49,9 @@ export class CommandController {
 
   #switchActiveAccount (): void {
     void ext.emulatorCtrl.switchActiveAccount()
+  }
+
+  #checkDependencies (): void {
+    void ext.checkDependencies()
   }
 }

@@ -9,3 +9,6 @@ export const SWITCH_ACCOUNT = 'cadence.switchActiveAccount'
 export const DEPLOY_CONTRACT = 'cadence.deployContract'
 export const EXECUTE_SCRIPT = 'cadence.executeScript'
 export const SEND_TRANSACTION = 'cadence.sendTransaction'
+
+// Command identifires for dependencies
+export const CHECK_DEPENDENCIES = 'cadence.checkDepencencies'

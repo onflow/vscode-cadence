@@ -6,6 +6,7 @@ import { Account } from './emulator/account'
 import { UIController } from './ui/ui-controller'
 import { ExtensionContext } from 'vscode'
 import { DEBUG_LOG } from './utils/debug'
+import { DependencyInstaller } from './dependency-installer/dependency-installer'
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -18,12 +19,16 @@ export class Extension {
   }
 
   ctx: ExtensionContext
+  #dependencyInstaller: DependencyInstaller
   #uiCtrl: UIController
   #commands: CommandController
   emulatorCtrl: EmulatorController
 
   private constructor (ctx: ExtensionContext) {
     this.ctx = ctx
+
+    // Check for any missing dependencies
+    this.#dependencyInstaller = new DependencyInstaller()
 
     // Initialize Emulator
     this.emulatorCtrl = new EmulatorController()
@@ -64,5 +69,9 @@ export class Extension {
     // Update UI
     this.#uiCtrl.emulatorStateChanged()
     refreshCodeLenses()
+  }
+
+  checkDependencies (): void {
+    this.#dependencyInstaller.checkDependencies()
   }
 }

@@ -41,7 +41,8 @@
 		"onCommand:cadence.runEmulator",
 		"onCommand:cadence.stopEmulator",
 		"onCommand:cadence.createAccount",
-		"onCommand:cadence.switchActiveAccount"
+		"onCommand:cadence.switchActiveAccount",
+		"onCommand:cadence.checkDepencencies"
 	],
 	"main": "./out/main.js",
 	"contributes": {
@@ -70,6 +71,11 @@
 				"command": "cadence.switchActiveAccount",
 				"category": "Cadence",
 				"title": "Switch account"
+			},
+			{
+				"command": "cadence.checkDepencencies",
+				"category": "Cadence",
+				"title": "Check Dependencies"
 			}
 		],
 		"configuration": {
