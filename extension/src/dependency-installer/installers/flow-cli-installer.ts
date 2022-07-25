@@ -1,6 +1,7 @@
 /* Installer for Flow CLI */
 import { window } from 'vscode'
-import { execDefault, execPowerShell, promptUserInfoMessage } from '../../utils/utils'
+import { execDefault, execPowerShell } from '../../utils/utils'
+import { promptUserInfoMessage } from '../../ui/prompts'
 import { Installer } from '../installer'
 
 // Command to check flow-cli

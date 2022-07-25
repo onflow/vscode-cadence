@@ -1,7 +1,7 @@
 import { window } from 'vscode'
 import { InstallFlowCLI } from './installers/flow-cli-installer'
 import { Installer, InstallError } from './installer'
-import { promptUserErrorMessage } from '../utils/utils'
+import { promptUserErrorMessage } from '../ui/prompts'
 
 const INSTALLERS = [
   InstallFlowCLI
@@ -61,13 +61,7 @@ export class DependencyInstaller {
   }
 
   #allInstalled (): boolean {
-    let installed: boolean = true
-    this.registeredInstallers.forEach((installer) => {
-      if (!installer.isInstalled()) {
-        installed = false
-      }
-    })
-    return installed
+    return this.registeredInstallers.find(installer => !installer.isInstalled()) ? false : true
   }
 
   #installMissingDependencies (): void {
