@@ -5,6 +5,7 @@ import { refreshCodeLenses } from './utils/utils'
 import { Account } from './emulator/account'
 import { UIController } from './ui/ui-controller'
 import { ExtensionContext } from 'vscode'
+import { DependencyInstaller } from './dependency-installer/dependency-installer'
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -17,6 +18,7 @@ export class Extension {
   }
 
   ctx: ExtensionContext
+  #dependencyInstaller: DependencyInstaller
   uiCtrl: UIController
   commands: CommandController
   emulatorCtrl: EmulatorController
@@ -24,7 +26,8 @@ export class Extension {
   private constructor (ctx: ExtensionContext) {
     this.ctx = ctx
 
-    // Note: Language Server Client should be initialized here when we remove client-side emulator
+    // Check for any missing dependencies
+    this.#dependencyInstaller = new DependencyInstaller()
 
     // Initialize Emulator
     this.emulatorCtrl = new EmulatorController(this.ctx.storagePath, this.ctx.globalStoragePath)
@@ -52,5 +55,9 @@ export class Extension {
 
     // Update UI
     this.uiCtrl.emulatorStateChanged()
+  }
+
+  checkDependencies (): void {
+    this.#dependencyInstaller.checkDependencies()
   }
 }
