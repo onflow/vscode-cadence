@@ -61,7 +61,7 @@ export class DependencyInstaller {
   }
 
   #allInstalled (): boolean {
-    return this.registeredInstallers.find(installer => !installer.isInstalled()) ? false : true
+    return this.registeredInstallers.find(installer => !installer.isInstalled()) == null
   }
 
   #installMissingDependencies (): void {

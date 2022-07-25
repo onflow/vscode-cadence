@@ -1,5 +1,5 @@
 /* Information and error prompts */
-import { window } from "vscode"
+import { window } from 'vscode'
 
 export function promptUserInfoMessage (message: string, buttonText: string, callback: Function): void {
   window.showInformationMessage(
