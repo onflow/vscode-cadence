@@ -14,7 +14,6 @@ import { Account } from './account'
 import { window } from 'vscode'
 import { GetAccountsReponse } from './server/responses'
 import { promptCopyAccountAddress } from '../ui/prompts'
-import { DEBUG_LOG } from '../utils/debug'
 
 export enum EmulatorState {
   Connected = 0,
@@ -32,7 +31,6 @@ export class EmulatorController {
     this.#state = EmulatorState.Disconnected
 
     // Initialize the language server and hosted emulator
-    DEBUG_LOG('init LS API')
     this.api = new LanguageServerAPI()
     if (this.api.running) {
       this.#state = EmulatorState.Connected
