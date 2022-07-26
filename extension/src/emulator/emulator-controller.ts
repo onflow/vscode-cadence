@@ -1,6 +1,6 @@
 /*
-EmulatorController is used to execute commands on the Flow emulator
-Communicates with local configs and language-server data
+EmulatorController is used to communicate with the language server
+and synchronize account data with the hosted emulator
 */
 import { ext } from '../main'
 import { LanguageServerAPI } from './server/language-server'
@@ -14,11 +14,11 @@ import { Account } from './account'
 import { window } from 'vscode'
 import { GetAccountsReponse } from './server/responses'
 import { promptCopyAccountAddress } from '../ui/prompts'
+import { DEBUG_LOG } from '../utils/debug'
 
 export enum EmulatorState {
-  Stopped = 0,
-  Starting,
-  Started,
+  Connected = 0,
+  Disconnected,
 }
 
 export class EmulatorController {
@@ -29,10 +29,17 @@ export class EmulatorController {
 
   constructor () {
     // Initialize state
-    this.#state = EmulatorState.Stopped
+    this.#state = EmulatorState.Disconnected
 
     // Initialize the language server and hosted emulator
+    DEBUG_LOG('init LS API')
     this.api = new LanguageServerAPI()
+    if (this.api.running) {
+      this.#state = EmulatorState.Connected
+      void window.showInformationMessage('Flow emulator started')
+    } else {
+      void window.showErrorMessage('Flow emulator failed to start')
+    }
   }
 
   deactivate (): void {
@@ -45,47 +52,29 @@ export class EmulatorController {
     this.#accountData = await this.api.getAccounts()
   }
 
-  #setState (state: EmulatorState): void {
-    this.#state = state
-    ext.emulatorStateChanged()
-  }
-
   getState (): EmulatorState {
     return this.#state
   }
 
-  getActiveAccount (): Account {
-    return this.#accountData.getActiveAccount()
-  }
-
-  async startEmulator (): Promise<void> {
-    try {
-      this.#setState(EmulatorState.Started)
-      ext.emulatorStateChanged()
-      void window.showInformationMessage('Flow emulated started')
-    } catch (err) {
-      void window.showErrorMessage('Flow emulator failed to start')
-      this.#setState(EmulatorState.Stopped)
-      ext.emulatorStateChanged()
-      throw err
+  getActiveAccount (): Account | null {
+    if (this.#state === EmulatorState.Connected) {
+      return this.#accountData.getActiveAccount()
+    } else {
+      return null
     }
-  }
-
-  // Stops the emulator by resetting the LS
-  async stopEmulator (): Promise<void> {
-    // Reset the language server
-    this.api.reset()
-
-    // Set new state
-    this.#setState(EmulatorState.Stopped)
-    ext.emulatorStateChanged()
-    void window.showInformationMessage('Flow emulated stopped')
   }
 
   restartServer (): void {
     void this.api.restartServer()
-    ext.emulatorStateChanged()
     void window.showInformationMessage('Restarted language server')
+    if (this.api.running) {
+      this.#state = EmulatorState.Connected
+      void window.showInformationMessage('Flow emulator started')
+    } else {
+      this.#state = EmulatorState.Disconnected
+      void window.showErrorMessage('Flow emulator failed to start')
+    }
+    ext.emulatorStateChanged()
   }
 
   async createNewAccount (): Promise<void> {

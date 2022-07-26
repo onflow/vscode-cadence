@@ -5,7 +5,6 @@ import { ext } from '../../main'
 import * as Config from '../local/config'
 import { Settings } from '../../settings/settings'
 import * as response from './responses'
-import { DEBUG_LOG } from '../../utils/debug'
 
 // The args to pass to the Flow CLI to start the language server.
 const START_LANGUAGE_SERVER_ARGS = ['cadence', 'language-server']

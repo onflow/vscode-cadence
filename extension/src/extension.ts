@@ -15,6 +15,7 @@ export class Extension {
 
   static initialize (ctx: ExtensionContext): Extension {
     Extension.#instance = new Extension(ctx)
+    Extension.#instance.emulatorStateChanged()
     return Extension.#instance
   }
 
@@ -27,14 +28,14 @@ export class Extension {
   private constructor (ctx: ExtensionContext) {
     this.ctx = ctx
 
+    // Initialize UI
+    this.#uiCtrl = new UIController()
+
     // Check for any missing dependencies
     this.#dependencyInstaller = new DependencyInstaller()
 
     // Initialize Emulator
     this.emulatorCtrl = new EmulatorController()
-
-    // Initialize UI
-    this.#uiCtrl = new UIController()
 
     // Initialize ExtensionCommands
     this.#commands = new CommandController()
@@ -56,13 +57,14 @@ export class Extension {
     return this.emulatorCtrl.getState()
   }
 
-  getActiveAccount (): Account {
+  getActiveAccount (): Account | null {
     return this.emulatorCtrl.getActiveAccount()
   }
 
   emulatorStateChanged (): void {
+    DEBUG_LOG('emulatorStateChanged()')
     // Sync account data with LS
-    if (this.getEmulatorState() === EmulatorState.Started) {
+    if (this.getEmulatorState() === EmulatorState.Connected) {
       void this.emulatorCtrl.syncAccountData()
     }
 
