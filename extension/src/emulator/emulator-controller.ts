@@ -13,7 +13,7 @@ import {
 import { Account } from './account'
 import { window } from 'vscode'
 import { GetAccountsReponse } from './server/responses'
-import { promptCopyAccountAddress } from '../utils/utils'
+import { promptCopyAccountAddress } from '../ui/prompts'
 
 export enum EmulatorState {
   Stopped = 0,
