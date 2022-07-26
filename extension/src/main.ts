@@ -13,6 +13,7 @@ export async function activate (ctx: ExtensionContext): Promise<void> {
   // Initialize the extension
   Telemetry.withTelemetry(() => {
     ext = Extension.initialize(ctx)
+    ext.emulatorStateChanged()
   })
 }
 

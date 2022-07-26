@@ -15,7 +15,6 @@ export class Extension {
 
   static initialize (ctx: ExtensionContext): Extension {
     Extension.#instance = new Extension(ctx)
-    Extension.#instance.emulatorStateChanged()
     return Extension.#instance
   }
 
@@ -62,7 +61,6 @@ export class Extension {
   }
 
   emulatorStateChanged (): void {
-    DEBUG_LOG('emulatorStateChanged()')
     // Sync account data with LS
     if (this.getEmulatorState() === EmulatorState.Connected) {
       void this.emulatorCtrl.syncAccountData()
