@@ -118,12 +118,12 @@ export class EmulatorController {
   copyActiveAccount (): void {
     const activeAccount = this.#accountManager.getActiveAccount()
     if (activeAccount !== null) {
-      env.clipboard.writeText(`${activeAccount.fullName()}`)
-      .then(() => {
-        void window.showInformationMessage(`Coppied account 0x${activeAccount.address} to clipboard`)
-      })
+      void env.clipboard.writeText(`${activeAccount.fullName()}`)
+        .then(() => {
+          void window.showInformationMessage(`Coppied account 0x${activeAccount.address} to clipboard`)
+        })
     } else {
-      void window.showInformationMessage(`No active account, emulator has not been started.`)
+      void window.showInformationMessage('No active account, emulator has not been started.')
     }
   }
 }
