@@ -122,8 +122,6 @@ export class EmulatorController {
         .then(() => {
           void window.showInformationMessage(`Coppied account ${activeAccount.fullName()} to clipboard`)
         })
-    } else {
-      void window.showInformationMessage('No active account, emulator has not been started.')
     }
   }
 }
