@@ -9,7 +9,7 @@ import { AccountManager } from './tools/account-manager'
 import { LanguageServerAPI } from './server/language-server'
 import { Settings } from '../settings/settings'
 import { Account } from './account'
-import { window } from 'vscode'
+import { window, env } from 'vscode'
 
 export enum EmulatorState {
   Stopped = 0,
@@ -113,5 +113,15 @@ export class EmulatorController {
 
   getActiveAccount (): Account | null {
     return this.#accountManager.getActiveAccount()
+  }
+
+  copyActiveAccount (): void {
+    const activeAccount = this.#accountManager.getActiveAccount()
+    if (activeAccount !== null) {
+      void env.clipboard.writeText(`${activeAccount.fullName()}`)
+        .then(() => {
+          void window.showInformationMessage(`Coppied account ${activeAccount.fullName()} to clipboard`)
+        })
+    }
   }
 }
