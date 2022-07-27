@@ -54,7 +54,7 @@ export class LanguageServerAPI {
         },
         initializationOptions: {
           configPath: configPath,
-          numberOfAccounts: numberOfAccounts
+          numberOfAccounts: `${numberOfAccounts}`
         }
       }
     )
