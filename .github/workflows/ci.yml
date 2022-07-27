@@ -11,17 +11,13 @@ jobs:
     name: "Running Tests"
     runs-on: macos-latest
     steps:
-      - name: Checkout code
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Install vscode
       - run: brew install --cask visual-studio-code
-      - name: Install Dependencies
       - run: npm ci
-      - name: Install flow-cli
       - run: brew install flow-cli
       - name: "End-to-end Tests"
         run: npm run e2e-test-action
