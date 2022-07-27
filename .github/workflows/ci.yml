@@ -20,9 +20,5 @@ jobs:
       - run: npm ci
       #- name: "Unit Tests"
       #  run: npm run unit-test
-      - name: "Enable flow cmd"
-        run: docker exec vscode sudo chmod +x /usr/local/bin/flow
-      - name: "test flow"
-        run: flow
       - name: "End-to-end Tests"
         run: npm run e2e-test
