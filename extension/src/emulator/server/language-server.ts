@@ -83,7 +83,12 @@ export class LanguageServerAPI {
   async restartServer (): Promise<void> {
     // Stop server
     const activeAccount = ext.getActiveAccount()
-    await this.client.stop()
+
+    try {
+      await this.client.stop()
+    } catch (err) {
+      console.log("failed to stop server!")
+    }
 
     // TODO: Will we want to keep the state of the emulator?
     // Will need to save the state and then restore it
