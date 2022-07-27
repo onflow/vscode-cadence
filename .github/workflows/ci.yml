@@ -17,10 +17,13 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: brew install --cask visual-studio-code
+      - name: setup-docker
+        uses: docker-practice/actions-setup-docker@v1
+      #- run: brew install --cask docker
       - run: npm ci
       - run: brew install flow-cli
       - name: "End-to-end Tests"
-        run: npm run e2e-test-action
+        run: npm run e2e-test
 
   #tests:
   #  name: "Running Tests"
