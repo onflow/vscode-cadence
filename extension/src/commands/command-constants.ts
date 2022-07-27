@@ -10,3 +10,6 @@ export const SEND_TRANSACTION = 'cadence.sendTransaction'
 
 // Command identifires for dependencies
 export const CHECK_DEPENDENCIES = 'cadence.checkDepencencies'
+
+// Copy active account to clipboard
+export const COPY_ACTIVE_ACCOUNT = 'cadence.copyActiveAccount'

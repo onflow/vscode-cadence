@@ -11,7 +11,7 @@ import {
   ADD_NEW_PREFIX
 } from '../utils/strings'
 import { Account } from './account'
-import { window } from 'vscode'
+import { window, env } from 'vscode'
 import { GetAccountsReponse } from './server/responses'
 import { promptCopyAccountAddress } from '../ui/prompts'
 
@@ -133,5 +133,14 @@ export class EmulatorController {
 
       ext.emulatorStateChanged()
     }, () => {})
+  }
+
+  copyActiveAccount (): void {
+    if (this.#state === EmulatorState.Disconnected) return
+    const activeAccount = this.#accountData.getActiveAccount()
+    void env.clipboard.writeText(`${activeAccount.fullName()}`)
+      .then(() => {
+        void window.showInformationMessage(`Coppied account ${activeAccount.fullName()} to clipboard`)
+      })
   }
 }

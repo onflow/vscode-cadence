@@ -61,6 +61,11 @@
 				"title": "Switch account"
 			},
 			{
+				"command": "cadence.copyActiveAccount",
+				"category": "Cadence",
+				"title": "Copy active account to clipboard"
+			},
+			{
 				"command": "cadence.checkDepencencies",
 				"category": "Cadence",
 				"title": "Check Dependencies"
