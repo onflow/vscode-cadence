@@ -26,7 +26,7 @@
 		"vscode-start": "docker-compose up -d && npm run docker-install-extension",
 		"vscode-stop": "docker-compose down",
 		"cypress": "./node_modules/.bin/cypress run",
-		"enable-flow": "docker exec vscode sudo chmod +x /usr/local/bin/flow && docker exec vscode flow",
+		"enable-flow": "docker exec vscode sudo ls /usr/local/bin/flow",
 		"e2e-test": "npm run package-test && npm run vscode-start && npm run enable-flow && npm run cypress && npm run vscode-stop"
 	},
 	"engines": {
