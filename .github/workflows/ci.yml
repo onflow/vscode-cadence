@@ -18,8 +18,8 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: brew install --cask visual-studio-code
       - name: setup-docker
-        uses: docker-practice/actions-setup-docker@v1
-      #- run: brew install --cask docker
+        #uses: docker-practice/actions-setup-docker@v1
+        run: brew install --cask docker
       - run: npm ci
       - run: brew install flow-cli
       - name: "End-to-end Tests"
