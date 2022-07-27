@@ -13,7 +13,7 @@ export function initTest (cy: Cypress.cy): void {
     return false
   })
 
-  //cy.visit('http://localhost:8888')
+  cy.visit('http://localhost:8888')
   cy.wait(1000)
 }
 
@@ -34,7 +34,7 @@ export function openFile (cy: Cypress.cy, name: string): void {
 export function startEmulator (cy: Cypress.cy): void {
   cy.contains('Start Flow Emulator')
     .click({ force: true })
-  cy.contains('Stop Flow Emulator', { timeout: 20000 })
+  cy.contains('Stop Flow Emulator', { timeout: 10000 })
   cy.wait(5000)
 }
 

@@ -17,12 +17,11 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-      #- name: setup-docker
-      #  uses: docker-practice/actions-setup-docker@v1
+      - name: setup-docker
+        uses: docker-practice/actions-setup-docker@v1
       - name: Install dependencies
-        run: brew install flow-cli
         run: npm ci
-      - name: "End-to-end Tests"
+      - name: "Run end-to-end tests"
         run: npm run e2e-test
 
   #tests:
