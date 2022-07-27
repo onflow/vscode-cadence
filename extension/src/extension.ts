@@ -61,10 +61,8 @@ export class Extension {
   }
 
   emulatorStateChanged (): void {
-    // Sync account data with LS
-    if (this.getEmulatorState() === EmulatorState.Connected) {
-      void this.emulatorCtrl.syncAccountData()
-    }
+    // Sync emulator with LS
+    this.emulatorCtrl.syncEmulatorState()
 
     // Update UI
     this.#uiCtrl.emulatorStateChanged()

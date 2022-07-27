@@ -24,7 +24,7 @@ export class EmulatorController {
   api: LanguageServerAPI
   #state: EmulatorState
   // Syncronized account data with the LS
-  #accountData!: GetAccountsReponse
+  #accountData: GetAccountsReponse
 
   constructor () {
     // Initialize state
@@ -32,12 +32,9 @@ export class EmulatorController {
 
     // Initialize the language server and hosted emulator
     this.api = new LanguageServerAPI()
-    if (this.api.running) {
-      this.#state = EmulatorState.Connected
-      void window.showInformationMessage('Flow emulator started')
-    } else {
-      void window.showErrorMessage('Flow emulator failed to start')
-    }
+
+    // Initialize account data
+    this.#accountData = new GetAccountsReponse(null)
   }
 
   deactivate (): void {
@@ -46,8 +43,17 @@ export class EmulatorController {
   }
 
   // Called whenever the emulator is updated
-  async syncAccountData (): Promise<void> {
+  async #syncAccountData (): Promise<void> {
     this.#accountData = await this.api.getAccounts()
+  }
+
+  syncEmulatorState () : void {
+    if (this.api.running) {
+      this.#state = EmulatorState.Connected
+      this.#syncAccountData()
+    } else {
+      this.#state = EmulatorState.Disconnected
+    }
   }
 
   getState (): EmulatorState {
@@ -65,13 +71,6 @@ export class EmulatorController {
   restartServer (): void {
     void this.api.restartServer()
     void window.showInformationMessage('Restarted language server')
-    if (this.api.running) {
-      this.#state = EmulatorState.Connected
-      void window.showInformationMessage('Flow emulator started')
-    } else {
-      this.#state = EmulatorState.Disconnected
-      void window.showErrorMessage('Flow emulator failed to start')
-    }
     ext.emulatorStateChanged()
   }
 
@@ -138,9 +137,11 @@ export class EmulatorController {
   copyActiveAccount (): void {
     if (this.#state === EmulatorState.Disconnected) return
     const activeAccount = this.#accountData.getActiveAccount()
-    void env.clipboard.writeText(`${activeAccount.fullName()}`)
-      .then(() => {
-        void window.showInformationMessage(`Coppied account ${activeAccount.fullName()} to clipboard`)
-      })
+    if (activeAccount !== null) {
+      void env.clipboard.writeText(`${activeAccount.fullName()}`)
+        .then(() => {
+          void window.showInformationMessage(`Coppied account ${activeAccount.fullName()} to clipboard`)
+        })
+    }
   }
 }

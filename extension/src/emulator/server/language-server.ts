@@ -20,6 +20,8 @@ export class LanguageServerAPI {
   accessCheckMode: string
   flowCommand: string
 
+  #initializedClient: boolean
+
   constructor () {
     const settings = Settings.getWorkspaceSettings()
     this.accessCheckMode = settings.accessCheckMode
@@ -27,6 +29,7 @@ export class LanguageServerAPI {
 
     // Init running state with false and update, when client is connected to server
     this.running = false
+    this.#initializedClient = false
 
     void this.startClient()
   }
@@ -37,6 +40,7 @@ export class LanguageServerAPI {
   }
 
   async startClient (): Promise<void> {
+    this.#initializedClient = false
     const configPath = await Config.getConfigPath()
     const numberOfAccounts = Settings.getWorkspaceSettings().numAccounts
 
@@ -61,16 +65,22 @@ export class LanguageServerAPI {
 
     this.client.onDidChangeState((e: StateChangeEvent) => {
       this.running = e.newState === State.Running
+      if (this.#initializedClient && !this.running) {
+        window.showErrorMessage('Cadence language server stopped')
+      }
+      ext.emulatorStateChanged()
     })
 
     // This also starts the hosted emulator
     this.client.start()
-      .then(() =>
+      .then(() => {
         window.showInformationMessage('Cadence language server started')
-      )
+        ext.emulatorStateChanged()
+      })
       .catch((err: Error) => {
         void window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
       })
+    this.#initializedClient = true
   }
 
   reset (): void {
@@ -87,11 +97,8 @@ export class LanguageServerAPI {
     try {
       await this.client.stop()
     } catch (err) {
-      console.log('failed to stop server!')
+      console.log('Failed to stop language server!')
     }
-
-    // TODO: Will we want to keep the state of the emulator?
-    // Will need to save the state and then restore it
 
     // Reboot server
     void this.client.start()
@@ -114,17 +121,20 @@ export class LanguageServerAPI {
   // account, if it was created successfully.
   async createAccount (): Promise<Account> {
     try {
+      console.log('Try create account')
       const res: any = await this.client.sendRequest('workspace/executeCommand', {
         command: LanguageServerAPI.CREATE_ACCOUNT_SERVER,
         arguments: []
       })
 
       const { name, address } = res
+      console.log('Created account: ' + name)
       return new Account(name, address)
     } catch (err) {
+      console.log('create account error: ' + err)
       if (err instanceof Error) {
         window.showErrorMessage(`Failed to create account: ${err.message}`)
-          .then(() => {}, () => {})
+        .then(() => {}, () => {})
       }
       throw err
     }
@@ -136,6 +146,10 @@ export class LanguageServerAPI {
       command: LanguageServerAPI.GET_ACCOUNTS,
       arguments: []
     })
+
+    if (res === null) {
+      console.log('getAccounts res is null')
+    }
 
     return new response.GetAccountsReponse(res)
   }
