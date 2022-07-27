@@ -87,7 +87,7 @@ export class LanguageServerAPI {
     try {
       await this.client.stop()
     } catch (err) {
-      console.log("failed to stop server!")
+      console.log('failed to stop server!')
     }
 
     // TODO: Will we want to keep the state of the emulator?

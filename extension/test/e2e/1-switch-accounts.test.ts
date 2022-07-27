@@ -1,4 +1,4 @@
-import { Accounts, initTest, initExtension, openFile, stopEmulator, switchAccount } from '../cypress-helpers'
+import { Accounts, initTest, initExtension, openFile, switchAccount } from '../cypress-helpers'
 
 describe('User Story test: Switch Accounts', () => {
   beforeEach(() => {
@@ -6,9 +6,7 @@ describe('User Story test: Switch Accounts', () => {
     initExtension(cy)
   })
 
-  afterEach(() => {
-    stopEmulator(cy)
-  })
+  afterEach(() => {})
 
   it('Switch accounts by entering name', () => {
     openFile(cy, 'NonFungibleToken.cdc')

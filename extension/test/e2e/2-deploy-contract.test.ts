@@ -1,4 +1,4 @@
-import { Accounts, initTest, initExtension, openFile, stopEmulator, switchAccount } from '../cypress-helpers'
+import { Accounts, initTest, initExtension, openFile, switchAccount } from '../cypress-helpers'
 
 describe('User Story test: Deploy Contract', () => {
   beforeEach(() => {
@@ -6,9 +6,7 @@ describe('User Story test: Deploy Contract', () => {
     initExtension(cy)
   })
 
-  afterEach(() => {
-    stopEmulator(cy)
-  })
+  afterEach(() => {})
 
   it('Start Emulator and Deploy Contract', () => {
     openFile(cy, 'FooContract.cdc')

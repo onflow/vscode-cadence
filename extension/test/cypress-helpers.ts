@@ -20,7 +20,6 @@ export function initTest (cy: Cypress.cy): void {
 export function initExtension (cy: Cypress.cy): void {
   openFile(cy, 'NonFungibleToken.cdc') // default file to trigger start extension
   cy.contains('Cadence language server started', { timeout: 50000 })
-  startEmulator(cy)
 }
 
 export function openFile (cy: Cypress.cy, name: string): void {
@@ -29,18 +28,6 @@ export function openFile (cy: Cypress.cy, name: string): void {
     .click({ force: true })
 
   cy.wait(2000)
-}
-
-export function startEmulator (cy: Cypress.cy): void {
-  cy.contains('Start Flow Emulator')
-    .click({ force: true })
-  cy.contains('Stop Flow Emulator', { timeout: 10000 })
-  cy.wait(5000)
-}
-
-export function stopEmulator (cy: Cypress.cy): void {
-  cy.contains('Stop Flow Emulator')
-    .click({ force: true })
 }
 
 export function switchAccount (cy: Cypress.cy, from: string, to: string): void {
