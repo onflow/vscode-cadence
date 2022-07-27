@@ -14,7 +14,7 @@ export function initTest (cy: Cypress.cy): void {
   })
 
   cy.visit('http://localhost:8888')
-  cy.wait(1000)
+  cy.wait(10000)
 }
 
 export function initExtension (cy: Cypress.cy): void {
@@ -25,7 +25,7 @@ export function initExtension (cy: Cypress.cy): void {
 
 export function openFile (cy: Cypress.cy, name: string): void {
   cy.get('.monaco-list-row')
-    .contains(name)
+    .contains(name, { timeout: 5000 })
     .click({ force: true })
 
   cy.wait(2000)
