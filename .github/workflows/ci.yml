@@ -21,4 +21,5 @@ jobs:
       #- name: "Unit Tests"
       #  run: npm run unit-test
       - name: "End-to-end Tests"
+        run: docker exec vscode sudo chmod +x /usr/local/bin/flow
         run: npm run e2e-test
