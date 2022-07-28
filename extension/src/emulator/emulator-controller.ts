@@ -69,9 +69,8 @@ export class EmulatorController {
   }
 
   restartServer (): void {
-    void this.api.restartServer()
+    void this.api.reset()
     void window.showInformationMessage('Restarted language server')
-    void ext.emulatorStateChanged()
   }
 
   async createNewAccount (): Promise<void> {
@@ -126,7 +125,6 @@ export class EmulatorController {
 
       // Switch active account to selected
       const setActive: Account = this.#accountData.getAccounts()[selected.target]
-      console.log('SWITCH ACCOUNT TO: ' + setActive.fullName())
       await this.api.switchActiveAccount(setActive)
 
       promptCopyAccountAddress(setActive)

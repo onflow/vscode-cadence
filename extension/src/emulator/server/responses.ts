@@ -1,5 +1,7 @@
+/* Defines response types from the language server */
 import { Account } from '../account'
 
+/* LS responds with account information in this format */
 export class ClientAccount {
   Address: string
   Balance: number
@@ -24,6 +26,7 @@ export class ClientAccount {
   }
 }
 
+/* Response to hold all account data needed by the extension */
 export class GetAccountsReponse {
   #accounts: Account[]
   #activeAccountIndex: number

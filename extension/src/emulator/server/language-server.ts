@@ -6,15 +6,12 @@ import * as Config from '../local/config'
 import { Settings } from '../../settings/settings'
 import * as response from './responses'
 
-// The args to pass to the Flow CLI to start the language server.
-const START_LANGUAGE_SERVER_ARGS = ['cadence', 'language-server']
+// Identities for commands handled by the Language server
+const CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
+const SWITCH_ACCOUNT_SERVER = 'cadence.server.flow.switchActiveAccount'
+const GET_ACCOUNTS_SERVER = 'cadence.server.flow.getAccounts'
 
 export class LanguageServerAPI {
-  // Identities for commands handled by the Language server
-  static CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
-  static SWITCH_ACCOUNT_SERVER = 'cadence.server.flow.switchActiveAccount'
-  static GET_ACCOUNTS = 'cadence.server.flow.getAccounts'
-
   client!: LanguageClient
   running: boolean
   accessCheckMode: string
@@ -49,7 +46,7 @@ export class LanguageServerAPI {
       'Cadence',
       {
         command: this.flowCommand,
-        args: START_LANGUAGE_SERVER_ARGS
+        args: ['cadence', 'language-server']
       },
       {
         documentSelector: [{ scheme: 'file', language: 'cadence' }],
@@ -83,48 +80,27 @@ export class LanguageServerAPI {
     this.#initializedClient = true
   }
 
-  reset (): void {
-    void this.client.stop()
-    this.running = false
-    void this.startClient()
+  async #sendRequest(cmd: string, args: any[] = []): Promise<any> {
+    return await this.client.sendRequest('workspace/executeCommand', {
+      command: cmd,
+      arguments: args
+    })
   }
 
-  // Restarts the language server
-  async restartServer (): Promise<void> {
-    // Stop server
-    const activeAccount = ext.getActiveAccount()
-
-    try {
-      await this.client.stop()
-    } catch (err) {
-      console.log('Failed to stop language server!')
-    }
-
-    // Reboot server
-    void this.client.start()
-    if (activeAccount !== null) {
-      void this.switchActiveAccount(activeAccount)
-    }
-    void ext.emulatorStateChanged()
+  async reset (): Promise<void> {
+    // TODO: send a reset command? Resetting the client does not work.
   }
 
   // Sends a request to switch the currently active account.
   async switchActiveAccount (account: Account): Promise<void> {
-    return await this.client.sendRequest('workspace/executeCommand', {
-      command: LanguageServerAPI.SWITCH_ACCOUNT_SERVER,
-      arguments: [account.name]
-    })
+    return await this.#sendRequest(SWITCH_ACCOUNT_SERVER, [account.name])
   }
 
   // Sends a request to create a new account. Returns the address of the new
   // account, if it was created successfully.
   async createAccount (): Promise<Account> {
     try {
-      const res: any = await this.client.sendRequest('workspace/executeCommand', {
-        command: LanguageServerAPI.CREATE_ACCOUNT_SERVER,
-        arguments: []
-      })
-
+      const res: any = await this.#sendRequest(CREATE_ACCOUNT_SERVER)
       return new response.ClientAccount(res).asAccount()
     } catch (err) {
       if (err instanceof Error) {
@@ -137,11 +113,7 @@ export class LanguageServerAPI {
 
   // Sends a request to obtain all account mappings, addresses, names, and active status
   async getAccounts (): Promise<response.GetAccountsReponse> {
-    const res: any = await this.client.sendRequest('workspace/executeCommand', {
-      command: LanguageServerAPI.GET_ACCOUNTS,
-      arguments: []
-    })
-
+    const res = await this.#sendRequest(GET_ACCOUNTS_SERVER)
     return new response.GetAccountsReponse(res)
   }
 }
