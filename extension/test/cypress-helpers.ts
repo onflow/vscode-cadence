@@ -20,6 +20,7 @@ export function initTest (cy: Cypress.cy): void {
 export function initExtension (cy: Cypress.cy): void {
   openFile(cy, 'NonFungibleToken.cdc') // default file to trigger start extension
   cy.contains('Cadence language server started', { timeout: 50000 })
+  cy.wait(2000)
   startEmulator(cy)
 }
 
@@ -27,7 +28,6 @@ export function openFile (cy: Cypress.cy, name: string): void {
   cy.get('.monaco-list-row')
     .contains(name, { timeout: 5000 })
     .click({ force: true })
-
   cy.wait(2000)
 }
 

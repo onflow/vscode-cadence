@@ -7,34 +7,34 @@ on:
     branches: [ master ]
 
 jobs:
-  #tests:
-  #  name: "Running Tests"
-  #  runs-on: macos-latest
-  #  steps:
-  #    - name: Checkout
-  #      uses: actions/checkout@v3
-  #    - name: Use Node.js ${{ matrix.node-version }}
-  #      uses: actions/setup-node@v3
-  #      with:
-  #        node-version: ${{ matrix.node-version }}
-  #    - name: setup-docker
-  #      uses: docker-practice/actions-setup-docker@v1
-  #    - name: Install dependencies
-  #      run: npm ci
-  #    - name: "Run end-to-end tests"
-  #      run: npm run e2e-test
-
   tests:
     name: "Running Tests"
-    runs-on: ubuntu-latest
+    runs-on: macos-12    # Can run flow-cli but all tests fail
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-      - run: npm ci
-      #- name: "Unit Tests"
-      #  run: npm run unit-test
-      - name: "End-to-end Tests"
+      - name: setup-docker
+        uses: docker-practice/actions-setup-docker@v1
+      - name: Install dependencies
+        run: npm ci
+      - name: "Run end-to-end tests"
         run: npm run e2e-test
+
+  #tests:
+  #  name: "Running Tests"
+  #  runs-on: ubuntu-latest      # Can't access flow-cli
+  #  steps:
+  #    - uses: actions/checkout@v3
+  #    - name: Use Node.js ${{ matrix.node-version }}
+  #      uses: actions/setup-node@v3
+  #      with:
+  #        node-version: ${{ matrix.node-version }}
+  #    - run: npm ci
+  #    #- name: "Unit Tests"
+  #    #  run: npm run unit-test
+  #    - name: "End-to-end Tests"
+  #      run: npm run e2e-test
