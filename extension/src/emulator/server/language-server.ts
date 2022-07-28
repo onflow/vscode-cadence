@@ -80,7 +80,7 @@ export class LanguageServerAPI {
     this.#initializedClient = true
   }
 
-  async #sendRequest(cmd: string, args: any[] = []): Promise<any> {
+  async #sendRequest (cmd: string, args: any[] = []): Promise<any> {
     return await this.client.sendRequest('workspace/executeCommand', {
       command: cmd,
       arguments: args
