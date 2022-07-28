@@ -36,7 +36,7 @@ export class GetAccountsReponse {
 
     if (res === null) return
 
-    res.forEach((obj, idx) => {
+    res.forEach((obj: any, idx: number) => {
       const client = new ClientAccount(obj)
       const account = client.asAccount()
       account.setIndex(idx)
