@@ -34,11 +34,11 @@ export class GetAccountsReponse {
     this.#activeAccountIndex = 0
     this.#activeAccount = null
 
-    if (!res) return
+    if (res === null) return
 
     res.forEach((obj, idx) => {
       const client = new ClientAccount(obj)
-      let account = client.asAccount()
+      const account = client.asAccount()
       account.setIndex(idx)
       this.#accounts.push(account)
       if (client.Active) {

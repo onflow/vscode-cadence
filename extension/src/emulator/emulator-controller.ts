@@ -124,12 +124,9 @@ export class EmulatorController {
         return
       }
 
-      // TODO: selected.target is negative?!?
-      const idx = accountOptions.length
-
       // Switch active account to selected
       const setActive: Account = this.#accountData.getAccounts()[selected.target]
-      console.log("SWITCH ACCOUNT TO: " + setActive.fullName())
+      console.log('SWITCH ACCOUNT TO: ' + setActive.fullName())
       await this.api.switchActiveAccount(setActive)
 
       promptCopyAccountAddress(setActive)

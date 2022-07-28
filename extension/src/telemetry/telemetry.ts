@@ -5,7 +5,7 @@ import { env } from 'vscode'
 // Called in main to setup telemetry
 export function initialize (): void {
   // Check if user is allowing telemetry for vscode globally
-  const activate: boolean = false // TODO: FOR TESTING //env.isTelemetryEnabled
+  const activate: boolean = env.isTelemetryEnabled
 
   // Initialize Sentry
   sentry.sentryInit(activate)
