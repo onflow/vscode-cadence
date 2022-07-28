@@ -1,13 +1,28 @@
-import { DEBUG_LOG } from '../../utils/debug'
 import { Account } from '../account'
 
-/*
-class ClientAccount {
-	*flow.Account
-	Name   string
-	active bool
+export class ClientAccount {
+  Address: string
+  Balance: number
+  Code: string | null
+  Keys: []
+  Contracts: {}
+  Name: string
+  Active: boolean
+
+  constructor (obj: any) {
+    this.Address = obj.Address
+    this.Balance = obj.Balance
+    this.Code = obj.Code
+    this.Keys = obj.Keys
+    this.Contracts = obj.Contracts
+    this.Name = obj.Name
+    this.Active = obj.Active
+  }
+
+  asAccount (): Account {
+    return new Account(this.Name, this.Address)
+  }
 }
-*/
 
 export class GetAccountsReponse {
   #accounts: Account[]
@@ -19,9 +34,17 @@ export class GetAccountsReponse {
     this.#activeAccountIndex = 0
     this.#activeAccount = null
 
-    // TODO: Set accounts and active account index from response
-
     if (!res) return
+
+    res.forEach((obj, idx) => {
+      const client = new ClientAccount(obj)
+      let account = client.asAccount()
+      account.setIndex(idx)
+      this.#accounts.push(account)
+      if (client.Active) {
+        this.#activeAccountIndex = idx
+      }
+    })
 
     this.#activeAccount = this.#accounts[this.#activeAccountIndex]
   }

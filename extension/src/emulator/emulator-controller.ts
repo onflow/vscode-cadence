@@ -47,10 +47,10 @@ export class EmulatorController {
     this.#accountData = await this.api.getAccounts()
   }
 
-  syncEmulatorState () : void {
+  async syncEmulatorState (): Promise<void> {
     if (this.api.running) {
       this.#state = EmulatorState.Connected
-      this.#syncAccountData()
+      await this.#syncAccountData()
     } else {
       this.#state = EmulatorState.Disconnected
     }
@@ -71,7 +71,7 @@ export class EmulatorController {
   restartServer (): void {
     void this.api.restartServer()
     void window.showInformationMessage('Restarted language server')
-    ext.emulatorStateChanged()
+    void ext.emulatorStateChanged()
   }
 
   async createNewAccount (): Promise<void> {
@@ -85,7 +85,7 @@ export class EmulatorController {
     promptCopyAccountAddress(account)
 
     // Update UI
-    ext.emulatorStateChanged()
+    await ext.emulatorStateChanged()
   }
 
   // Switches the active account to the option selected by the user. The selection
@@ -124,13 +124,17 @@ export class EmulatorController {
         return
       }
 
+      // TODO: selected.target is negative?!?
+      const idx = accountOptions.length
+
       // Switch active account to selected
       const setActive: Account = this.#accountData.getAccounts()[selected.target]
+      console.log("SWITCH ACCOUNT TO: " + setActive.fullName())
       await this.api.switchActiveAccount(setActive)
 
       promptCopyAccountAddress(setActive)
 
-      ext.emulatorStateChanged()
+      await ext.emulatorStateChanged()
     }, () => {})
   }
 

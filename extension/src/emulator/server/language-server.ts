@@ -66,16 +66,16 @@ export class LanguageServerAPI {
     this.client.onDidChangeState((e: StateChangeEvent) => {
       this.running = e.newState === State.Running
       if (this.#initializedClient && !this.running) {
-        window.showErrorMessage('Cadence language server stopped')
+        void window.showErrorMessage('Cadence language server stopped')
       }
-      ext.emulatorStateChanged()
+      void ext.emulatorStateChanged()
     })
 
     // This also starts the hosted emulator
     this.client.start()
       .then(() => {
-        window.showInformationMessage('Cadence language server started')
-        ext.emulatorStateChanged()
+        void window.showInformationMessage('Cadence language server started')
+        void ext.emulatorStateChanged()
       })
       .catch((err: Error) => {
         void window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
@@ -105,15 +105,14 @@ export class LanguageServerAPI {
     if (activeAccount !== null) {
       void this.switchActiveAccount(activeAccount)
     }
-    ext.emulatorStateChanged()
+    void ext.emulatorStateChanged()
   }
 
   // Sends a request to switch the currently active account.
   async switchActiveAccount (account: Account): Promise<void> {
-    const { name, address } = account
     return await this.client.sendRequest('workspace/executeCommand', {
       command: LanguageServerAPI.SWITCH_ACCOUNT_SERVER,
-      arguments: [name, address]
+      arguments: [account.name]
     })
   }
 
@@ -121,20 +120,16 @@ export class LanguageServerAPI {
   // account, if it was created successfully.
   async createAccount (): Promise<Account> {
     try {
-      console.log('Try create account')
       const res: any = await this.client.sendRequest('workspace/executeCommand', {
         command: LanguageServerAPI.CREATE_ACCOUNT_SERVER,
         arguments: []
       })
 
-      const { name, address } = res
-      console.log('Created account: ' + name)
-      return new Account(name, address)
+      return new response.ClientAccount(res).asAccount()
     } catch (err) {
-      console.log('create account error: ' + err)
       if (err instanceof Error) {
         window.showErrorMessage(`Failed to create account: ${err.message}`)
-        .then(() => {}, () => {})
+          .then(() => {}, () => {})
       }
       throw err
     }
@@ -146,10 +141,6 @@ export class LanguageServerAPI {
       command: LanguageServerAPI.GET_ACCOUNTS,
       arguments: []
     })
-
-    if (res === null) {
-      console.log('getAccounts res is null')
-    }
 
     return new response.GetAccountsReponse(res)
   }

@@ -60,9 +60,9 @@ export class Extension {
     return this.emulatorCtrl.getActiveAccount()
   }
 
-  emulatorStateChanged (): void {
+  async emulatorStateChanged (): Promise<void> {
     // Sync emulator with LS
-    this.emulatorCtrl.syncEmulatorState()
+    await this.emulatorCtrl.syncEmulatorState()
 
     // Update UI
     this.#uiCtrl.emulatorStateChanged()
