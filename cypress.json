@@ -1,5 +1,5 @@
 {
   "integrationFolder": "extension/test/e2e/",
-  "video": "false",
+  "video": false,
   "screenshotOnRunFailure": false
 }
