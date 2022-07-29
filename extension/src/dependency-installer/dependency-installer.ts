@@ -2,9 +2,11 @@ import { window } from 'vscode'
 import { InstallFlowCLI } from './installers/flow-cli-installer'
 import { Installer, InstallError } from './installer'
 import { promptUserErrorMessage } from '../ui/prompts'
+import { InstallCadenceLint } from './installers/cadence-lint-installer'
 
 const INSTALLERS = [
-  InstallFlowCLI
+  InstallFlowCLI,
+  InstallCadenceLint
   // Add other dependency installers here
 ]
 
