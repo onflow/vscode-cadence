@@ -10,6 +10,7 @@ import * as response from './responses'
 const CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
 const SWITCH_ACCOUNT_SERVER = 'cadence.server.flow.switchActiveAccount'
 const GET_ACCOUNTS_SERVER = 'cadence.server.flow.getAccounts'
+const RESTART_SERVER = 'cadence.server.flow.restart'
 
 export class LanguageServerAPI {
   client!: LanguageClient
@@ -88,7 +89,7 @@ export class LanguageServerAPI {
   }
 
   async reset (): Promise<void> {
-    // TODO: send a reset command? Resetting the client does not work.
+    await this.#sendRequest(RESTART_SERVER)
   }
 
   // Sends a request to switch the currently active account.
