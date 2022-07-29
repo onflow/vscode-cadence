@@ -15,3 +15,6 @@ export const CHECK_DEPENDENCIES = 'cadence.checkDepencencies'
 
 // Copy active account to clipboard
 export const COPY_ACTIVE_ACCOUNT = 'cadence.copyActiveAccount'
+
+// Cadence Lint
+export const CADENCE_LINT = 'cadence.cadenceLint'

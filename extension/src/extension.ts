@@ -1,11 +1,12 @@
 /* The extension */
 import { EmulatorState, EmulatorController } from './emulator/emulator-controller'
 import { CommandController } from './commands/command-controller'
-import { refreshCodeLenses } from './utils/utils'
+import { execDefault, refreshCodeLenses } from './utils/utils'
 import { Account } from './emulator/account'
 import { UIController } from './ui/ui-controller'
 import { ExtensionContext } from 'vscode'
 import { DependencyInstaller } from './dependency-installer/dependency-installer'
+import { CADENCE_LINT_PATH } from './dependency-installer/installers/cadence-lint-installer'
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -59,5 +60,12 @@ export class Extension {
 
   checkDependencies (): void {
     this.#dependencyInstaller.checkDependencies()
+  }
+
+  runCadenceLint (): void {
+    // Run linter on files
+    if (CADENCE_LINT_EXEC !== undefined) {
+      execDefault(CADENCE_LINT_PATH)
+    }
   }
 }

@@ -31,6 +31,7 @@ export class CommandController {
     this.#registerCommand(commandID.SWITCH_ACCOUNT, this.#switchActiveAccount)
     this.#registerCommand(commandID.CHECK_DEPENDENCIES, this.#checkDependencies)
     this.#registerCommand(commandID.COPY_ACTIVE_ACCOUNT, this.#copyActiveAccount)
+    this.#registerCommand(commandID.CADENCE_LINT, this.#cadenceLint)
   }
 
   #restartServer (): void {
@@ -59,5 +60,9 @@ export class CommandController {
 
   #checkDependencies (): void {
     void ext.checkDependencies()
+  }
+
+  #cadenceLint (): void {
+    ext.runCadenceLint()
   }
 }

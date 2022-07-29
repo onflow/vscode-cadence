@@ -42,7 +42,8 @@
 		"onCommand:cadence.stopEmulator",
 		"onCommand:cadence.createAccount",
 		"onCommand:cadence.switchActiveAccount",
-		"onCommand:cadence.checkDepencencies"
+		"onCommand:cadence.checkDepencencies",
+		"onCommand:cadence.cadenceLint"
 	],
 	"main": "./out/main.js",
 	"contributes": {
@@ -81,6 +82,11 @@
 				"command": "cadence.checkDepencencies",
 				"category": "Cadence",
 				"title": "Check Dependencies"
+			},
+			{
+				"command": "cadence.cadenceLint",
+				"category": "Cadence",
+				"title": "Run Cadence Lint"
 			}
 		],
 		"configuration": {
