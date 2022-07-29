@@ -6,11 +6,10 @@ export class InstallError extends Error {}
 
 export abstract class Installer {
   #installerName: string
-  #installed: boolean
+  #installed: boolean = false
 
   constructor (name: string) {
     this.#installerName = name
-    this.#installed = this.verifyInstall()
   }
 
   getName (): string {
@@ -18,6 +17,7 @@ export abstract class Installer {
   }
 
   isInstalled (): boolean {
+    this.#installed = this.verifyInstall()
     return this.#installed
   }
 

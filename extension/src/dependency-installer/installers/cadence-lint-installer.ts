@@ -1,17 +1,17 @@
-// import { window } from 'vscode'
-// import { execDefault, execPowerShell } from '../../utils/utils'
-// import { promptUserInfoMessage } from '../../ui/prompts'
 import { Installer } from '../installer'
-import { exec } from 'child_process'
 import * as pkg from '../../../../package.json'
 import { execDefault } from '../../utils/utils'
+import { checkHomebrew } from './homebrew-installer'
+import { window } from 'vscode'
+import { ext } from '../../main'
 
+// Path to cadence-lint executable
+export let CADENCE_LINT_PATH: string
+
+// Install paths
 const CADENCE_LINT_REPO = 'https://github.com/onflow/cadence-lint.git'
 const MACOS_INSTALL_PATH = '~/.vscode/extensions/onflow.cadence-' + pkg.version + '/cadence-lint'
 const EXECUTABLE_NAME = 'cadence-lint'
-
-// Path to cadence-lint executable
-export let CADENCE_LINT_PATH = ''
 
 export class InstallCadenceLint extends Installer {
   #installMethod!: Function
@@ -27,9 +27,11 @@ export class InstallCadenceLint extends Installer {
         this.#installMethod = this.#install_macos
         break
       case 'win32':
+        CADENCE_LINT_PATH = ''
         // this.#install_windows()
         break
       default:
+        CADENCE_LINT_PATH = ''
         // this.#install_bash_cmd()
         break
     }
@@ -40,27 +42,45 @@ export class InstallCadenceLint extends Installer {
   }
 
   #install_macos (): void {
-    CADENCE_LINT_PATH = MACOS_INSTALL_PATH
-    // Clone cadence-lint repo
-    console.log('clonning repo')
-    if (!execDefault('git clone ' + CADENCE_LINT_REPO + ' ' + MACOS_INSTALL_PATH)) {
-      console.log('could not clone cadence-lint')
+    // Check if git is intalled
+    if (!execDefault('git help')) {
+      if (!checkHomebrew()) {
+        window.showInformationMessage('Please install Homebrew to allow for the installation of Candence Lint')
+        ext.checkDependencies()
+        return
+      }
+
+      // Install git using Homebrew
+      execDefault('brew install git')
+      if (!execDefault('git help')) {
+        console.log ('Could not install git')
+        return
+      }
     }
 
-    console.log('building cadence-lint with golang')
+    // Clone cadence-lint repo
+    // TODO: Check if it already exists
+    if (!execDefault('git clone ' + CADENCE_LINT_REPO + ' ' + MACOS_INSTALL_PATH)) {
+      console.log('Could not clone cadence-lint')
+    }
+
+    // Check if golang is installed
+    if (!execDefault('go help')) {
+      execDefault('brew install go')
+      if (!execDefault('go help')) {
+        console.log('Could not install golang')
+        return
+      }
+    }
+
+    // Build cadence-lint
+    console.log('Building cadence-lint with golang')
     if (!execDefault('cd ' + MACOS_INSTALL_PATH + ' && go build -o .')) {
       console.log ('Failed to build cadence-lint with golang')
     }
-
-    if (!execDefault(CADENCE_LINT_PATH)) {
-      console.log('Cannot run cadence-lint')
-    } else {
-      console.log('ran cadence-lint!!')
-    }
-
   }
 
   protected verifyInstall (): boolean {
-      return execDefault(CADENCE_LINT_PATH)
+    return execDefault(CADENCE_LINT_PATH)
   }
 }

@@ -3,8 +3,10 @@ import { InstallFlowCLI } from './installers/flow-cli-installer'
 import { Installer, InstallError } from './installer'
 import { promptUserErrorMessage } from '../ui/prompts'
 import { InstallCadenceLint } from './installers/cadence-lint-installer'
+import { InstallHomebrew } from './installers/homebrew-installer'
 
 const INSTALLERS = [
+  InstallHomebrew,
   InstallFlowCLI,
   InstallCadenceLint
   // Add other dependency installers here
@@ -70,6 +72,7 @@ export class DependencyInstaller {
     this.registeredInstallers.forEach((installer) => {
       try {
         installer.runInstall()
+        window.showInformationMessage(installer.getName() + ' installed')
       } catch (err) {
         if (err instanceof InstallError) {
           void window.showErrorMessage(err.message)
