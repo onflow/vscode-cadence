@@ -8,7 +8,8 @@ const SENTRY_DSN: string = 'https://4d98c4d4ac7e4892850f8e3d2e61c733@o114654.ing
 // True when sentry telemetry is active
 let sentryActivated: boolean = false
 
-export function sentryInit (activate: boolean): void {
+
+export async function sentryInit (activate: boolean): Promise<void> {
   sentryActivated = activate
   if (!sentryActivated) return
   Sentry.init({
@@ -16,6 +17,10 @@ export function sentryInit (activate: boolean): void {
     tracesSampleRate: 1.0,
     attachStacktrace: true
   })
+}
+
+export function setUser (id: string): void {
+  Sentry.setUser({'id': id})
 }
 
 export async function sentryClose (): Promise<void> {
@@ -29,5 +34,14 @@ export function captureException (exception: any, captureContent?: Type.CaptureC
     name: exception.message as string
   })
   Sentry.captureException(exception, captureContent)
+  transaction.finish()
+}
+
+export function captureStatistics (message: string): void {
+  if (!sentryActivated) return
+  const transaction = Sentry.startTransaction({
+    name: message as string
+  })
+  Sentry.captureMessage(message)
   transaction.finish()
 }
