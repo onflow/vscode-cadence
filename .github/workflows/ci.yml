@@ -36,7 +36,6 @@ jobs:
 
       - name: VS Code Docker
         run: npm run vscode-start
-        wait-on: http://localhost:8888
 
       - name: Docker Flow CLI Permissions
         run: docker exec vscode sudo chmod +x /usr/local/bin/flow
