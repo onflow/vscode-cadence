@@ -4,12 +4,6 @@ and synchronize account data with the hosted emulator
 */
 import { ext } from '../main'
 import { LanguageServerAPI } from './server/language-server'
-import {
-  CREATE_NEW_ACCOUNT,
-  ACTIVE_PREFIX,
-  INACTIVE_PREFIX,
-  ADD_NEW_PREFIX
-} from '../utils/strings'
 import { Account } from './account'
 import { window, env } from 'vscode'
 import { GetAccountsReponse } from './server/responses'
@@ -94,6 +88,8 @@ export class EmulatorController {
     const accountOptions = Object.values(this.#accountData.getAccounts())
     // Mark the active account with a `*` in the dialog
       .map((account) => {
+        const ACTIVE_PREFIX = '🟢'
+        const INACTIVE_PREFIX = '⚫️'
         const prefix: string =
             account.index === this.#accountData.getActiveAccountIndex() ? ACTIVE_PREFIX : INACTIVE_PREFIX
         const label = `${prefix} ${account.fullName()}`
@@ -104,8 +100,10 @@ export class EmulatorController {
         }
       })
 
+    // Add option to create a new account
+    const ADD_NEW_PREFIX = '🐣'
     accountOptions.push({
-      label: `${ADD_NEW_PREFIX} ${CREATE_NEW_ACCOUNT}`,
+      label: `${ADD_NEW_PREFIX} ${'Create New Account'}`,
       target: accountOptions.length
     })
 
