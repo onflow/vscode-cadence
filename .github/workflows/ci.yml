@@ -79,11 +79,17 @@ jobs:
       - name: Start vscode Docker Container
         run: npm run vscode-start
 
-      - name: Install wait for it
-        run: pip install wait-for-it
+      #- name: Install wait for it
+      #  run: pip install wait-for-it
 
-      - name: Wait for docker container
-        run: wait-for-it --service http://localhost:8888
+      #- name: Wait for docker container
+      #  run: wait-for-it --service http://localhost:8888
+
+      - name: Wait for Docker container
+        uses: MaximeGoyette/wait-for-it-action@master
+        with:
+          host: localhost
+          port: 8888
 
       #- name: Wait for docker container
       #  run: sleep 30
