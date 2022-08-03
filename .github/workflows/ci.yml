@@ -35,7 +35,6 @@ jobs:
         with:
           wait-on: 'http://localhost:8888'
           record: true
-          runTests: false
           browser: chrome
         env:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
