@@ -22,20 +22,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Record Cypress
-        run: npx cypress run --record --key ${{ secrets.CYPRESS_RECORD_KEY }}
-
       - name: Package
         run: npm run e2e-test
 
-      #- name: VS Code Docker
-      #  run: npm run vscode-start
+      - name: VS Code Docker
+        run: npm run vscode-start
 
-      #- name: Docker Flow CLI Permissions
-      #  run: docker exec vscode sudo chmod +x /usr/local/bin/flow
+      - name: Docker Flow CLI Permissions
+        run: docker exec vscode sudo chmod +x /usr/local/bin/flow
 
-      #- name: Check Flow CLI
-      #  run: docker exec vscode flow
+      - name: Check Flow CLI
+        run: docker exec vscode flow
+
+      - name: Record Cypress
+        run: npx cypress run --record --key ${{ secrets.CYPRESS_RECORD_KEY }}
 
       #- mame: End-to-end tests
       #  run: npm run e2e-test
