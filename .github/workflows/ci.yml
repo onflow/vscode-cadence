@@ -31,6 +31,12 @@ jobs:
       - name: Start vscode Docker Container
         run: npm run vscode-start
 
+      - name: Wait
+        run: sleep 30
+
+      - name: Install flow-cli
+        run: sh -ci "$(curl -fsSL https://storage.googleapis.com/flow-cli/install.sh)"
+
       - name: Cypress
         uses: cypress-io/github-action@v4
         with:
