@@ -11,7 +11,7 @@ jobs:
     name: vscode-cadence Cypress End to End tests
     timeout-minutes: 30
     runs-on: ubuntu-latest
-    container: cypress/browsers:node12.18.3-chrome87-ff82
+    #container: cypress/browsers:node12.18.3-chrome87-ff82
     #container: cypress/browsers:node16.14.2-slim-chrome103-ff102 #use arm64 arch on Apple M1 chips when running locally
     steps:
       - name: Checkout
