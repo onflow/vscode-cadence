@@ -1,4 +1,4 @@
-[![Build](https://github.com/onflow/vscode-cadence/actions/workflows/build.yml/badge.svg)](https://github.com/onflow/vscode-cadence/actions/workflows/build.yml)
+[![CI](https://github.com/onflow/vscode-cadence/actions/workflows/CI.yml/badge.svg)](https://github.com/onflow/vscode-cadence/actions/workflows/CI.yml)
 ![Sentry](https://img.shields.io/badge/Sentry-reporting-blue?logo=sentry)
 <br />
 <p align="center">
