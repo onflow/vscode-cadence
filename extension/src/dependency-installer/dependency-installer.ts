@@ -19,6 +19,8 @@ export class DependencyInstaller {
   checkDependencies (): void {
     if (!this.#allInstalled()) {
       const missing: string[] = this.#getMissingDependenciesList()
+      window.showInformationMessage('Installing missing dependencies!')
+      this.#installMissingDependencies()
 
       // Prompt user to install missing dependencies
       promptUserErrorMessage(
