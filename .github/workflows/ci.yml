@@ -10,7 +10,7 @@ jobs:
   cypress:
     name: vscode-cadence Cypress End to End tests
     timeout-minutes: 30
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     #container: cypress/browsers:node16.14.2-slim-chrome103-ff102 #use arm64 arch on Apple M1 chips when running locally
     steps:
       #- name: Install build dependencies (mostly for sqlite on ARM)
