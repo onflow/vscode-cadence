@@ -79,8 +79,14 @@ jobs:
       - name: Start vscode Docker Container
         run: npm run vscode-start
 
+      - name: Install wait for it
+        run: pip install wait-for-it
+
       - name: Wait for docker container
-        run: sleep 30
+        run: wait-for-it --service http://localhost:8888
+
+      #- name: Wait for docker container
+      #  run: sleep 30
 
       - name: Install flow-cli
         run: docker exec vscode sh -ci "$(curl -fsSL https://storage.googleapis.com/flow-cli/install.sh)"
