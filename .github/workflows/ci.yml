@@ -35,7 +35,7 @@ jobs:
         run: sleep 30
 
       - name: Install flow-cli
-        run: sh -ci "$(curl -fsSL https://storage.googleapis.com/flow-cli/install.sh)"
+        run: docker exec vscode sh -ci "$(curl -fsSL https://storage.googleapis.com/flow-cli/install.sh)"
 
       - name: Cypress
         uses: cypress-io/github-action@v4
