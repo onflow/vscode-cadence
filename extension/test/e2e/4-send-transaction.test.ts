@@ -11,7 +11,7 @@ describe('User Story test: Send Transaction', () => {
   it('Send Transaction using Emulator', () => {
     openFile(cy, 'Tx.cdc')
 
-    cy.contains('Send signed by ServiceAccount').click({ force: true })
+    cy.contains('Send signed by Alice').click({ force: true })
     cy.contains('Transaction status: SEALED')
   })
 })

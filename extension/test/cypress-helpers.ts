@@ -1,6 +1,5 @@
 /* Helper functions and data for testing with Cypress */
 export const Accounts = {
-  Service: 'ServiceAccount (0xf8d6e0586b0a20c7)',
   Alice: 'Alice (0x01cf0e2f2f715450)',
   Bob: 'Bob (0x179b6b1cb6755e31)',
   Charlie: 'Charlie (0xf3fcd2c1a78f5eee)',

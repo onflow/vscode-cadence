@@ -11,18 +11,13 @@ describe('User Story test: Deploy Contract', () => {
   it('Start Emulator and Deploy Contract', () => {
     openFile(cy, 'FooContract.cdc')
 
-    cy.contains(`Switched to account ${Accounts.Service}`)
-
-    cy.contains('Copy Address')
-      .click({ force: true })
-
-    cy.contains('Deploy contract FooContract to ServiceAccount')
+    cy.contains('Deploy contract FooContract to Alice')
       .click({ force: true })
 
     cy.contains('Deploying contract FooContract to account f8d6e0586b0a20c7')
       .should('be.visible')
 
-    switchAccount(cy, Accounts.Service, Accounts.Alice)
+    switchAccount(cy, Accounts.Alice, Accounts.Bob)
 
     // Click to update UI
     cy.contains('FooContract {}')
@@ -30,10 +25,10 @@ describe('User Story test: Deploy Contract', () => {
 
     cy.wait(5000)
 
-    cy.contains('Deploy contract FooContract to Alice')
+    cy.contains('Deploy contract FooContract to Bob')
       .click({ force: true })
 
-    cy.contains('Deploying contract FooContract to account 01cf0e2f2f715450')
+    cy.contains('Deploying contract FooContract to account 179b6b1cb6755e31')
       .should('be.visible')
   })
 })
