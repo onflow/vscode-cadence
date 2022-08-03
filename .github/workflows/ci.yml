@@ -38,7 +38,7 @@ jobs:
         run: docker exec vscode sh -ci "$(curl -fsSL https://storage.googleapis.com/flow-cli/install.sh)"
 
       - name: export path
-        run: docker exec vscode bash -c "export PATH=$PATH:/home/coder/.local/bin"
+        run: docker exec vscode sh -c "export PATH=$PATH:/home/coder/.local/bin"
 
       - name: Cypress
         uses: cypress-io/github-action@v4
