@@ -10,7 +10,7 @@ jobs:
   cypress:
     name: vscode-cadence Cypress End to End tests
     #timeout-minutes: 30
-    runs-on: macos-12
+    runs-on: ubuntu-latest
     #container: cypress/browsers:node12.18.3-chrome87-ff82
     #container: cypress/browsers:node16.14.2-slim-chrome103-ff102 #use arm64 arch on Apple M1 chips when running locally
     steps:
@@ -21,15 +21,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-
-      # Setup docker for macos
-      - name: Setup docker
-        run: |
-          HOMEBREW_NO_AUTO_UPDATE=1 brew install --cask docker
-          sudo /Applications/Docker.app/Contents/MacOS/Docker --unattended --install-privileged-components
-          open -a /Applications/Docker.app --args --unattended --accept-license
-          echo "We are waiting for Docker to be up and running. It can take over 2 minutes..."
-          while ! /Applications/Docker.app/Contents/Resources/bin/docker info &>/dev/null; do sleep 1; done
 
       - name: Install dependencies
         run: npm ci
@@ -49,18 +40,6 @@ jobs:
         env:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      #- name: Record Cypress
-      #  run: npx cypress run --record --key ${{ secrets.CYPRESS_RECORD_KEY }}
-
-      #- mame: End-to-end tests
-      #  run: npm run e2e-test
-      
-      #- name: Cypress run
-      #  uses: cypress-io/github-action@v4
-      #  with:
-      #    start: npm run dev:emulator
-      #    wait-on: http://localhost:8888
 
 
   #tests:
