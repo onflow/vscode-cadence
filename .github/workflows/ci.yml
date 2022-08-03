@@ -23,25 +23,25 @@ jobs:
         run: npm ci
 
       - name: Package
-        run: sudo npm run package-test
+        run: npm run e2e-test
 
-      - name: VS Code Docker
-        run: npm run vscode-start
+      #- name: VS Code Docker
+      #  run: npm run vscode-start
 
-      - name: Docker Flow CLI Permissions
-        run: docker exec vscode sudo chmod +x /usr/local/bin/flow
+      #- name: Docker Flow CLI Permissions
+      #  run: docker exec vscode sudo chmod +x /usr/local/bin/flow
 
-      - name: Check Flow CLI
-        run: docker exec vscode flow
+      #- name: Check Flow CLI
+      #  run: docker exec vscode flow
 
       #- mame: End-to-end tests
       #  run: npm run e2e-test
       
-      - name: Cypress run
-        uses: cypress-io/github-action@v4
-        with:
-          start: npm run dev:emulator
-          wait-on: http://localhost:8888
+      #- name: Cypress run
+      #  uses: cypress-io/github-action@v4
+      #  with:
+      #    start: npm run dev:emulator
+      #    wait-on: http://localhost:8888
 
 
   #tests:
