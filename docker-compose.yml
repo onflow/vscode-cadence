@@ -1,7 +1,7 @@
 services:
   test:
     image: codercom/code-server:latest
-    command: /source --disable-telemetry --disable-update-check --port 8888
+    command: /source --auth none --disable-telemetry --disable-update-check --port 8888
     container_name: vscode
     ports:
       - "8888:8888"
@@ -9,6 +9,3 @@ services:
       - ./extension/test/fixtures/workspace:/source
       - ./extension/test/fixtures/workspace/sbin:/usr/local/sbin
       - ./extension/test/fixtures/workspace/bin:/usr/local/bin
-    environment:
-      - PASSWORD="password"
-      - SUDO_PASSWORD=password
