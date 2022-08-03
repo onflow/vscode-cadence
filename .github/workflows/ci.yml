@@ -11,7 +11,7 @@ jobs:
     name: vscode-cadence Cypress End to End tests
     timeout-minutes: 30
     runs-on: ubuntu-latest
-    container: cypress/browsers:node16.14.2-slim-chrome103-ff102 #use arm64 arch on Apple M1 chips when running locally
+    #container: cypress/browsers:node16.14.2-slim-chrome103-ff102 #use arm64 arch on Apple M1 chips when running locally
     steps:
       #- name: Install build dependencies (mostly for sqlite on ARM)
       #  run: apt-get update -y && apt-get install build-essential -y
@@ -21,6 +21,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Record Cypress
+        run: cypress run --record --key ${{ secrets.CYPRESS_RECORD_KEY }}
 
       - name: Package
         run: npm run e2e-test
