@@ -1,6 +1,6 @@
 {
   "projectId": "3ei47t",
   "integrationFolder": "extension/test/e2e/",
-  "video": false,
-  "screenshotOnRunFailure": false
+  "video": true,
+  "screenshotOnRunFailure": true
 }
