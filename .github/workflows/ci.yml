@@ -23,7 +23,7 @@ jobs:
         run: npm ci
 
       - name: Record Cypress
-        run: cypress run --record --key ${{ secrets.CYPRESS_RECORD_KEY }}
+        run: npx cypress run --record --key ${{ secrets.CYPRESS_RECORD_KEY }}
 
       - name: Package
         run: npm run e2e-test
