@@ -44,6 +44,23 @@
 	],
 	"main": "./out/main.js",
 	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "flow-explorer",
+					"title": "Flow Explorer",
+					"icon": "images/flow.svg"
+				}
+			]
+		},
+		"views": {
+			"flow-explorer": [
+					{
+							"id": "flowview",
+							"name": "Flow View"
+					}
+			]
+		},
 		"commands": [
 			{
 				"command": "cadence.restartServer",
