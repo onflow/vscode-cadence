@@ -23,7 +23,8 @@
 		"lint": "ts-standard",
 		"lint-fix": "ts-standard --fix",
 		"docker-install-extension": "docker exec vscode code-server --install-extension /source/cadence.vsix",
-		"vscode-start": "docker-compose up -d && npm run docker-install-extension",
+		"docker-install-flow-cli": "docker exec vscode sh -ci \"$(curl -fsSL https://storage.googleapis.com/flow-cli/install.sh)\"",
+		"vscode-start": "docker-compose up -d && npm run docker-install-extension && npm run docker-install-flow-cli",
 		"vscode-stop": "docker-compose down",
 		"cypress": "./node_modules/.bin/cypress run",
 		"e2e-test": "npm run package-test && npm run vscode-start && npm run cypress && npm run vscode-stop"
@@ -168,7 +169,7 @@
 		"@types/node": "^10.12.21",
 		"@types/vscode": "^1.65.0",
 		"@vscode/test-electron": "^2.1.5",
-		"cypress": "^10.4.0",
+		"cypress": "^8.3.0",
 		"esbuild": "^0.14.42",
 		"eslint-auto-fix": "^1.0.4",
 		"glob": "^7.1.7",

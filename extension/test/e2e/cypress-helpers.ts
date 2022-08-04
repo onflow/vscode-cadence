@@ -24,11 +24,6 @@ export function initExtension (cy: Cypress.cy): void {
   startEmulator(cy)
 }
 
-export function trustWorkspaceFolder(cy: Cypress.cy): void {
-  cy.contains('Trust folder')
-    .click({ force: true })
-}
-
 export function openFile (cy: Cypress.cy, name: string): void {
   cy.get('.monaco-list-row')
     .contains(name, { timeout: 5000 })
