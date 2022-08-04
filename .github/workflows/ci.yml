@@ -7,7 +7,8 @@ on:
     branches: [ master ]
 
 checkout: &checkout
-  uses: actions/checkout@v3
+  - name: Checkout
+    uses: actions/checkout@v3
 
 jobs:
   linter:
@@ -28,8 +29,7 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    steps:
-      <<: *checkout
+    steps: *checkout
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
