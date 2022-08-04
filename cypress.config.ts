@@ -1,8 +1,12 @@
 import { defineConfig } from 'cypress'
 
 export default defineConfig({
-  projectId: "3ei47t",
-  //integrationFolder: "extension/test/e2e/",
-  video: true,
-  screenshotOnRunFailure: true
+  e2e: {
+    projectId:"3ei47t",
+    fixturesFolder: 'extension/test/fixtures',
+    specPattern: 'extension/test/e2e/*.test.ts',
+    video: true,
+    screenshotOnRunFailure: true,
+    supportFile: false
+  }
 })
