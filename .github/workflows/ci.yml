@@ -83,7 +83,7 @@ jobs:
         run: npm run integration-test
 
   cypress:
-    needs: [unittest, integration]
+    needs: build
     name: Cypress End to End Tests
     runs-on: ubuntu-latest
     steps:
