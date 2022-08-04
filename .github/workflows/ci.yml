@@ -6,10 +6,6 @@ on:
   pull_request:
     branches: [ master ]
 
-checkout: &checkout
-  - name: Checkout
-    uses: actions/checkout@v3
-
 jobs:
   linter:
     name: "Code Style Standard"
@@ -29,7 +25,9 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    steps: *checkout
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
