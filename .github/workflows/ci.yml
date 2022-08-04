@@ -6,6 +6,21 @@ on:
   pull_request:
     branches: [ master ]
 
+ubuntu-setup: &ubuntu
+  name: Build
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install dependencies
+      run: npm ci
+
 jobs:
   linter:
     name: "Code Style Standard"
@@ -23,20 +38,7 @@ jobs:
       - run: npm run lint
 
   build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install dependencies
-        run: npm ci
-
+    <<: *ubuntu
       - name: Package
         run: npm run package
 
