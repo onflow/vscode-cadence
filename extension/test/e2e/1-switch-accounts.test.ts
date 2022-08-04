@@ -1,9 +1,14 @@
-import { Accounts, initTest, initExtension, openFile, stopEmulator, switchAccount } from '../cypress-helpers'
+import { Accounts, initTest, initExtension, openFile, stopEmulator, switchAccount, trustWorkspaceFolder } from './cypress-helpers'
 
 describe('User Story test: Switch Accounts', () => {
-  beforeEach(() => {
+  before(() => {
     initTest(cy)
+    trustWorkspaceFolder(cy)
     initExtension(cy)
+  })
+  
+  beforeEach(() => {
+
   })
 
   afterEach(() => {

@@ -15,9 +15,6 @@ export function initTest (cy: Cypress.cy): void {
 
   cy.visit('http://localhost:8888')
   cy.wait(10000)
-
-  cy.contains('Trust folder')
-  .click({ force: true })
 }
 
 export function initExtension (cy: Cypress.cy): void {
@@ -25,6 +22,11 @@ export function initExtension (cy: Cypress.cy): void {
   cy.contains('Cadence language server started', { timeout: 50000 })
   cy.wait(2000)
   startEmulator(cy)
+}
+
+export function trustWorkspaceFolder(cy: Cypress.cy): void {
+  cy.contains('Trust folder')
+    .click({ force: true })
 }
 
 export function openFile (cy: Cypress.cy, name: string): void {
