@@ -15,6 +15,9 @@ export function initTest (cy: Cypress.cy): void {
 
   cy.visit('http://localhost:8888')
   cy.wait(10000)
+
+  cy.contains('Trust folder')
+  .click({ force: true })
 }
 
 export function initExtension (cy: Cypress.cy): void {

@@ -1,3 +1,4 @@
+/* Run integration tests */
 import * as path from 'path'
 
 import { runTests } from '@vscode/test-electron'
@@ -5,7 +6,7 @@ import { runTests } from '@vscode/test-electron'
 async function main (): Promise<void> {
   try {
     const extensionDevelopmentPath = path.resolve(__dirname, '../../')
-    const extensionTestsPath = path.resolve(__dirname, './suite/index')
+    const extensionTestsPath = path.resolve(__dirname, './integration/index')
 
     const testWorkspace = path.resolve(process.cwd(), './src/test/fixtures/workspace')
 
