@@ -63,8 +63,9 @@ jobs:
         run: npm run unit-test
 
   integration:
-    runs-on: macos-latest
+    needs: build
     name: Integration Tests
+    runs-on: macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -76,9 +77,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      #- name: Install mocha
-      #  run: npm install mocha
 
       - name: Integration Tests
         run: npm run integration-test

@@ -14,7 +14,7 @@
 		"esbuild": "npm run -S esbuild-base -- --sourcemap",
 		"esbuild-watch": "npm run -S esbuild-base -- --sourcemap --watch",
 		"check": "tsc extension/src/main.ts",
-		"unit-test": "ts-mocha **/*.unit.test.ts",
+		"unit-test": "npm run esbuild && tsc -p ./ && mocha ./out/test/unit/*.unit.test.js",
 		"copy-test-fixtures": "rm -rf ./out/test/fixtures && cp -R ./extension/test/fixtures ./out/test/integration/fixtures",
 		"integration-test": "npm run esbuild && tsc -p ./ && npm run copy-test-fixtures && node ./out/test/run-integration-tests.js",
 		"package": "./node_modules/.bin/vsce package",
@@ -30,6 +30,14 @@
 		"cypress": "./node_modules/.bin/cypress run",
 		"e2e-test": "npm run package-test && npm run vscode-start && npm run cypress && npm run vscode-stop"
 	},
+	"ts-standard": {
+		"files": ["extension/src/*"],
+    "ignore": [
+			"node_modules/*",
+      "out",
+      "*.js"
+    ]
+  },
 	"engines": {
 		"vscode": "^1.65.0"
 	},
@@ -191,11 +199,5 @@
 		"publisherDisplayName": "Flow Blockchain",
 		"publisherId": "1b4a291e-1133-468e-b471-80338e4c9595",
 		"isPreReleaseVersion": false
-	},
-	"ts-standard": {
-    "ignore": [
-      "out",
-      "*.js"
-    ]
-  }
+	}
 }
