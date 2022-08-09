@@ -3,6 +3,7 @@ import * as sentry from './sentry-wrapper'
 import { env, ExtensionContext } from 'vscode'
 import * as pkg from '../../../package.json'
 import * as uuid from 'uuid'
+import { DEBUG_ACTIVE } from '../utils/debug'
 
 async function getUID (ctx: ExtensionContext): Promise<string> {
   const uid: string | undefined = ctx.globalState.get<string>('uid')
@@ -18,7 +19,7 @@ async function getUID (ctx: ExtensionContext): Promise<string> {
 // Called in main to setup telemetry
 export async function initialize (ctx: ExtensionContext): Promise<void> {
   // Check if user is allowing telemetry for vscode globally
-  const activate: boolean = env.isTelemetryEnabled
+  const activate: boolean = env.isTelemetryEnabled && !DEBUG_ACTIVE
 
   // Initialize Sentry
   await sentry.sentryInit(activate)

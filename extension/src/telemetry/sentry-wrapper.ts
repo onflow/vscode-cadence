@@ -29,18 +29,10 @@ export async function sentryClose (): Promise<void> {
 
 export function captureException (exception: any, captureContent?: Type.CaptureContext | undefined): void {
   if (!sentryActivated) return
-  const transaction = Sentry.startTransaction({
-    name: exception.message as string
-  })
   Sentry.captureException(exception, captureContent)
-  transaction.finish()
 }
 
 export function captureStatistics (message: string): void {
   if (!sentryActivated) return
-  const transaction = Sentry.startTransaction({
-    name: message
-  })
-  Sentry.captureMessage(message)
-  transaction.finish()
+  Sentry.captureMessage(message, 'info')
 }
