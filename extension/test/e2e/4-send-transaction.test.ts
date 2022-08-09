@@ -1,4 +1,4 @@
-import { initTest, initExtension, openFile } from '../cypress-helpers'
+import { initTest, initExtension, openFile } from './cypress-helpers'
 
 describe('User Story test: Send Transaction', () => {
   beforeEach(() => {
