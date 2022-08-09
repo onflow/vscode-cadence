@@ -7,9 +7,8 @@ on:
     branches: [ master ]
 
 jobs:
-
-  tests:
-    name: "Running Tests"
+  linter:
+    name: "Code Style Standard"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -18,9 +17,80 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm ci
-      - name: "Unit Tests"
+      - run: npm run lint
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Package
+        run: npm run package
+
+  unittest:
+    needs: build
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Package
+        run: npm run package-test
+
+      - name: Unit Tests
         run: npm run unit-test
 
-# Remove e2e tests from CI until they are fixed
-#      - name: "End-to-end Tests"
-#        run: npm run e2e-test
+  cypress:
+    needs: build
+    name: Cypress End to End Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Package
+        run: npm run package-test
+
+      - name: Start vscode Docker Container
+        run: npm run vscode-start
+
+      - name: Wait for docker container
+        run: pip install wait-for-it && wait-for-it --service http://localhost:8888
+
+      - name: Install flow-cli
+        run: docker exec vscode sh -ci "$(curl -fsSL https://storage.googleapis.com/flow-cli/install.sh)"
+
+      - name: Cypress
+        uses: cypress-io/github-action@v4
+        with:
+          wait-on: 'http://localhost:8888'
+          record: true
+          browser: chrome
+        env:
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
