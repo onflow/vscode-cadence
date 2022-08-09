@@ -1,5 +1,5 @@
 /* Contains cypress code to initialize the workspace before any other testing takes place */
-import { initTest } from '../cypress-helpers'
+import { initTest } from './cypress-helpers'
 
 describe('Initialize Workspace Settings', () => {
   beforeEach(() => {
