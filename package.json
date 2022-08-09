@@ -191,5 +191,11 @@
 		"publisherDisplayName": "Flow Blockchain",
 		"publisherId": "1b4a291e-1133-468e-b471-80338e4c9595",
 		"isPreReleaseVersion": false
-	}
+	},
+	"ts-standard": {
+    "ignore": [
+      "out",
+      "*.js"
+    ]
+  }
 }
