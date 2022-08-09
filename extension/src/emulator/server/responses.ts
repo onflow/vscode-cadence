@@ -26,10 +26,52 @@ export class ClientAccount {
   }
 }
 
+class contractInfo {
+  uri: any
+  documentVersion: number
+  startPos: any
+  kind: any
+  name: string
+  parameters: any[]
+  pragmaArgumentStrings: string[]
+  pragmaArguments: any[][]
+  pragmaSignersNames: string[]
+
+  constructor (obj: any) {
+    this.uri = obj.uri
+    this.documentVersion = obj.documentVersion
+    this.startPos = obj.startPos
+    this.kind = obj.kind
+    this.name = obj.name
+    this.parameters = obj.parameters
+    this.pragmaArgumentStrings = obj.pragmaArgumentStrings
+    this.pragmaArguments = obj.pragmaArguments
+    this.pragmaSignersNames = obj.pragmaSignersNames
+  }
+
+  getName (): string {
+    return this.name
+  }
+}
+
+/* Contract info in LS contracts.go
+type contractInfo struct {
+	uri                   protocol.DocumentURI
+	documentVersion       int32
+	startPos              *ast.Position
+	kind                  contractKind
+	name                  string
+	parameters            []*sema.Parameter
+	pragmaArgumentStrings []string
+	pragmaArguments       [][]Argument
+	pragmaSignersNames    []string
+}
+*/
+
 /* Response to hold all account data needed by the extension */
 export class GetAccountsReponse {
   #accounts: Account[]
-  #contracts: any[]
+  #contracts: contractInfo[]
   #activeAccountIndex: number
   #activeAccount: Account | null
 
@@ -49,7 +91,9 @@ export class GetAccountsReponse {
       if (client.Active) {
         this.#activeAccountIndex = idx
       }
-      this.#contracts.push(client.Contracts)
+      console.log("CTRACT")
+      console.log(client.Contracts)
+      this.#contracts.push(new contractInfo(client.Contracts))
     })
 
     this.#activeAccount = this.#accounts[this.#activeAccountIndex]
@@ -57,12 +101,8 @@ export class GetAccountsReponse {
 
   getAccounts (): Account[] {
     console.log('CONTRACTS: ')
-    this.#contracts.forEach((dict) => {
-      for (let key in dict) {
-        let value = this.#contracts[key]
-        // Use `key` and `value`
-        console.log('key, value: ', key, value)
-      }
+    this.#contracts.forEach((contract) => {
+      console.log(contract.getName())
     })
 
     return this.#accounts

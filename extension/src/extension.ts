@@ -61,7 +61,7 @@ export class Extension {
   }
 
   getDeployedContracts (accountName: string): string[] {
-    
+
   }
 
   async emulatorStateChanged (): Promise<void> {

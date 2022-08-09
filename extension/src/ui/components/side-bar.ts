@@ -8,11 +8,10 @@ import {
   EventEmitter
 } from 'vscode'
 
-import { GetAccountsReponse } from '../../emulator/server/responses';
+import { GetAccountsReponse } from '../../emulator/server/responses'
 
 export class SidebarUI {
-
-  constructor() {
+  constructor () {
     window.registerTreeDataProvider(
       'flowView',
       new AccountItemProvider()
@@ -28,47 +27,45 @@ export class SidebarUI {
   emulatorStateChanged (): void {
 
   }
-
 }
 
 class AccountItemProvider implements TreeDataProvider<AccountItem | DeployedContractItem> {
-  constructor() {}
+  constructor () {}
 
-  getTreeItem(element: AccountItem | DeployedContractItem): TreeItem {
-    return element;
+  getTreeItem (element: AccountItem | DeployedContractItem): TreeItem {
+    return element
   }
 
-  getChildren(element?: AccountItem | DeployedContractItem): Thenable<AccountItem[] | DeployedContractItem[]> {
+  getChildren (element?: AccountItem | DeployedContractItem): Thenable<AccountItem[] | DeployedContractItem[]> {
     if (element instanceof AccountItem) {
       return Promise.resolve(
         this.#getDeployedContracts()
       )
     } else {
-      return Promise.resolve([]);
+      return Promise.resolve([])
     }
   }
 
-  #getDeployedContracts(): DeployedContractItem[] {
+  #getDeployedContracts (): DeployedContractItem[] {
     // Parse GetAccountsReponse contracts
     // TODO:
     return []
   }
 
   // Refresh view
-  private _onDidChangeTreeData: EventEmitter<AccountItem | DeployedContractItem | undefined | null | void>
-    = new EventEmitter<AccountItem | DeployedContractItem | undefined | null | void>();
+  private readonly _onDidChangeTreeData: EventEmitter<AccountItem | DeployedContractItem | undefined | null | void>
+  = new EventEmitter<AccountItem | DeployedContractItem | undefined | null | void>()
 
   readonly onDidChangeTreeData: Event<AccountItem | DeployedContractItem | undefined | null | void>
-    = this._onDidChangeTreeData.event;
+  = this._onDidChangeTreeData.event
 
-  refresh(): void {
-    this._onDidChangeTreeData.fire();
+  refresh (): void {
+    this._onDidChangeTreeData.fire()
   }
 }
 
-
 class DeployedContractItem extends TreeItem {
-  constructor(
+  constructor (
     public readonly label: string,
     public readonly collapsibleState: TreeItemCollapsibleState
   ) {
@@ -79,7 +76,7 @@ class DeployedContractItem extends TreeItem {
 }
 
 class AccountItem extends TreeItem {
-  constructor(
+  constructor (
     public readonly name: string, // Name is full name + address
     public readonly collapsibleState: TreeItemCollapsibleState
   ) {
