@@ -75,9 +75,6 @@ export class TerminalController {
       unlinkSync(join(this.storagePath, FLOW_CONFIG_FILENAME))
       unlinkSync(join(this.storagePath, FLOW_DB_FILENAME))
     } catch (err) {
-      if (err.code === 'ENOENT') {
-        return
-      }
       console.error('Error resetting storage: ', err)
     }
   }

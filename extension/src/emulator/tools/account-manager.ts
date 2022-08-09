@@ -35,8 +35,10 @@ export class AccountManager {
 
       ext.emulatorStateChanged()
     } catch (err) {
-      window.showErrorMessage(`Failed to create account: ${err.message as string}`)
-        .then(() => {}, () => {})
+      if (err instanceof Error) {
+        window.showErrorMessage(`Failed to create account: ${err.message}`)
+          .then(() => {}, () => {})
+      }
       throw err
     }
   }
@@ -74,8 +76,10 @@ export class AccountManager {
 
       ext.emulatorStateChanged()
     } catch (err) {
-      window.showErrorMessage(`Failed to switch account: ${err.message as string}`)
-        .then(() => {}, () => {})
+      if (err instanceof Error) {
+        window.showErrorMessage(`Failed to switch account: ${err.message}`)
+          .then(() => {}, () => {})
+      }
       throw err
     }
   }

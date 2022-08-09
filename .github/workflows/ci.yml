@@ -11,11 +11,14 @@ jobs:
     name: "Code Style Standard"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
+
       - run: npm ci
       - run: npm run lint
 
@@ -25,6 +28,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
@@ -43,6 +47,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
@@ -56,6 +61,25 @@ jobs:
 
       - name: Unit Tests
         run: npm run unit-test
+
+  integration:
+    needs: build
+    name: Integration Tests
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Integration Tests
+        run: npm run integration-test
 
   cypress:
     needs: build
@@ -78,12 +102,6 @@ jobs:
 
       - name: Start vscode Docker Container
         run: npm run vscode-start
-
-      - name: Wait for docker container
-        run: pip install wait-for-it && wait-for-it --service http://localhost:8888
-
-      - name: Install flow-cli
-        run: docker exec vscode sh -ci "$(curl -fsSL https://storage.googleapis.com/flow-cli/install.sh)"
 
       - name: Cypress
         uses: cypress-io/github-action@v4
