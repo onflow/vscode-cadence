@@ -63,7 +63,7 @@ jobs:
         run: npm run unit-test
 
   integration:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     name: Integration Tests
     steps:
       - name: Checkout
