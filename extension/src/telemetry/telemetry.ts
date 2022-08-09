@@ -1,37 +1,33 @@
 /* Telemetry functions */
 import * as sentry from './sentry-wrapper'
-import { env } from 'vscode'
+import { env, ExtensionContext } from 'vscode'
 import * as pkg from '../../../package.json'
-import * as crypto from 'crypto'
+import * as uuid from 'uuid'
 
-// Generate unique userid from hashed serial number
-var serialNumber = require('serial-number')
-serialNumber.preferUUID = true
-
-let hashID = ''
-
-function updateID (hashID: string): void {
-  console.log('UPDATED ID CALLED - id: ' + hashID)
-  sentry.setUser(hashID)
-}
-
-function setUserID(): void {
-  serialNumber(function (err: any, value: string) {
-    hashID = crypto.createHash('sha256').update(value).digest('hex')
-    updateID(hashID)
-  })
+async function getUID (ctx: ExtensionContext): Promise<string> {
+  const uid: string | undefined = ctx.globalState.get<string>('uid')
+  if (uid === undefined) {
+    // Generate new uid
+    const uidGen = uuid.v4()
+    await ctx.globalState.update('uid', uidGen)
+    return uidGen
+  }
+  return uid
 }
 
 // Called in main to setup telemetry
-export async function initialize (): Promise<void> {
+export async function initialize (ctx: ExtensionContext): Promise<void> {
   // Check if user is allowing telemetry for vscode globally
   const activate: boolean = env.isTelemetryEnabled
 
   // Initialize Sentry
   await sentry.sentryInit(activate)
 
-  // Set user id
-  setUserID()
+  // Get unique UID
+  const uid = await getUID(ctx)
+
+  // Set uid for Sentry
+  sentry.setUser(uid)
 
   // Send initial statistics
   sendVersionStatistics()
