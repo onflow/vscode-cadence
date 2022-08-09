@@ -23,7 +23,7 @@ suite('Extension Test Suite', () => {
     console.log('Open NonFungibleToken.cdc')
     const setting: vscode.Uri = vscode.Uri.parse(path.join(__dirname, '/fixtures/workspace/NonFungibleToken.cdc'))
     vscode.workspace.openTextDocument(setting).then((a: vscode.TextDocument) => {
-      vscode.window.showTextDocument(a, 1, false).then(e => {})
+      void vscode.window.showTextDocument(a, 1, false).then(e => {})
     }, (error: any) => {
       console.error(error)
     })
