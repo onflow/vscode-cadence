@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { Accounts, initTest, initExtension, openFile, switchAccount } from '../cypress-helpers'
-=======
-import { Accounts, initTest, initExtension, openFile, stopEmulator, switchAccount } from './cypress-helpers'
->>>>>>> cdc96c18989e4e96afe3979c78cef59a49d928f2
+import { Accounts, initTest, initExtension, openFile, switchAccount } from './cypress-helpers'
 
 describe('User Story test: Deploy Contract', () => {
   beforeEach(() => {
