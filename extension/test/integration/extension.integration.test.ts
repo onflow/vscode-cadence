@@ -3,12 +3,13 @@ import * as assert from 'assert'
 // import { EmulatorState } from '../../src/emulator/emulator-controller'
 // import { delay } from './index'
 import * as vscode from 'vscode'
-import { before, Done } from 'mocha'
+import * as path from 'path'
+import { before } from 'mocha'
 
 suite('Extension Test Suite', () => {
   before(() => {
     vscode.window.showInformationMessage('Start all tests.')
-    .then(() => {}, () => {})
+      .then(() => {}, () => {})
   })
 
   test('Extension commands', async () => {
@@ -17,26 +18,27 @@ suite('Extension Test Suite', () => {
     const ext = await extension?.activate()
     assert.strictEqual(extension?.isActive, true)
 
+    void ext
+
     console.log('Open NonFungibleToken.cdc')
-    var setting: vscode.Uri = vscode.Uri.parse(__dirname + '/fixtures/workspace/NonFungibleToken.cdc');
+    const setting: vscode.Uri = vscode.Uri.parse(path.join(__dirname, '/fixtures/workspace/NonFungibleToken.cdc'))
     vscode.workspace.openTextDocument(setting).then((a: vscode.TextDocument) => {
-        vscode.window.showTextDocument(a, 1, false).then(e => {})
+      vscode.window.showTextDocument(a, 1, false).then(e => {})
     }, (error: any) => {
-        console.error(error)
+      console.error(error)
     })
-    
-    //await vscode.commands.executeCommand(cmd.RESTART_SERVER)
-    //assert.strictEqual(ext.getEmulatorState(), EmulatorState.Stopped)
 
-    //await delay(10)
+    // await vscode.commands.executeCommand(cmd.RESTART_SERVER)
+    // assert.strictEqual(ext.getEmulatorState(), EmulatorState.Stopped)
 
-    //console.log('Start Emulator')
-    //await vscode.commands.executeCommand(cmd.START_EMULATOR)
-    //await delay(3)
-    //assert.strictEqual(ext.getEmulatorState(), EmulatorState.Started)
+    // await delay(10)
 
-   //await vscode.commands.executeCommand(cmd.CREATE_ACCOUNT)
-    //assert.strictEqual(ext.getActiveAccount()?.address, 'e03daebed8ca0615')
+    // console.log('Start Emulator')
+    // await vscode.commands.executeCommand(cmd.START_EMULATOR)
+    // await delay(3)
+    // assert.strictEqual(ext.getEmulatorState(), EmulatorState.Started)
 
+    // await vscode.commands.executeCommand(cmd.CREATE_ACCOUNT)
+    // assert.strictEqual(ext.getActiveAccount()?.address, 'e03daebed8ca0615')
   }).timeout(100000)
 })

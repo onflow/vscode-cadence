@@ -30,14 +30,6 @@
 		"cypress": "./node_modules/.bin/cypress run",
 		"e2e-test": "npm run package-test && npm run vscode-start && npm run cypress && npm run vscode-stop"
 	},
-	"ts-standard": {
-		"files": ["extension/src/*"],
-    "ignore": [
-			"node_modules/*",
-      "out",
-      "*.js"
-    ]
-  },
 	"engines": {
 		"vscode": "^1.65.0"
 	},
