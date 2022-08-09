@@ -7,13 +7,15 @@ import * as Telemetry from './telemetry/telemetry'
 export let ext: Extension
 
 // Called by VS Code when the extension starts up
-export async function activate (ctx: ExtensionContext): Promise<void> {
+export async function activate (ctx: ExtensionContext): Promise<Extension> {
   Telemetry.initialize()
 
   // Initialize the extension
   Telemetry.withTelemetry(() => {
     ext = Extension.initialize(ctx)
   })
+
+  return ext
 }
 
 // Called by VS Code when the extension terminates
