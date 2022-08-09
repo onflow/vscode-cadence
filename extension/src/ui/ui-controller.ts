@@ -2,13 +2,18 @@
 import { StatusBarUI } from './components/status-bar'
 import { ext } from '../main'
 import { EmulatorState } from '../emulator/emulator-controller'
+import { SidebarUI } from './components/side-bar'
 
 export class UIController {
   #statusBar: StatusBarUI
+  #explorer: SidebarUI
 
   constructor () {
     // Initialize status bar
     this.#statusBar = new StatusBarUI(EmulatorState.Disconnected, null)
+
+    // Initialize explorer
+    this.#explorer = new SidebarUI()
   }
 
   emulatorStateChanged (): void {

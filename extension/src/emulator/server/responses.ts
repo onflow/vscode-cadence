@@ -29,11 +29,13 @@ export class ClientAccount {
 /* Response to hold all account data needed by the extension */
 export class GetAccountsReponse {
   #accounts: Account[]
+  #contracts: any[]
   #activeAccountIndex: number
   #activeAccount: Account | null
 
   constructor (res: any) {
     this.#accounts = []
+    this.#contracts = []
     this.#activeAccountIndex = 0
     this.#activeAccount = null
 
@@ -47,12 +49,22 @@ export class GetAccountsReponse {
       if (client.Active) {
         this.#activeAccountIndex = idx
       }
+      this.#contracts.push(client.Contracts)
     })
 
     this.#activeAccount = this.#accounts[this.#activeAccountIndex]
   }
 
   getAccounts (): Account[] {
+    console.log('CONTRACTS: ')
+    this.#contracts.forEach((dict) => {
+      for (let key in dict) {
+        let value = this.#contracts[key]
+        // Use `key` and `value`
+        console.log('key, value: ', key, value)
+      }
+    })
+
     return this.#accounts
   }
 
@@ -62,5 +74,10 @@ export class GetAccountsReponse {
 
   getActiveAccount (): Account | null {
     return this.#activeAccount
+  }
+
+  getContracts (): {} {
+    console.log('CONTRACTS: ', this.#contracts)
+    return this.#contracts
   }
 }

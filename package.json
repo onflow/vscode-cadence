@@ -37,6 +37,7 @@
 	"icon": "images/icon.png",
 	"activationEvents": [
 		"onLanguage:cadence",
+		"onView:flowView",
 		"onCommand:cadence.restartServer",
 		"onCommand:cadence.createAccount",
 		"onCommand:cadence.switchActiveAccount",
@@ -56,12 +57,16 @@
 		"views": {
 			"flow-explorer": [
 					{
-							"id": "flowview",
+							"id": "flowView",
 							"name": "Flow View"
 					}
 			]
 		},
 		"commands": [
+			{
+				"command": "flowview.refreshEntry",
+				"title": "Refresh Flow View"
+			},
 			{
 				"command": "cadence.restartServer",
 				"category": "Cadence",

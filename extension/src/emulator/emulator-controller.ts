@@ -62,6 +62,12 @@ export class EmulatorController {
     }
   }
 
+  getAccountContracts (accountName: string): string[] {
+    // TODO: implement
+    this.#accountData.getContracts()
+    return []
+  }
+
   restartServer (): void {
     void this.api.reset()
     void window.showInformationMessage('Restarted language server')
