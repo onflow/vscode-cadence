@@ -5,7 +5,7 @@ import { runTests } from '@vscode/test-electron'
 
 async function main (): Promise<void> {
   try {
-    const extensionDevelopmentPath = path.resolve(__dirname, '../../')
+    const extensionDevelopmentPath = path.resolve(__dirname, '../src/')
     const extensionTestsPath = path.resolve(__dirname, './integration/index.js')
 
     const testWorkspace = path.resolve(__dirname, './fixtures/workspace')

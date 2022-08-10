@@ -46,7 +46,7 @@
 		"onCommand:cadence.switchActiveAccount",
 		"onCommand:cadence.checkDepencencies"
 	],
-	"main": "./out/main.js",
+	"main": "./out/extension/src/main.js",
 	"contributes": {
 		"commands": [
 			{
