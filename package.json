@@ -167,6 +167,7 @@
 	"devDependencies": {
 		"@types/glob": "^7.1.4",
 		"@types/node": "^10.12.21",
+		"@types/uuid": "8.3.4",
 		"@types/vscode": "^1.65.0",
 		"@vscode/test-electron": "^2.1.5",
 		"cypress": "^8.3.0",
@@ -183,7 +184,6 @@
 		"@sentry/node": "^7.6.0",
 		"ansi-regex": "^6.0.1",
 		"mocha": "^10.0.0",
-		"uuid": "^8.3.2",
 		"vsce": "^2.9.1",
 		"vscode-languageclient": "^8.0.1"
 	},
