@@ -6,12 +6,11 @@ import * as uuid from 'uuid'
 import { DEBUG_ACTIVE } from '../utils/debug'
 
 async function getUID (ctx: ExtensionContext): Promise<string> {
-  const uid: string | undefined = ctx.globalState.get<string>('uid')
+  let uid: string | undefined = ctx.globalState.get<string>('uid')
   if (uid === undefined) {
     // Generate new uid and add it to global state
-    const uidGen: string = uuid.v4()
-    await ctx.globalState.update('uid', uidGen)
-    return uidGen
+    uid = uuid.v4()
+    await ctx.globalState.update('uid', uid)
   }
   return uid
 }
