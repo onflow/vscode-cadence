@@ -18,6 +18,10 @@ export function sentryInit (activate: boolean): void {
   })
 }
 
+export function setUser (id: string): void {
+  Sentry.setUser({ id: id })
+}
+
 export async function sentryClose (): Promise<void> {
   if (!sentryActivated) return
   void await Sentry.close()
@@ -30,4 +34,9 @@ export function captureException (exception: any, captureContent?: Type.CaptureC
   })
   Sentry.captureException(exception, captureContent)
   transaction.finish()
+}
+
+export function captureStatistics (message: string): void {
+  if (!sentryActivated) return
+  Sentry.captureMessage(message, 'info')
 }
