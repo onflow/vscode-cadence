@@ -5,6 +5,9 @@
 - Improved testing suite @DylanTinianov (#108)
 - Added telemetry using Sentry to track errors @DylanTinianov (#103)
 - Removed Snyk from CI configuration @DylanTinianov (#95)
+- Setup End To End Tests @DylanTinianov (#132)
+- Add integration tests to CI @DylanTinianov (#140)
+- Add usage statistics to Sentry @DylanTinianov (#144)
 
 ## 🐞 Bug Fixes
 - Fixed path issues on Windows @DylanTinianov (#112)
