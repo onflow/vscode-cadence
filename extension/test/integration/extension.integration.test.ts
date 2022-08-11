@@ -5,6 +5,7 @@ import * as assert from 'assert'
 import * as vscode from 'vscode'
 import * as path from 'path'
 import { before } from 'mocha'
+import { delay } from './index'
 
 suite('Extension Test Suite', () => {
   before(() => {
@@ -15,10 +16,6 @@ suite('Extension Test Suite', () => {
   test('Extension commands', async () => {
     console.log('Activate Extension')
     const extension = vscode.extensions.getExtension('onflow.cadence')
-    const ext = await extension?.activate()
-    assert.strictEqual(extension?.isActive, true)
-
-    void ext
 
     console.log('Open NonFungibleToken.cdc')
     const setting: vscode.Uri = vscode.Uri.parse(path.join(__dirname, '/fixtures/workspace/NonFungibleToken.cdc'))
@@ -27,6 +24,12 @@ suite('Extension Test Suite', () => {
     }, (error: any) => {
       console.error(error)
     })
+
+    await delay(2)
+
+    const ext = await extension?.activate()
+    assert.strictEqual(extension?.isActive, true)
+    void ext
 
     // await vscode.commands.executeCommand(cmd.RESTART_SERVER)
     // assert.strictEqual(ext.getEmulatorState(), EmulatorState.Stopped)
