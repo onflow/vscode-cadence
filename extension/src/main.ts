@@ -8,7 +8,7 @@ export let ext: Extension
 
 // Called by VS Code when the extension starts up
 export async function activate (ctx: ExtensionContext): Promise<Extension> {
-  Telemetry.initialize()
+  await Telemetry.initialize(ctx)
 
   // Initialize the extension
   Telemetry.withTelemetry(() => {

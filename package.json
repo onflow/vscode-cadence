@@ -10,13 +10,13 @@
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run -S esbuild-base -- --minify",
-		"esbuild-base": "esbuild ./extension/src/main.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
+		"esbuild-base": "esbuild ./extension/src/main.ts --bundle --outfile=out/extension/src/main.js --external:vscode --format=cjs --platform=node",
 		"esbuild": "npm run -S esbuild-base -- --sourcemap",
 		"esbuild-watch": "npm run -S esbuild-base -- --sourcemap --watch",
 		"check": "tsc extension/src/main.ts",
-		"unit-test": "npm run esbuild && tsc -p ./ && mocha ./out/test/unit/*.unit.test.js",
-		"copy-test-fixtures": "rm -rf ./out/test/fixtures && cp -R ./extension/test/fixtures ./out/test/integration/fixtures",
-		"integration-test": "npm run esbuild && tsc -p ./ && npm run copy-test-fixtures && node ./out/test/run-integration-tests.js",
+		"unit-test": "npm run esbuild && tsc -p ./ && mocha ./out/extension/test/unit/*.unit.test.js",
+		"copy-test-fixtures": "rm -rf ./out/extension/test/integration/fixtures && cp -R ./extension/test/fixtures ./out/extension/test/integration/fixtures",
+		"integration-test": "npm run esbuild && tsc -p ./ && npm run copy-test-fixtures && node ./out/extension/test/run-integration-tests.js",
 		"package": "./node_modules/.bin/vsce package",
 		"package-windows": ".\\node_modules\\.bin\\vsce.cmd package",
 		"install-extension": "code --install-extension cadence-*.vsix",
@@ -44,7 +44,7 @@
 		"onCommand:cadence.switchActiveAccount",
 		"onCommand:cadence.checkDepencencies"
 	],
-	"main": "./out/main.js",
+	"main": "./out/extension/src/main.js",
 	"contributes": {
 		"commands": [
 			{
@@ -155,11 +155,11 @@
 	"devDependencies": {
 		"@types/glob": "^7.1.4",
 		"@types/node": "^10.12.21",
+		"@types/uuid": "^8.3.4",
 		"@types/vscode": "^1.65.0",
 		"@vscode/test-electron": "^2.1.5",
 		"cypress": "^8.3.0",
-		"esbuild": "^0.14.42",
-		"eslint-auto-fix": "^1.0.4",
+		"esbuild": "^0.15.0",
 		"glob": "^7.1.7",
 		"nyc": "^15.1.0",
 		"ts-standard": "^11.0.0",
@@ -172,6 +172,7 @@
 		"ansi-regex": "^6.0.1",
 		"mocha": "^10.0.0",
 		"vsce": "^2.9.1",
+		"uuid": "^8.3.2",
 		"vscode-languageclient": "^8.0.1"
 	},
 	"__metadata": {
