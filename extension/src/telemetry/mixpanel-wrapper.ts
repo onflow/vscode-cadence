@@ -39,6 +39,7 @@ export function setUserInformation (uid: string, version: string): void {
     Object.keys(zones).forEach(z => {
       const cityArr = z.split('/')
       const city: string = cityArr[cityArr.length - 1]
+      // @ts-ignore
       timeZoneCityToCountry[city] = countries[zones[z].countries[0]].name
     })
 
