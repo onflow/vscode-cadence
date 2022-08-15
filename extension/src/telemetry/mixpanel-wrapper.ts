@@ -48,12 +48,14 @@ export function setUserInformation (uid: string, version: string): void {
     void err
   }
 
+  let userOS = process.platform === 'darwin' ? 'macOS' : process.platform
+  
   userInfo = {
     vscode_cadence_version: version,
     distinct_id: uid,
     city: userCity,
     country: userCountry,
-    operating_system: process.platform
+    operating_system: userOS
   }
 }
 
