@@ -4,7 +4,7 @@ import { countries, zones } from 'moment-timezone/data/meta/latest.json'
 import osName from 'os-name'
 
 // Mixpanel vscode-cadence
-const MIXPANEL_TOKEN: string = '3bf150e1e4b38a9b58286a6c0e888d72'
+const MIXPANEL_TOKEN: string = '69e592a84fef909bee58668b5c764ae4'
 
 // True when mixpanel telemetry is active
 let mixpanelActivated: boolean = false
