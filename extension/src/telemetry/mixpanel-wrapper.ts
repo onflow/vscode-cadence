@@ -29,7 +29,7 @@ export async function mixpanelInit (activate: boolean): Promise<void> {
 
 // Set user information including uid, city, country, and operating system
 export function setUserInformation (uid: string, version: string): void {
-  let userOS: string = osName()
+  const userOS: string = osName()
   let userCity: string = ''
   let userCountry: string = ''
 
@@ -39,7 +39,7 @@ export function setUserInformation (uid: string, version: string): void {
     Object.keys(zones).forEach(z => {
       const cityArr = z.split('/')
       const city: string = cityArr[cityArr.length - 1]
-      // @ts-ignore
+      // @ts-expect-error
       timeZoneCityToCountry[city] = countries[zones[z].countries[0]].name
     })
 
