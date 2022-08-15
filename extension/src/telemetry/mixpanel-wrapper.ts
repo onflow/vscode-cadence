@@ -1,6 +1,7 @@
 /* Wrapper functions for Mixpanel analytics */
 import * as mixpanel from 'mixpanel'
 import { countries, zones } from 'moment-timezone/data/meta/latest.json'
+import osName from 'os-name'
 
 // Mixpanel vscode-cadence
 const MIXPANEL_TOKEN: string = '3bf150e1e4b38a9b58286a6c0e888d72'
@@ -28,6 +29,7 @@ export async function mixpanelInit (activate: boolean): Promise<void> {
 
 // Set user information including uid, city, country, and operating system
 export function setUserInformation (uid: string, version: string): void {
+  let userOS: string = osName()
   let userCity: string = ''
   let userCountry: string = ''
 
@@ -48,8 +50,6 @@ export function setUserInformation (uid: string, version: string): void {
     void err
   }
 
-  let userOS = process.platform === 'darwin' ? 'macOS' : process.platform
-  
   userInfo = {
     vscode_cadence_version: version,
     distinct_id: uid,
