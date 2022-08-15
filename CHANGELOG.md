@@ -8,6 +8,7 @@
 - Setup End To End Tests @DylanTinianov (#132)
 - Add integration tests to CI @DylanTinianov (#140)
 - Add usage statistics to Sentry @DylanTinianov (#144)
+- Add activation analytics with Mixpanel @DylanTinianov (#145)
 
 ## 🐞 Bug Fixes
 - Fixed path issues on Windows @DylanTinianov (#112)
