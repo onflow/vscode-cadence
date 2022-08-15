@@ -1,11 +1,12 @@
 /* Telemetry functions */
 import * as sentry from './sentry-wrapper'
+import * as mixpanel from './mixpanel-wrapper'
 import { env, ExtensionContext } from 'vscode'
 import * as pkg from '../../../package.json'
 import * as uuid from 'uuid'
 import { DEBUG_ACTIVE } from '../utils/debug'
 
-async function getUID (ctx: ExtensionContext): Promise<string> {
+export async function getUID (ctx: ExtensionContext): Promise<string> {
   let uid: string | undefined = ctx.globalState.get<string>('uid')
   if (uid === undefined) {
     // Generate new uid and add it to global state
@@ -23,11 +24,15 @@ export async function initialize (ctx: ExtensionContext): Promise<void> {
   // Initialize Sentry
   await sentry.sentryInit(activate)
 
+  // Initialize Mixpanel
+  await mixpanel.mixpanelInit(activate)
+
   // Get unique UID
   const uid = await getUID(ctx)
 
-  // Set uid for Sentry
-  sentry.setUser(uid)
+  // Set uid for Sentry and Mixpanel
+  sentry.setUser(uid, pkg.version)
+  mixpanel.setUserInformation(uid, pkg.version)
 
   // Send initial statistics
   sendVersionStatistics()
@@ -39,7 +44,7 @@ export async function deactivate (): Promise<void> {
 }
 
 function sendVersionStatistics (): void {
-  sentry.captureStatistics('Activated Extension - version: ' + pkg.version)
+  mixpanel.captureStatistics('Activated Extension')
 }
 
 // Wrap a function call with telemetry
@@ -50,4 +55,8 @@ export function withTelemetry (callback: (...args: any[]) => any): void {
     sentry.captureException(err)
     throw err
   }
+}
+
+export function trackEvent(eventName: string, properties: {}): void {
+  mixpanel.captureStatistics(eventName, properties)
 }
