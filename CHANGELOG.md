@@ -1,4 +1,4 @@
-# v1.0.0 (2022-07-28)
+# v1.0.0 (2022-08-16)
 
 ## 🛠 Improvements
 - Complete system architecture overhaul to improve extendability, scalability, and maintainability @DylanTinianov (#99)
