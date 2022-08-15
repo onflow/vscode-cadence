@@ -57,6 +57,6 @@ export function withTelemetry (callback: (...args: any[]) => any): void {
   }
 }
 
-export function trackEvent(eventName: string, properties: {}): void {
+export function trackEvent (eventName: string, properties: {}): void {
   mixpanel.captureStatistics(eventName, properties)
 }

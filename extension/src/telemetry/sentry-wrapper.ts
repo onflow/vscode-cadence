@@ -19,7 +19,7 @@ export async function sentryInit (activate: boolean): Promise<void> {
 }
 
 export function setUser (id: string, version: string): void {
-  Sentry.setUser({ id: id, vscode_cadence_version: version})
+  Sentry.setUser({ id: id, vscode_cadence_version: version })
 }
 
 export async function sentryClose (): Promise<void> {
