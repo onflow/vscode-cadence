@@ -185,7 +185,6 @@
 		"ansi-regex": "^6.0.1",
 		"mixpanel": "^0.17.0",
 		"mocha": "^10.0.0",
-		"moment-timezone": "^0.5.34",
 		"os-name": "^5.0.1",
 		"uuid": "^8.3.2",
 		"vsce": "^2.9.1",
