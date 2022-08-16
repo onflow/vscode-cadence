@@ -9,7 +9,7 @@ const MIXPANEL_TOKEN: string = '69e592a84fef909bee58668b5c764ae4'
 let mixpanelActivated: boolean = false
 
 // Mixpanel instance
-let mixPanel: mixpanel.Mixpanel | undefined
+let mixPanel: mixpanel.Mixpanel
 
 // User information
 let userInfo: {
@@ -32,7 +32,7 @@ export async function mixpanelInit (activate: boolean, uid: string, version: str
 }
 
 export function captureStatistics (eventName: string, properties: mixpanel.PropertyDict = {}): void {
-  if (!mixpanelActivated || mixPanel === undefined) return
+  if (!mixpanelActivated) return
 
   // Add user information
   properties.vscode_cadence_version = userInfo.vscode_cadence_version
