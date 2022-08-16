@@ -21,21 +21,17 @@ export async function initialize (ctx: ExtensionContext): Promise<void> {
   // Check if user is allowing telemetry for vscode globally
   const activate: boolean = env.isTelemetryEnabled && !DEBUG_ACTIVE
 
-  // Initialize Sentry
-  await sentry.sentryInit(activate)
-
-  // Initialize Mixpanel
-  await mixpanel.mixpanelInit(activate)
-
   // Get unique UID
   const uid = await getUID(ctx)
 
-  // Set uid for Sentry and Mixpanel
-  sentry.setUser(uid, pkg.version)
-  mixpanel.setUserInformation(uid, pkg.version)
+  // Initialize Sentry
+  await sentry.sentryInit(activate, uid, pkg.version)
+
+  // Initialize Mixpanel
+  await mixpanel.mixpanelInit(activate, uid, pkg.version)
 
   // Send initial statistics
-  sendVersionStatistics()
+  sendActivationStatistics()
 }
 
 // Called in main to deactivate telemetry
@@ -43,7 +39,7 @@ export async function deactivate (): Promise<void> {
   await sentry.sentryClose()
 }
 
-function sendVersionStatistics (): void {
+function sendActivationStatistics (): void {
   mixpanel.captureStatistics('Activated Extension')
 }
 

@@ -12,20 +12,18 @@ let mixpanelActivated: boolean = false
 let mixPanel: mixpanel.Mixpanel | undefined
 
 // User information
-interface UserInfo {
+let userInfo: {
   vscode_cadence_version: string
   distinct_id: string
   operating_system: string
 }
-let userInfo: UserInfo | undefined
 
-export async function mixpanelInit (activate: boolean): Promise<void> {
+export async function mixpanelInit (activate: boolean, uid: string, version: string): Promise<void> {
   mixpanelActivated = activate
-  mixPanel = mixpanel.init(MIXPANEL_TOKEN)
-}
+  if (!mixpanelActivated) return
 
-// Set user information including uid, extension version, and operating system
-export function setUserInformation (uid: string, version: string): void {
+  mixPanel = mixpanel.init(MIXPANEL_TOKEN)
+
   userInfo = {
     vscode_cadence_version: version,
     distinct_id: uid,
@@ -35,10 +33,12 @@ export function setUserInformation (uid: string, version: string): void {
 
 export function captureStatistics (eventName: string, properties: mixpanel.PropertyDict = {}): void {
   if (!mixpanelActivated || mixPanel === undefined) return
-  if (userInfo !== undefined) {
-    properties.vscode_cadence_version = userInfo.vscode_cadence_version
-    properties.distinct_id = userInfo.distinct_id
-    properties.$os = userInfo.operating_system
-  }
+
+  // Add user information
+  properties.vscode_cadence_version = userInfo.vscode_cadence_version
+  properties.distinct_id = userInfo.distinct_id
+  properties.$os = userInfo.operating_system
+
+  // Track event data
   mixPanel.track(eventName, properties)
 }
