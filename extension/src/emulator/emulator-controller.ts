@@ -70,6 +70,7 @@ export class EmulatorController {
   async createNewAccount (): Promise<void> {
     // Create new account on hosted emulator
     const account = await this.api.createAccount()
+    void window.showInformationMessage('New account created: ' + account.fullName())
 
     // Switch active account to the new account
     await this.api.switchActiveAccount(account)

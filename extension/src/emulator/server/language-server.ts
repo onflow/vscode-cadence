@@ -38,6 +38,7 @@ export class LanguageServerAPI {
   }
 
   async startClient (): Promise<void> {
+    void window.showInformationMessage('Starting Cadence language server...')
     this.#initializedClient = false
     const configPath = await Config.getConfigPath()
     const numberOfAccounts = Settings.getWorkspaceSettings().numAccounts
