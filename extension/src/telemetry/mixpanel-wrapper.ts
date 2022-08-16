@@ -24,7 +24,7 @@ export async function mixpanelInit (activate: boolean): Promise<void> {
   mixPanel = mixpanel.init(MIXPANEL_TOKEN)
 }
 
-// Set user information including uid, city, country, and operating system
+// Set user information including uid, extension version, and operating system
 export function setUserInformation (uid: string, version: string): void {
   userInfo = {
     vscode_cadence_version: version,
