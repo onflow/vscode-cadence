@@ -3,13 +3,11 @@ import {
   Range,
   window
 } from 'vscode'
+import { CodeLensRefreshRequest } from 'vscode-languageclient'
 
 // This method will add and then remove a space on the last line to trick codelens to be updated
 export const refreshCodeLenses = (): void => {
   window.visibleTextEditors.forEach((editor) => {
-    if (editor.document.lineCount !== 0) {
-      return
-    }
     // NOTE: We add a space to the end of the last line to force
     // Codelens to refresh.
     const lineCount = editor.document.lineCount
