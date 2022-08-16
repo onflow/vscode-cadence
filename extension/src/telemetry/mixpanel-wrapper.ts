@@ -18,6 +18,11 @@ let userInfo: {
   operating_system: string
 }
 
+// Events to capture
+export namespace Events {
+  export const Activation: string = 'Extension Activated'
+}
+
 export async function mixpanelInit (activate: boolean, uid: string, version: string): Promise<void> {
   mixpanelActivated = activate
   if (!mixpanelActivated) return

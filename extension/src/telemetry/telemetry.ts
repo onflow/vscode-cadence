@@ -40,7 +40,7 @@ export async function deactivate (): Promise<void> {
 }
 
 function sendActivationStatistics (): void {
-  mixpanel.captureStatistics('Activated Extension')
+  mixpanel.captureStatistics(mixpanel.Events.Activation)
 }
 
 // Wrap a function call with telemetry
