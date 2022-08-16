@@ -8,18 +8,19 @@ const SENTRY_DSN: string = 'https://4d98c4d4ac7e4892850f8e3d2e61c733@o114654.ing
 // True when sentry telemetry is active
 let sentryActivated: boolean = false
 
-export async function sentryInit (activate: boolean): Promise<void> {
+export async function sentryInit (activate: boolean, uid: string, version: string): Promise<void> {
   sentryActivated = activate
   if (!sentryActivated) return
+
+  // Initialize Sentry
   Sentry.init({
     dsn: SENTRY_DSN,
     tracesSampleRate: 1.0,
     attachStacktrace: true
   })
-}
 
-export function setUser (id: string): void {
-  Sentry.setUser({ id: id })
+  // Set user information
+  Sentry.setUser({ id: uid, vscode_cadence_version: version })
 }
 
 export async function sentryClose (): Promise<void> {
