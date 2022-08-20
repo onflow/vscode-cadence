@@ -1,122 +1,140 @@
 /*
-EmulatorController is used to execute commands on the Flow emulator
-Contains an account manager to manage active accounts
-Communicates with local configs and language-server data
+EmulatorController is used to communicate with the language server
+and synchronize account data with the hosted emulator
 */
 import { ext } from '../main'
-import { TerminalController } from './tools/terminal'
-import { AccountManager } from './tools/account-manager'
 import { LanguageServerAPI } from './server/language-server'
-import { Settings } from '../settings/settings'
 import { Account } from './account'
 import { window, env } from 'vscode'
+import { GetAccountsReponse } from './server/responses'
+import { promptCopyAccountAddress } from '../ui/prompts'
 
 export enum EmulatorState {
-  Stopped = 0,
-  Starting,
-  Started,
+  Connected = 0,
+  Disconnected,
 }
 
 export class EmulatorController {
-  #accountManager: AccountManager
-  #terminalCtrl: TerminalController
   api: LanguageServerAPI
   #state: EmulatorState
+  // Syncronized account data with the LS
+  #accountData: GetAccountsReponse
 
-  constructor (storagePath: string | undefined, globalStoragePath: string) {
+  constructor () {
     // Initialize state
-    this.#state = EmulatorState.Stopped
+    this.#state = EmulatorState.Disconnected
 
-    // Initialize the language server api
+    // Initialize the language server and hosted emulator
     this.api = new LanguageServerAPI()
 
-    // Initialize AccountManager
-    this.#accountManager = new AccountManager(this.api)
-
-    // Initialize a terminal
-    this.#terminalCtrl = new TerminalController(storagePath, globalStoragePath)
+    // Initialize account data
+    this.#accountData = new GetAccountsReponse(null)
   }
 
-  #setState (state: EmulatorState): void {
-    this.#state = state
-    ext.emulatorStateChanged()
+  deactivate (): void {
+    // Disconnect from language server
+    this.api.deactivate()
+  }
+
+  // Called whenever the emulator is updated
+  async #syncAccountData (): Promise<void> {
+    this.#accountData = await this.api.getAccounts()
+  }
+
+  async syncEmulatorState (): Promise<void> {
+    if (this.api.running) {
+      this.#state = EmulatorState.Connected
+      await this.#syncAccountData()
+    } else {
+      this.#state = EmulatorState.Disconnected
+    }
   }
 
   getState (): EmulatorState {
     return this.#state
   }
 
-  async startEmulator (): Promise<void> {
-    try {
-      // Start the emulator with the service key we gave to the language server.
-      this.#setState(EmulatorState.Starting)
-      ext.emulatorStateChanged()
-
-      // Start emulator in terminal window
-      void this.#terminalCtrl.startEmulator()
-
-      await this.api.initAccountManager() // Note: seperate from AccountManager class
-
-      const settings = Settings.getWorkspaceSettings()
-
-      const accounts = await this.api.createDefaultAccounts(settings.numAccounts)
-
-      // Add accounts to local data
-      for (const account of accounts) {
-        void this.#accountManager.addAccountLocal(account)
-      }
-
-      await this.#accountManager.setActiveAccount(0)
-
-      this.#setState(EmulatorState.Started)
-      ext.emulatorStateChanged()
-    } catch (err) {
-      void window.showErrorMessage('Flow emulator failed to start')
-      this.#setState(EmulatorState.Stopped)
-      ext.emulatorStateChanged()
-      throw err
+  getActiveAccount (): Account | null {
+    if (this.#state === EmulatorState.Connected) {
+      return this.#accountData.getActiveAccount()
+    } else {
+      return null
     }
   }
 
-  // Stops emulator, exits the terminal, and removes all config/db files.
-  async stopEmulator (): Promise<void> {
-    this.#terminalCtrl.resetTerminal()
-
-    this.#setState(EmulatorState.Stopped)
-
-    // Clear accounts and restart language server to ensure account state is in sync.
-    this.#accountManager.resetAccounts()
-    ext.emulatorStateChanged()
-    await this.api.client.stop()
-
-    // Reset the language server
-    this.api.reset()
-  }
-
-  /* Language Server Interface */
   restartServer (): void {
-    void this.api.restartServer()
+    void this.api.reset()
+    void window.showInformationMessage('Restarted language server')
   }
 
-  /* Account Manager Interface */
-  createNewAccount (): void {
-    void this.#accountManager.createNewAccount()
+  async createNewAccount (): Promise<void> {
+    // Create new account on hosted emulator
+    const account = await this.api.createAccount()
+    void window.showInformationMessage('New account created: ' + account.fullName())
+
+    // Switch active account to the new account
+    await this.api.switchActiveAccount(account)
+
+    // Allow user to copy new account address to clipboard
+    promptCopyAccountAddress(account)
+
+    // Update UI
+    await ext.emulatorStateChanged()
   }
 
-  setActiveAccount (activeIndex: number): void {
-    void this.#accountManager.setActiveAccount(activeIndex)
-  }
-
+  // Switches the active account to the option selected by the user. The selection
+  // is propagated to the Language Server.
   switchActiveAccount (): void {
-    this.#accountManager.switchActiveAccount()
-  }
+    // Create the options (mark the active account with an 'active' prefix)
+    const accountOptions = Object.values(this.#accountData.getAccounts())
+    // Mark the active account with a `*` in the dialog
+      .map((account) => {
+        const ACTIVE_PREFIX = '🟢'
+        const INACTIVE_PREFIX = '⚫️'
+        const prefix: string =
+            account.index === this.#accountData.getActiveAccountIndex() ? ACTIVE_PREFIX : INACTIVE_PREFIX
+        const label = `${prefix} ${account.fullName()}`
 
-  getActiveAccount (): Account | null {
-    return this.#accountManager.getActiveAccount()
+        return {
+          label: label,
+          target: account.index
+        }
+      })
+
+    // Add option to create a new account
+    const ADD_NEW_PREFIX = '🐣'
+    accountOptions.push({
+      label: `${ADD_NEW_PREFIX} ${'Create New Account'}`,
+      target: accountOptions.length
+    })
+
+    // Display account selection options
+    window.showQuickPick(accountOptions).then(async (selected) => {
+      // `selected` is undefined if the QuickPick is dismissed, and the
+      // string value of the selected option otherwise.
+      if (selected === undefined) {
+        return
+      }
+
+      // Check if create new account is selected
+      if (selected.target === accountOptions.length - 1) {
+        await this.createNewAccount()
+        return
+      }
+
+      // Switch active account to selected
+      const setActive: Account = this.#accountData.getAccounts()[selected.target]
+      await this.api.switchActiveAccount(setActive)
+
+      promptCopyAccountAddress(setActive)
+
+      await ext.emulatorStateChanged()
+    }, () => {})
   }
 
   copyActiveAccount (): void {
-    const activeAccount = this.#accountManager.getActiveAccount()
+    if (this.#state === EmulatorState.Disconnected) return
+    const activeAccount = this.#accountData.getActiveAccount()
     if (activeAccount !== null) {
       void env.clipboard.writeText(`${activeAccount.fullName()}`)
         .then(() => {

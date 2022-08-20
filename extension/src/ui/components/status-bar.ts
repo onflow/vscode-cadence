@@ -34,20 +34,15 @@ export class StatusBarUI {
 
   #updateEmulatorStatusBarItem (emulatorState: EmulatorState): void {
     switch (emulatorState) {
-      case EmulatorState.Stopped:
-        this.#emulatorStatusItem.command = commandID.START_EMULATOR
-        this.#emulatorStatusItem.text = '$(debug-start) Start Flow Emulator'
-        break
-      case EmulatorState.Starting:
+      case EmulatorState.Connected:
         this.#emulatorStatusItem.command = undefined
-        this.#emulatorStatusItem.text = '$(loading~spin) Emulator starting...'
+        this.#emulatorStatusItem.text = '$(vm-active) Flow Emulator Connected'
         break
-      case EmulatorState.Started:
-        this.#emulatorStatusItem.command = commandID.STOP_EMULATOR
-        this.#emulatorStatusItem.text = '$(debug-stop) Stop Flow Emulator'
+      case EmulatorState.Disconnected:
+        this.#emulatorStatusItem.command = undefined
+        this.#emulatorStatusItem.text = '$(vm-outline) Flow Emulator Disconnected'
         break
     }
-
     this.#emulatorStatusItem.show()
   }
 

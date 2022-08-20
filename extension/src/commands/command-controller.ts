@@ -1,5 +1,4 @@
 /* CommandController is responsible for registering possible commands */
-
 import { commands } from 'vscode'
 import { ext } from '../main'
 import * as commandID from './command-constants'
@@ -7,10 +6,10 @@ import { Disposable } from 'vscode-languageclient'
 import * as Telemetry from '../telemetry/telemetry'
 
 export class CommandController {
-  cmds: Disposable[] // Hold onto commands
+  #cmds: Disposable[] // Hold onto commands
 
   constructor () {
-    this.cmds = []
+    this.#cmds = []
     Telemetry.withTelemetry(this.#registerCommands.bind(this))
   }
 
@@ -18,14 +17,12 @@ export class CommandController {
   #registerCommand (command: string, callback: (...args: any[]) => any): void {
     const commandCallback = (): void => { Telemetry.withTelemetry(callback.bind(this)) }
     const cmd: Disposable = commands.registerCommand(command, commandCallback)
-    this.cmds.push(cmd)
+    this.#cmds.push(cmd)
   }
 
   // Registers all commands that are handled by the extension (as opposed to
   // those handled by the Language Server).
   #registerCommands (): void {
-    this.#registerCommand(commandID.START_EMULATOR, this.#startEmulator)
-    this.#registerCommand(commandID.STOP_EMULATOR, this.#stopEmulator)
     this.#registerCommand(commandID.RESTART_SERVER, this.#restartServer)
     this.#registerCommand(commandID.CREATE_ACCOUNT, this.#createAccount)
     this.#registerCommand(commandID.SWITCH_ACCOUNT, this.#switchActiveAccount)
@@ -35,14 +32,6 @@ export class CommandController {
 
   #restartServer (): void {
     ext.emulatorCtrl.restartServer()
-  }
-
-  #startEmulator (): void {
-    void ext.emulatorCtrl.startEmulator()
-  }
-
-  #stopEmulator (): void {
-    void ext.emulatorCtrl.stopEmulator()
   }
 
   #createAccount (): void {

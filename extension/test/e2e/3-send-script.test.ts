@@ -1,4 +1,4 @@
-import { initTest, initExtension, openFile, stopEmulator } from './cypress-helpers'
+import { initTest, initExtension, openFile } from './cypress-helpers'
 
 describe('User Story test: Send Script', () => {
   beforeEach(() => {
@@ -6,9 +6,7 @@ describe('User Story test: Send Script', () => {
     initExtension(cy)
   })
 
-  afterEach(() => {
-    stopEmulator(cy)
-  })
+  afterEach(() => {})
 
   it('Send Script using Emulator', () => {
     openFile(cy, 'Script.cdc')

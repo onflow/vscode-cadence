@@ -1,4 +1,4 @@
-import { Accounts, initTest, initExtension, openFile, stopEmulator, switchAccount } from './cypress-helpers'
+import { Accounts, initTest, initExtension, openFile, switchAccount } from './cypress-helpers'
 
 describe('User Story test: Switch Accounts', () => {
   beforeEach(() => {
@@ -6,15 +6,12 @@ describe('User Story test: Switch Accounts', () => {
     initExtension(cy)
   })
 
-  afterEach(() => {
-    stopEmulator(cy)
-  })
+  afterEach(() => {})
 
   it('Switch accounts by entering name', () => {
     openFile(cy, 'NonFungibleToken.cdc')
-    cy.contains(`Switched to account ${Accounts.Service}`)
 
-    cy.contains(`Active account: ${Accounts.Service}`, { matchCase: false })
+    cy.contains(`Active account: ${Accounts.Alice}`, { matchCase: false })
       .click({ force: true })
 
     cy.get('.quick-input-box > .monaco-inputbox > .ibwrapper > .input')
@@ -26,6 +23,6 @@ describe('User Story test: Switch Accounts', () => {
 
   it('Switch accounts by click', () => {
     openFile(cy, 'NonFungibleToken.cdc')
-    switchAccount(cy, Accounts.Service, Accounts.Bob)
+    switchAccount(cy, Accounts.Alice, Accounts.Bob)
   })
 })

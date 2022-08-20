@@ -8,7 +8,7 @@ export class UIController {
 
   constructor () {
     // Initialize status bar
-    this.#statusBar = new StatusBarUI(EmulatorState.Stopped, null)
+    this.#statusBar = new StatusBarUI(EmulatorState.Disconnected, null)
   }
 
   emulatorStateChanged (): void {

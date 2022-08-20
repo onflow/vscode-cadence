@@ -1,14 +1,22 @@
-# Change Log
+# v1.0.0 (2022-08-16)
 
-All notable changes to the "bamboo" extension will be documented in this file.
+## 🛠 Improvements
+- Complete system architecture overhaul to improve extendability, scalability, and maintainability @DylanTinianov (#99)
+- Improved testing suite @DylanTinianov (#108)
+- Added telemetry using Sentry to track errors @DylanTinianov (#103)
+- Removed Snyk from CI configuration @DylanTinianov (#95)
+- Setup End To End Tests @DylanTinianov (#132)
+- Add integration tests to CI @DylanTinianov (#140)
+- Add usage statistics to Sentry @DylanTinianov (#144)
+- Add activation analytics with Mixpanel @DylanTinianov (#145)
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+## 🐞 Bug Fixes
+- Fixed path issues on Windows @DylanTinianov (#112)
 
-## [0.0.2] - 2019-10-29
-### Changed
-- Renamed instances of `bamboo` to `cadence`
-- Configuration option to start language server now supports arguments
+## 💥 Breaking Changes
+- Integrated Cadence Language Server hosted emulator @DylanTinianov (#109)
 
-## [Unreleased]
-
-- Initial release
+## ⭐ Features
+- Enabled users to enter a custom path to their flow.json file @DylanTinianov (#102)
+- Added a dependency installer to install missing dependencies such as flow-cli @DylanTinianov (#124)
+- Added a command to copy the active account to clipboard @DylanTinianov (#131)

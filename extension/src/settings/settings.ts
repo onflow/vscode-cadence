@@ -40,11 +40,11 @@ export class Settings {
     }
     this.flowCommand = flowCommand
 
-    const numAccounts: number | undefined = cadenceConfig.get(
+    let numAccounts: number | undefined = cadenceConfig.get(
       Settings.CONFIG_NUM_ACCOUNTS
     )
-    if (numAccounts === undefined) {
-      throw new Error(`Missing ${Settings.CONFIG_NUM_ACCOUNTS} config`)
+    if (numAccounts === undefined || numAccounts <= 0) {
+      numAccounts = 3
     }
     this.numAccounts = numAccounts
 

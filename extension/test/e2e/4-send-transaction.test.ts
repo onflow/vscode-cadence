@@ -1,5 +1,4 @@
-/* TODO: This test will be fixed with hosted emulator changes
-import { initTest, initExtension, openFile, stopEmulator } from '../cypress-helpers'
+import { initTest, initExtension, openFile } from './cypress-helpers'
 
 describe('User Story test: Send Transaction', () => {
   beforeEach(() => {
@@ -7,15 +6,12 @@ describe('User Story test: Send Transaction', () => {
     initExtension(cy)
   })
 
-  afterEach(() => {
-    stopEmulator(cy)
-  })
+  afterEach(() => {})
 
   it('Send Transaction using Emulator', () => {
     openFile(cy, 'Tx.cdc')
 
-    cy.contains('Send signed by ServiceAccount').click({ force: true })
+    cy.contains('Send signed by Alice').click({ force: true })
     cy.contains('Transaction status: SEALED')
   })
 })
-*/
