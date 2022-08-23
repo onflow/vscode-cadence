@@ -1,11 +1,14 @@
 /* Installer for Flow CLI */
 import { window } from 'vscode'
 import { execDefault, execPowerShell } from '../../utils/utils'
-import { promptUserInfoMessage } from '../../ui/prompts'
+import { promptUserInfoMessage, promptUserErrorMessage } from '../../ui/prompts'
 import { Installer } from '../installer'
+import { execSync } from 'child_process'
+import * as semver from 'semver'
 
 // Command to check flow-cli
-const CHECK_FLOW_CLI_CMD = 'flow'
+const CHECK_FLOW_CLI_CMD = 'flow version'
+const COMPATIBLE_FLOW_CLI_VERSIONS = '0.39.2 || >=0.39.2'
 
 // Flow CLI with homebrew
 const CHECK_HOMEBREW_CMD = 'brew help help' // Run this to check if brew is executable
@@ -88,8 +91,28 @@ export class InstallFlowCLI extends Installer {
     return execDefault(CHECK_HOMEBREW_CMD)
   }
 
+  checkVersion (): boolean {
+    let buffer: Buffer = execSync(CHECK_FLOW_CLI_CMD)
+    // Format version from output
+    let versionStr: string | null = buffer.toString().split(' ')[1]
+    versionStr = semver.clean(versionStr)
+    console.log('FLOW CLI VERSION: ' + versionStr)
+
+    // Check that version number is compatible
+    let version: semver.SemVer | null = semver.parse(versionStr)
+    if (version === null) return false
+    if (!semver.satisfies(version, COMPATIBLE_FLOW_CLI_VERSIONS)) {
+      window.showErrorMessage('Incompatible Flow CLI version ' + versionStr)
+      return false
+    }
+    return true
+  }
+
   verifyInstall (): boolean {
     // Check if flow-cli is executable
-    return execDefault(CHECK_FLOW_CLI_CMD)
+    if (!execDefault(CHECK_FLOW_CLI_CMD)) return false
+
+    // Check flow-cli version number
+    return this.checkVersion()
   }
 }

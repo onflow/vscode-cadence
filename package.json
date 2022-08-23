@@ -159,6 +159,7 @@
 		"@types/uuid": "^8.3.4",
 		"@types/vscode": "^1.65.0",
 		"@vscode/test-electron": "^2.1.5",
+		"@types/semver": "^7.3.12",
 		"cypress": "^8.3.0",
 		"esbuild": "^0.15.0",
 		"glob": "^7.1.7",
