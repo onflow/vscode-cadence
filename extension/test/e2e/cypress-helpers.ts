@@ -18,7 +18,7 @@ export function initTest (cy: Cypress.cy): void {
 
 export function initExtension (cy: Cypress.cy): void {
   openFile(cy, 'NonFungibleToken.cdc') // default file to trigger start extension
-  cy.contains('Cadence language server started', { timeout: 100000 })
+  cy.contains('Flow Emulator Connected', { timeout: 100000 })
 }
 
 export function openFile (cy: Cypress.cy, name: string): void {
