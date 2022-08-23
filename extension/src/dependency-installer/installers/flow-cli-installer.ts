@@ -92,17 +92,24 @@ export class InstallFlowCLI extends Installer {
   }
 
   checkVersion (): boolean {
-    let buffer: Buffer = execSync(CHECK_FLOW_CLI_CMD)
-    // Format version from output
+    // Get version informaton
+    const buffer: Buffer = execSync(CHECK_FLOW_CLI_CMD)
+
+    // Format version string from output
     let versionStr: string | null = buffer.toString().split(' ')[1]
     versionStr = semver.clean(versionStr)
-    console.log('FLOW CLI VERSION: ' + versionStr)
+    if (versionStr === null) return false
 
-    // Check that version number is compatible
-    let version: semver.SemVer | null = semver.parse(versionStr)
+    // Ensure user has a compatible version number installed
+    const version: semver.SemVer | null = semver.parse(versionStr)
     if (version === null) return false
+
     if (!semver.satisfies(version, COMPATIBLE_FLOW_CLI_VERSIONS)) {
-      window.showErrorMessage('Incompatible Flow CLI version ' + versionStr)
+      promptUserErrorMessage(
+        'Incompatible Flow CLI version: ' + versionStr,
+        'Install latest Flow CLI',
+        () => { this.install() }
+      )
       return false
     }
     return true
