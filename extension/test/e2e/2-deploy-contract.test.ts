@@ -14,8 +14,7 @@ describe('User Story test: Deploy Contract', () => {
     cy.contains('Deploy contract FooContract to Alice')
       .click({ force: true })
 
-    cy.contains('Deploying contract FooContract to account f8d6e0586b0a20c7')
-      .should('be.visible')
+    cy.contains('Contract FooContract has been deployed to account Alice')
 
     switchAccount(cy, Accounts.Alice, Accounts.Bob)
 
@@ -28,7 +27,6 @@ describe('User Story test: Deploy Contract', () => {
     cy.contains('Deploy contract FooContract to Bob')
       .click({ force: true })
 
-    cy.contains('Deploying contract FooContract to account 179b6b1cb6755e31')
-      .should('be.visible')
+    cy.contains('Contract FooContract has been deployed to account Bob')
   })
 })

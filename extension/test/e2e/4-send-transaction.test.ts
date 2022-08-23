@@ -12,6 +12,6 @@ describe('User Story test: Send Transaction', () => {
     openFile(cy, 'Tx.cdc')
 
     cy.contains('Send signed by Alice').click({ force: true })
-    cy.contains('Transaction status: SEALED')
+    cy.contains('Transaction SEALED with ID')
   })
 })

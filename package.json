@@ -24,7 +24,7 @@
 		"lint": "ts-standard",
 		"lint-fix": "ts-standard --fix",
 		"docker-install-extension": "docker exec vscode code-server --install-extension /source/cadence.vsix",
-		"docker-install-flow-cli": "docker exec vscode sh -ci \"$(curl -fsSL https://storage.googleapis.com/flow-cli/install.sh)\" -- v0.39.2",
+		"docker-install-flow-cli": "docker exec vscode sh -ci \"$(curl -fsSL https://storage.googleapis.com/flow-cli/install.sh)\"",
 		"vscode-start": "docker-compose up -d && npm run docker-install-extension && npm run docker-install-flow-cli",
 		"vscode-stop": "docker-compose down",
 		"cypress": "./node_modules/.bin/cypress run",

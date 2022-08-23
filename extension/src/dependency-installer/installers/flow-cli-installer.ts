@@ -8,7 +8,7 @@ import * as semver from 'semver'
 
 // Command to check flow-cli
 const CHECK_FLOW_CLI_CMD = 'flow version'
-const COMPATIBLE_FLOW_CLI_VERSIONS = '0.39.2 || >=0.39.2'
+const COMPATIBLE_FLOW_CLI_VERSIONS = '>=0.39.2'
 
 // Flow CLI with homebrew
 const CHECK_HOMEBREW_CMD = 'brew help help' // Run this to check if brew is executable
