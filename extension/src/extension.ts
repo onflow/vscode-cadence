@@ -38,8 +38,6 @@ export class Extension {
 
     // Initialize ExtensionCommands
     this.#commands = new CommandController()
-
-    throw new Error('TEST ERROR')
   }
 
   // Called on exit
