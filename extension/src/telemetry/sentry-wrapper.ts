@@ -16,7 +16,11 @@ export async function sentryInit (activate: boolean, uid: string, version: strin
   Sentry.init({
     dsn: SENTRY_DSN,
     tracesSampleRate: 1.0,
-    attachStacktrace: true
+    attachStacktrace: true,
+    ignoreErrors: [
+      'SyntaxError', // Caused by Language Server on invalid syntax
+      'No valid config path' // User doesn't have a valid flow.json file path
+    ]
   })
 
   // Set user information
