@@ -49,12 +49,11 @@ export function withTelemetry (callback: (...args: any[]) => any): void {
     callback()
   } catch (err) {
     sentry.captureException(err)
-    mixpanel.captureStatistics(mixpanel.Events.UnhandledException, { Error: err })
-    /*
     if (err instanceof Error) {
       mixpanel.captureStatistics(mixpanel.Events.UnhandledException, { Error: err.message })
+    } else {
+      mixpanel.captureStatistics(mixpanel.Events.UnhandledException, { Error: err })
     }
-    */
     throw err
   }
 }
