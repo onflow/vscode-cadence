@@ -37,7 +37,7 @@ export async function mixpanelInit (activate: boolean, uid: string, version: str
   }
 }
 
-export function captureStatistics (eventName: string, properties: mixpanel.PropertyDict = {}): void {
+export function captureEvent (eventName: string, properties: mixpanel.PropertyDict = {}): void {
   if (!mixpanelActivated) return
 
   // Add user information
