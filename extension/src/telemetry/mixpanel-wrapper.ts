@@ -37,6 +37,19 @@ export async function mixpanelInit (activate: boolean, uid: string, version: str
   }
 }
 
+export function captureException (err: any): void {
+  const errProperties = Object.getOwnPropertyNames(err)
+  const mixpanelProperties: mixpanel.PropertyDict = {}
+
+  // Extract properties from the error
+  errProperties.forEach((elem) => {
+    type ObjectKey = keyof typeof err
+    mixpanelProperties[elem] = err[elem as ObjectKey]
+  })
+
+  captureEvent(Events.UnhandledException, mixpanelProperties)
+}
+
 export function captureEvent (eventName: string, properties: mixpanel.PropertyDict = {}): void {
   if (!mixpanelActivated) return
 
