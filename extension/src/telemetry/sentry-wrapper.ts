@@ -1,7 +1,6 @@
 /* Wrapper functions for error reporting using Sentry */
 import * as Sentry from '@sentry/node'
 import * as Type from '@sentry/types'
-import { IgnoreErrors } from './ignore-errors'
 
 // Sentry vscode-cadence
 const SENTRY_DSN: string = 'https://4d98c4d4ac7e4892850f8e3d2e61c733@o114654.ingest.sentry.io/6568410'
@@ -18,7 +17,7 @@ export async function sentryInit (activate: boolean, uid: string, version: strin
     dsn: SENTRY_DSN,
     tracesSampleRate: 1.0,
     attachStacktrace: true,
-    ignoreErrors: IgnoreErrors
+    defaultIntegrations: false
   })
 
   // Set user information

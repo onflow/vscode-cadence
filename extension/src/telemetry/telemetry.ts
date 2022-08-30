@@ -5,7 +5,6 @@ import { env, ExtensionContext } from 'vscode'
 import * as pkg from '../../../package.json'
 import * as uuid from 'uuid'
 import { DEBUG_ACTIVE } from '../utils/debug'
-import { ignoreError } from './ignore-errors'
 
 export async function getUID (ctx: ExtensionContext): Promise<string> {
   let uid: string | undefined = ctx.globalState.get<string>('uid')
@@ -50,23 +49,7 @@ export function withTelemetry (callback: (...args: any[]) => any): void {
     callback()
   } catch (err) {
     sentry.captureException(err)
-
-    // Try to send error to mixpanel
-    try {
-      const error: Error = err as Error
-      if (!ignoreError(error)) {
-        mixpanel.captureEvent(
-          mixpanel.Events.UnhandledException,
-          {
-            Error: (error).name,
-            Message: (error).message
-          }
-        )
-      }
-    } catch (failed) {
-      void failed
-    }
-
+    mixpanel.captureException(err)
     throw err
   }
 }
