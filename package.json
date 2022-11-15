@@ -131,7 +131,7 @@
 				"extensions": [
 					".cdc"
 				],
-				"configuration": "./language/language-configuration.json"
+				"configuration": "./extension/language/language-configuration.json"
 			}
 		],
 		"grammars": [
