@@ -15,6 +15,7 @@ const CHECK_HOMEBREW_CMD = 'brew help help' // Run this to check if brew is exec
 const BASH_INSTALL_HOMEBREW = '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
 
 // Shell install commands
+const BREW_UPDATE = 'brew update'
 const BREW_INSTALL_FLOW_CLI = 'brew install flow-cli'
 const WINDOWS_POWERSHELL_INSTALL_CMD = 'iex "& { $(irm \'https://storage.googleapis.com/flow-cli/install.ps1\') }"'
 const BASH_INSTALL_FLOW_CLI = 'sh -ci "$(curl -fsSL https://storage.googleapis.com/flow-cli/install.sh)"'
@@ -70,11 +71,15 @@ export class InstallFlowCLI extends Installer {
       promptUserInfoMessage(
         'Install Flow CLI using Homebrew',
         'Install Flow CLI',
-        () => { void execDefault(BREW_INSTALL_FLOW_CLI) }
+        () => {
+          void execDefault(BREW_UPDATE)
+          void execDefault(BREW_INSTALL_FLOW_CLI)
+        }
       )
     } else {
       // Install Flow CLI using homebrew
       void window.showInformationMessage('Installing Flow CLI')
+      void execDefault(BREW_UPDATE)
       void execDefault(BREW_INSTALL_FLOW_CLI)
     }
   }
@@ -96,7 +101,8 @@ export class InstallFlowCLI extends Installer {
     const buffer: Buffer = execSync(CHECK_FLOW_CLI_CMD)
 
     // Format version string from output
-    let versionStr: string | null = buffer.toString().split(' ')[1]
+    let versionStr: string | null = (buffer.toString().split('\n')[0]).split(' ')[1]
+
     versionStr = semver.clean(versionStr)
     if (versionStr === null) return false
 
