@@ -14,8 +14,7 @@ describe('User Story test: Switch Accounts', () => {
     cy.contains(`Active account: ${Accounts.Alice}`, { matchCase: false })
       .click({ force: true })
 
-    cy.get('.quick-input-box > .monaco-inputbox > .ibwrapper > .input')
-      .type(`${Accounts.Bob}{enter}`)
+    cy.type(`${Accounts.Bob}{enter}`)
 
     cy.contains(`Switched to account ${Accounts.Bob}`, { timeout: 10000, matchCase: false })
     cy.contains(`Active account: ${Accounts.Bob}`, { timeout: 10000, matchCase: false })
