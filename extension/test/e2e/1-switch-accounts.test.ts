@@ -12,10 +12,7 @@ describe('User Story test: Switch Accounts', () => {
     openFile(cy, 'NonFungibleToken.cdc')
 
     cy.contains(`Active account: ${Accounts.Alice}`, { matchCase: false })
-      .click({ force: true })
-
-    cy.get('.quick-input-box > .monaco-inputbox > .ibwrapper > .input')
-      .type(`${Accounts.Bob}{enter}`)
+      .click({ force: true }).type(`${Accounts.Bob}{enter}`)
 
     cy.contains(`Switched to account ${Accounts.Bob}`, { timeout: 10000, matchCase: false })
     cy.contains(`Active account: ${Accounts.Bob}`, { timeout: 10000, matchCase: false })
