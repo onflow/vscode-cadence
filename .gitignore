@@ -6,3 +6,4 @@ out
 .vscode-test
 *.vsix
 cypress
+.idea
