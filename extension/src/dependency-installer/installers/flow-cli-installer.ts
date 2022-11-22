@@ -4,6 +4,7 @@ import { execDefault, execPowerShell } from '../../utils/utils'
 import { promptUserInfoMessage, promptUserErrorMessage } from '../../ui/prompts'
 import { Installer } from '../installer'
 import { execSync } from 'child_process'
+import { parseFlowCliVersion } from './version-parsers'
 import * as semver from 'semver'
 
 // Command to check flow-cli
@@ -101,7 +102,7 @@ export class InstallFlowCLI extends Installer {
     const buffer: Buffer = execSync(CHECK_FLOW_CLI_CMD)
 
     // Format version string from output
-    let versionStr: string | null = (buffer.toString().split('\n')[0]).split(' ')[1]
+    let versionStr: string | null = parseFlowCliVersion(buffer)
 
     versionStr = semver.clean(versionStr)
     if (versionStr === null) return false
