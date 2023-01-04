@@ -113,7 +113,6 @@ jobs:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-
   windows-build:
     name: Windows Build
     runs-on: windows-latest
@@ -149,13 +148,13 @@ jobs:
         run: npm ci
 
       - name: Package
-        run: npm run package-test
+        run: npm run package-test-windows
 
       - name: Unit Tests
         run: npm run unit-test-windows
 
-  integration-windows:
-    needs: build
+  windows-integration:
+    needs: windows-build
     name: Windows Integration Tests
     runs-on: windows-latest
     steps:
