@@ -160,7 +160,7 @@
 		"@types/expect": "^24.3.0",
 		"@types/glob": "^7.1.4",
 		"@types/mixpanel": "^2.14.4",
-		"@types/node": "^10.12.21",
+		"@types/node": "^18.11.18",
 		"@types/semver": "^7.3.12",
 		"@types/uuid": "^8.3.4",
 		"@types/vscode": "^1.65.0",

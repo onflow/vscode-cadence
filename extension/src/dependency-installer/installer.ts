@@ -1,5 +1,5 @@
 /* Abstract Installer class */
-import { DEBUG_LOG } from '../utils/debug'
+import { window } from 'vscode'
 
 // InstallError is thrown if install fails
 export class InstallError extends Error {}
@@ -26,13 +26,16 @@ export abstract class Installer {
       return
     }
 
-    DEBUG_LOG('Running ' + this.#installerName + ' installer...')
+    void window.showInformationMessage('Running ' + this.#installerName + ' installer, please wait...')
     this.install()
 
     if (!this.verifyInstall()) {
       throw new InstallError('Failed to install: ' + this.#installerName)
     }
+
     this.#installed = true
+    void window.showInformationMessage(this.#installerName + ' installed sucessfully. ' +
+    'You may need to reload the extension.')
   }
 
   // Installation logic
