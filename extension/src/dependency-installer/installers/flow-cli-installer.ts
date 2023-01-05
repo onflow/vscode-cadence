@@ -115,7 +115,15 @@ export class InstallFlowCLI extends Installer {
       promptUserErrorMessage(
         'Incompatible Flow CLI version: ' + versionStr,
         'Install latest Flow CLI',
-        () => { this.install() }
+        () => {
+          this.install()
+          if (!this.verifyInstall()) {
+            window.showErrorMessage('Failed to install Flow CLI')
+            return
+          }
+          window.showInformationMessage('Flow CLI installed sucessfully. ' + 
+          'You may need to reload the extension.')
+        }
       )
       return false
     }
