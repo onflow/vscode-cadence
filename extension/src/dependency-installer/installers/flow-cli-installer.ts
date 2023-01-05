@@ -118,10 +118,10 @@ export class InstallFlowCLI extends Installer {
         () => {
           this.install()
           if (!this.verifyInstall()) {
-            window.showErrorMessage('Failed to install Flow CLI')
+            void window.showErrorMessage('Failed to install Flow CLI')
             return
           }
-          window.showInformationMessage('Flow CLI installed sucessfully. ' + 
+          void window.showInformationMessage('Flow CLI installed sucessfully. ' +
           'You may need to reload the extension.')
         }
       )

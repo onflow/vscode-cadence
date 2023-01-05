@@ -26,7 +26,7 @@ export abstract class Installer {
       return
     }
 
-    window.showInformationMessage('Running ' + this.#installerName + ' installer...')
+    void window.showInformationMessage('Running ' + this.#installerName + ' installer...')
     this.install()
 
     if (!this.verifyInstall()) {
@@ -34,7 +34,7 @@ export abstract class Installer {
     }
 
     this.#installed = true
-    window.showInformationMessage(this.#installerName + ' installed sucessfully. ' + 
+    void window.showInformationMessage(this.#installerName + ' installed sucessfully. ' +
     'You may need to reload the extension.')
   }
 
