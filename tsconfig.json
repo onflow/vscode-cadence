@@ -10,7 +10,10 @@
 		"sourceMap": true,
 		"strict": true,
 		"noImplicitReturns": true,
-		"types": ["cypress"]
+		"types": [
+			"cypress",
+			"node"
+		]
 	},
 	"exclude": [
 		"node_modules",
