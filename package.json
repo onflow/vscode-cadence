@@ -3,7 +3,7 @@
 	"displayName": "Cadence",
 	"publisher": "onflow",
 	"description": "This extension integrates Cadence, the resource-oriented smart contract programming language of Flow, into Visual Studio Code.",
-	"version": "1.0.5",
+	"version": "1.0.6",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/onflow/vscode-cadence.git"
