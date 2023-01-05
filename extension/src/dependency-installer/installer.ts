@@ -26,7 +26,7 @@ export abstract class Installer {
       return
     }
 
-    void window.showInformationMessage('Running ' + this.#installerName + ' installer...')
+    void window.showInformationMessage('Running ' + this.#installerName + ' installer, please wait...')
     this.install()
 
     if (!this.verifyInstall()) {
