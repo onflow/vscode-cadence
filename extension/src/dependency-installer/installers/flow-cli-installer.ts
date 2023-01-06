@@ -18,8 +18,8 @@ const BASH_INSTALL_HOMEBREW = '/bin/bash -c "$(curl -fsSL https://raw.githubuser
 // Shell install commands
 const BREW_UPDATE = 'brew update'
 const BREW_INSTALL_FLOW_CLI = 'brew install flow-cli'
-const WINDOWS_POWERSHELL_INSTALL_CMD = 'iex "& { $(irm \'https://storage.googleapis.com/flow-cli/install.ps1\') }"'
-const BASH_INSTALL_FLOW_CLI = 'sh -ci "$(curl -fsSL https://storage.googleapis.com/flow-cli/install.sh)"'
+const WINDOWS_POWERSHELL_INSTALL_CMD = 'iex "& { $(irm \'https://raw.githubusercontent.com/onflow/flow-cli/master/install.ps1\') }"'
+const BASH_INSTALL_FLOW_CLI = 'sh -ci "$(curl -fsSL https://raw.githubusercontent.com/onflow/flow-cli/master/install.sh)"'
 
 export class InstallFlowCLI extends Installer {
   constructor () {
