@@ -170,7 +170,7 @@ export class InstallFlowCLI extends Installer {
     // Check if latest version > current version
     if (latest != null && latestStr != null && semver.compare(latest, version) === 1) {
       promptUserInfoMessage(
-        'There is a newer Flow CLI version: ' + latestStr,
+        'There is a new Flow CLI version available: ' + latestStr,
         'Install latest Flow CLI',
         () => {
           void window.showInformationMessage('Running Flow CLI installer, please wait...')
