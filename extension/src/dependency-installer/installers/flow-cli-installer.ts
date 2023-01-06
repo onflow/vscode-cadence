@@ -123,7 +123,7 @@ export class InstallFlowCLI extends Installer {
         }
     }
 
-    let latestStr: string | null = parseFlowCliVersion(output)
+    const latestStr: string | null = parseFlowCliVersion(output)
     if (latestStr != null) {
       LATEST_FLOW_CLI_VERSION = latestStr
     }
