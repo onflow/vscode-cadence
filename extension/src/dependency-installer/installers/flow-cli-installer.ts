@@ -9,7 +9,8 @@ import * as semver from 'semver'
 
 // Command to check flow-cli
 const CHECK_FLOW_CLI_CMD = 'flow version'
-const COMPATIBLE_FLOW_CLI_VERSIONS = '>=0.43.1'
+const COMPATIBLE_FLOW_CLI_VERSIONS = '>=0.43.2'
+let LATEST_FLOW_CLI_VERSION = ''
 
 // Flow CLI with homebrew
 const CHECK_HOMEBREW_CMD = 'brew help help' // Run this to check if brew is executable
@@ -18,8 +19,12 @@ const BASH_INSTALL_HOMEBREW = '/bin/bash -c "$(curl -fsSL https://raw.githubuser
 // Shell install commands
 const BREW_UPDATE = 'brew update'
 const BREW_INSTALL_FLOW_CLI = 'brew install flow-cli'
-const WINDOWS_POWERSHELL_INSTALL_CMD = 'iex "& { $(irm \'https://raw.githubusercontent.com/onflow/flow-cli/master/install.ps1\') }"'
+const POWERSHELL_INSTALL_CMD = 'iex "& { $(irm \'https://raw.githubusercontent.com/onflow/flow-cli/master/install.ps1\') }"'
 const BASH_INSTALL_FLOW_CLI = 'sh -ci "$(curl -fsSL https://raw.githubusercontent.com/onflow/flow-cli/master/install.sh)"'
+
+// Shell check latest version
+const BASH_GET_VERSION = 'curl https://raw.githubusercontent.com/onflow/flow-cli/master/version.txt'
+const POWERSHELL_GET_VERSION = '(Invoke-WebRequest -Uri https://raw.githubusercontent.com/onflow/flow-cli/master/version.txt).Content'
 
 export class InstallFlowCLI extends Installer {
   constructor () {
@@ -86,7 +91,7 @@ export class InstallFlowCLI extends Installer {
   }
 
   #install_windows (): void {
-    execPowerShell(WINDOWS_POWERSHELL_INSTALL_CMD)
+    execPowerShell(POWERSHELL_INSTALL_CMD)
   }
 
   #install_bash_cmd (): void {
@@ -97,8 +102,41 @@ export class InstallFlowCLI extends Installer {
     return execDefault(CHECK_HOMEBREW_CMD)
   }
 
+  findLatestVersion (): void {
+    let output: Buffer
+    const OS_TYPE = process.platform
+    switch (OS_TYPE) {
+      case 'win32':
+        try {
+          output = execSync(POWERSHELL_GET_VERSION, { shell: 'powershell.exe' })
+        } catch (err) {
+          return
+        }
+        break
+      case 'darwin':
+      case 'linux':
+      default:
+        try {
+          output = execSync(BASH_GET_VERSION)
+        } catch (err) {
+          return
+        }
+    }
+
+    let latestStr: string | null = parseFlowCliVersion(output)
+    if (latestStr != null) {
+      LATEST_FLOW_CLI_VERSION = latestStr
+    }
+  }
+
   checkVersion (): boolean {
-    // Get version informaton
+    if (LATEST_FLOW_CLI_VERSION === '') {
+      this.findLatestVersion()
+    }
+    const latestStr: string | null = semver.clean(LATEST_FLOW_CLI_VERSION)
+    const latest: semver.SemVer | null = semver.parse(latestStr)
+
+    // Get user's version informaton
     const buffer: Buffer = execSync(CHECK_FLOW_CLI_CMD)
 
     // Format version string from output
@@ -128,6 +166,25 @@ export class InstallFlowCLI extends Installer {
       )
       return false
     }
+
+    // Check if latest version > current version
+    if (latest != null && latestStr != null && semver.compare(latest, version) === 1) {
+      promptUserInfoMessage(
+        'There is a newer Flow CLI version: ' + latestStr,
+        'Install latest Flow CLI',
+        () => {
+          void window.showInformationMessage('Running Flow CLI installer, please wait...')
+          this.install()
+          if (!this.verifyInstall()) {
+            void window.showErrorMessage('Failed to install Flow CLI')
+            return
+          }
+          void window.showInformationMessage('Flow CLI installed sucessfully. ' +
+          'You may need to reload the extension.')
+        }
+      )
+    }
+
     return true
   }
 
