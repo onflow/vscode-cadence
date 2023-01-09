@@ -182,6 +182,7 @@
 		"@sentry/node": "^7.29.0",
 		"ansi-regex": "^6.0.1",
 		"mixpanel": "^0.17.0",
+		"node-fetch": "^3.3.0",
 		"os-name": "^5.0.1",
 		"uuid": "^9.0.0",
 		"vsce": "^2.15.0",
