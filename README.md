@@ -1,4 +1,5 @@
 [![CI](https://github.com/onflow/vscode-cadence/actions/workflows/ci.yml/badge.svg)](https://github.com/onflow/vscode-cadence/actions/workflows/ci.yml)
+[![Docs](https://img.shields.io/badge/Read%20The-Docs-blue)](https://developers.flow.com/tools/vscode-extension)
 <br />
 <p align="center">
   <a href="https://docs.onflow.org/vscode-extension/">
@@ -19,25 +20,18 @@
 <br />
 <br />
 
+
 ## Installation
+#### Install the Cadence extension from the **[Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=onflow.cadence)**
+#### The extension is also available on the **[Open VSX Registry](https://open-vsx.org/extension/onflow/cadence)**
 
-### Prerequisites
-To install the extension, ensure you have:
-- **Installed [VS Code](https://code.visualstudio.com/docs/setup/setup-overview)**
-- **Installed the [Flow CLI](https://docs.onflow.org/flow-cli/install/)**. The extension will help you install Flow CLI and other depencencies.
-
-
-### Install from **[Visual Studio Code marketplace](https://marketplace.visualstudio.com/items?itemName=onflow.cadence)**
-
-### Also on **[Open VSX](https://open-vsx.org/extension/onflow/cadence)**
+Once installed, the extension will help you install other dependencies such as the [Flow CLI](https://docs.onflow.org/flow-cli/install/).
 
 ## Features
 
 ### Start Emulator
 Starting the Flow emulator is as simple as one click. You can also switch between accounts and
 if your projects contains `flow.json` it gets automatically loaded by the emulator.
-
-![start emulator](https://storage.googleapis.com/flow-resources/documentation-assets/vscode-extension/start-emulator-min.gif)
 
 ### Deploy Contracts
 Deploy contracts to the emulator without leaving the VSCode editor. The address the contract
