@@ -5,12 +5,14 @@ import { ext } from '../../main'
 import * as Config from '../local/config'
 import { Settings } from '../../settings/settings'
 import * as response from './responses'
+import {watch} from "fs/promises";
 
 // Identities for commands handled by the Language server
 const CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
 const SWITCH_ACCOUNT_SERVER = 'cadence.server.flow.switchActiveAccount'
 const GET_ACCOUNTS_SERVER = 'cadence.server.flow.getAccounts'
 const RESTART_SERVER = 'cadence.server.flow.restart'
+const RELOAD_CONFIGURATION = 'cadence.server.flow.reloadConfiguration'
 
 export class LanguageServerAPI {
   client!: LanguageClient
@@ -75,6 +77,7 @@ export class LanguageServerAPI {
       .then(() => {
         void window.showInformationMessage('Cadence language server started')
         void ext.emulatorStateChanged()
+        this.watchFlowConfiguration()
       })
       .catch((err: Error) => {
         void window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
@@ -96,6 +99,11 @@ export class LanguageServerAPI {
   // Sends a request to switch the currently active account.
   async switchActiveAccount (account: Account): Promise<void> {
     return await this.#sendRequest(SWITCH_ACCOUNT_SERVER, [account.name])
+  }
+
+  // Watch and reload flow configuration when changed.
+  watchFlowConfiguration () {
+    Config.watchFlowConfigChanges(() => this.#sendRequest(RELOAD_CONFIGURATION))
   }
 
   // Sends a request to create a new account. Returns the address of the new

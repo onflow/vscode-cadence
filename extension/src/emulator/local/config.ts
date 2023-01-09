@@ -78,6 +78,14 @@ async function readLocalConfig (): Promise<string> {
   return configFilePath
 }
 
+export function watchFlowConfigChanges(changedEvent: () => {}) {
+  workspace.onDidChangeTextDocument(e => {
+    if (configPath !== undefined && e.document.fileName == configPath) {
+      changedEvent()
+    }
+  })
+}
+
 // Called when configuration is changed
 function handleConfigChanges (): void {
   workspace.onDidChangeConfiguration((e) => {
