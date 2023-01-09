@@ -78,7 +78,7 @@ async function readLocalConfig (): Promise<string> {
   return configFilePath
 }
 
-export async function watchFlowConfigChanges(changedEvent: () => {}) {
+export async function watchFlowConfigChanges (changedEvent: () => {}) {
   const path = await getConfigPath()
   const configWatcher = workspace.createFileSystemWatcher(path)
 
