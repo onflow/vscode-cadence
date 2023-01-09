@@ -79,9 +79,18 @@ async function readLocalConfig (): Promise<string> {
 }
 
 export function watchFlowConfigChanges(changedEvent: () => {}) {
+  let updateDelay: any = null
   workspace.onDidChangeTextDocument(e => {
-    if (configPath !== undefined && e.document.fileName == configPath) {
-      changedEvent()
+    if (configPath == undefined || e.document.fileName != configPath) {
+      return
+    }
+
+    // request deduplication - we do this to avoid spamming requests in a short time period but rather aggragete into one
+    if (updateDelay == null) {
+      updateDelay = setTimeout(() => {
+        changedEvent()
+        updateDelay = null
+      }, 500)
     }
   })
 }
