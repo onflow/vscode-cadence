@@ -104,7 +104,8 @@ export class InstallFlowCLI extends Installer {
     void fetch(VERSION_INFO_URL)
       .then(async response => await response.text())
       .then(text => {
-        const latestStr: string | null = semver.clean(text)
+        let latestStr: string | null = parseFlowCliVersion(text)
+        latestStr = semver.clean(text)
         const latest: semver.SemVer | null = semver.parse(latestStr)
 
         // Check if latest version > current version
