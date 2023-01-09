@@ -1,5 +1,4 @@
 [![CI](https://github.com/onflow/vscode-cadence/actions/workflows/ci.yml/badge.svg)](https://github.com/onflow/vscode-cadence/actions/workflows/ci.yml)
-![Sentry](https://img.shields.io/badge/Sentry-reporting-blue?logo=sentry)
 <br />
 <p align="center">
   <a href="https://docs.onflow.org/vscode-extension/">
@@ -24,18 +23,13 @@
 
 ### Prerequisites
 To install the extension, ensure you have:
-- **installed the [Flow CLI](https://docs.onflow.org/flow-cli/install/)**
-- **installed the [VS Code](https://code.visualstudio.com/docs/setup/setup-overview)**
-- **configured the [code command line interface](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line)**
+- **Installed [VS Code](https://code.visualstudio.com/docs/setup/setup-overview)**
+- **Installed the [Flow CLI](https://docs.onflow.org/flow-cli/install/)**. The extension will help you install Flow CLI and other depencencies.
 
-### Install from marketplace
 
-Install the extension via Visual Studio Code marketplace.
-The extension can be found here:
+### Install from **[Visual Studio Code marketplace](https://marketplace.visualstudio.com/items?itemName=onflow.cadence)**
 
-**[Cadence Extension](https://marketplace.visualstudio.com/items?itemName=onflow.cadence)**
-
-https://marketplace.visualstudio.com/items?itemName=onflow.cadence
+### Also on **[Open VSX](https://open-vsx.org/extension/onflow/cadence)**
 
 ## Features
 
