@@ -34,7 +34,7 @@ You may also choose to run your own Flow emulator locally. The extension will de
 Deploy contracts to the emulator without leaving the VSCode editor. The address the contract
 gets deployed to is returned and available for copying.
 
-![deploy contracts](https://storage.googleapis.com/flow-resources/documentation-assets/vscode-extension/deploy-contract-min.gif)
+![deploy contracts](./docs/deploy_contracts.gif)
 
 ### Code Generation
 Write cadence code with the speed of light and get your product live before
