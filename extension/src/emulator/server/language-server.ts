@@ -5,6 +5,7 @@ import { ext } from '../../main'
 import * as Config from '../local/config'
 import { Settings } from '../../settings/settings'
 import * as response from './responses'
+import sleepSynchronously from 'sleep-synchronously';
 
 // Identities for commands handled by the Language server
 const CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
@@ -66,10 +67,10 @@ export class LanguageServerAPI {
       this.running = e.newState === State.Running
       if (this.#initializedClient && !this.running) {
         void window.showErrorMessage('Cadence language server stopped')
-        // TODO: Wait before restarting
+        sleepSynchronously(1000 * 5) // Wait enable flow-cli update
       }
-      if (this.#initializedClient && this.running) {
-        void window.showErrorMessage('Cadence language server started')
+      else if (this.running) {
+        void window.showInformationMessage('Cadence language server started')
       }
       void ext.emulatorStateChanged()
     })
