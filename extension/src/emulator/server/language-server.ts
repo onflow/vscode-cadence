@@ -66,6 +66,10 @@ export class LanguageServerAPI {
       this.running = e.newState === State.Running
       if (this.#initializedClient && !this.running) {
         void window.showErrorMessage('Cadence language server stopped')
+        // TODO: Wait before restarting
+      }
+      if (this.#initializedClient && this.running) {
+        void window.showErrorMessage('Cadence language server started')
       }
       void ext.emulatorStateChanged()
     })
