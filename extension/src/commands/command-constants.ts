@@ -13,3 +13,8 @@ export const CHECK_DEPENDENCIES = 'cadence.checkDepencencies'
 
 // Copy active account to clipboard
 export const COPY_ACTIVE_ACCOUNT = 'cadence.copyActiveAccount'
+
+// Flow CLI super commands
+export const FLOW_SETUP = 'cadence.flowSetup'
+export const FLOW_DEV = 'cadence.flowDev'
+export const FLOW_EXEC = 'cadence.flowExec'

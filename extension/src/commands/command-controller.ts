@@ -4,6 +4,7 @@ import { ext } from '../main'
 import * as commandID from './command-constants'
 import { Disposable } from 'vscode-languageclient'
 import * as Telemetry from '../telemetry/telemetry'
+import { execDefault } from '../utils/utils'
 
 export class CommandController {
   #cmds: Disposable[] // Hold onto commands
@@ -23,11 +24,19 @@ export class CommandController {
   // Registers all commands that are handled by the extension (as opposed to
   // those handled by the Language Server).
   #registerCommands (): void {
+    // Flow emulator commands
     this.#registerCommand(commandID.RESTART_SERVER, this.#restartServer)
     this.#registerCommand(commandID.CREATE_ACCOUNT, this.#createAccount)
     this.#registerCommand(commandID.SWITCH_ACCOUNT, this.#switchActiveAccount)
-    this.#registerCommand(commandID.CHECK_DEPENDENCIES, this.#checkDependencies)
     this.#registerCommand(commandID.COPY_ACTIVE_ACCOUNT, this.#copyActiveAccount)
+
+    // Extension dependencies
+    this.#registerCommand(commandID.CHECK_DEPENDENCIES, this.#checkDependencies)
+
+    // Flow CLI super commands
+    this.#registerCommand(commandID.FLOW_SETUP, this.#flowSetup)
+    this.#registerCommand(commandID.FLOW_DEV, this.#flowDev)
+    this.#registerCommand(commandID.FLOW_EXEC, this.#flowExec)
   }
 
   #restartServer (): void {
@@ -48,5 +57,19 @@ export class CommandController {
 
   #checkDependencies (): void {
     void ext.checkDependencies()
+  }
+
+  #flowSetup (): void {
+    // TODO: Does this need to be run before the emulator is started?
+    // TODO: Run flow setup in a shell? Needs to run in the right directory
+    execDefault("flow setup")
+  }
+
+  #flowDev (): void {
+    
+  }
+
+  #flowExec (): void {
+    
   }
 }

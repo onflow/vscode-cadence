@@ -74,6 +74,21 @@
 				"command": "cadence.checkDepencencies",
 				"category": "Cadence",
 				"title": "Check Dependencies"
+			},
+			{
+				"command": "cadence.flowSetup",
+				"category": "Cadence",
+				"title": "Flow setup"
+			},
+			{
+				"command": "cadence.flowDev",
+				"category": "Cadence",
+				"title": "Flow dev"
+			},
+			{
+				"command": "cadence.flowExec",
+				"category": "Cadence",
+				"title": "Flow exec"
 			}
 		],
 		"configuration": {
