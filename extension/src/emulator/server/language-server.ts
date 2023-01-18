@@ -43,6 +43,7 @@ export class LanguageServerAPI {
     this.#initializedClient = false
     const configPath = await Config.getConfigPath()
     const numberOfAccounts = Settings.getWorkspaceSettings().numAccounts
+    const accessCheckMode = Settings.getWorkspaceSettings().accessCheckMode
 
     this.client = new LanguageClient(
       'cadence',
@@ -58,7 +59,8 @@ export class LanguageServerAPI {
         },
         initializationOptions: {
           configPath: configPath,
-          numberOfAccounts: `${numberOfAccounts}`
+          numberOfAccounts: `${numberOfAccounts}`,
+          accessCheckMode: accessCheckMode
         }
       }
     )
