@@ -29,7 +29,7 @@ export class LanguageServerAPI {
     // Init running state with false and update, when client is connected to server
     this.running = false
     this.#initializedClient = false
-
+    
     void this.startClient()
   }
 

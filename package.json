@@ -49,6 +49,61 @@
 	],
 	"main": "./out/extension/src/main.js",
 	"contributes": {
+		"breakpoints": [
+			{
+			  "language": "cadence"
+			}
+		  ],
+		"debuggers": [
+		{
+			  "type": "cadence",
+			  "languages": [
+				"cadence"
+			  ],
+			  "label": "Cadence Debug",
+			  "configurationAttributes": {
+				"launch": {
+				  "required": [
+					"program"
+				  ],
+				  "properties": {
+					"program": {
+					  "type": "string",
+					  "description": "Absolute path to a file.",
+					  "default": "${file}"
+					},
+					"stopOnEntry": {
+					  "type": "boolean",
+					  "description": "Automatically stop after launch.",
+					  "default": true
+					}
+					
+					
+				  }
+				},
+				"attach": {
+				  "required": [
+				  ],
+				  "properties": {
+					"stopOnEntry": {
+					  "type": "boolean",
+					  "description": "Automatically stop after attach.",
+					  "default": true
+					}
+				}
+			  },
+			  "initialConfigurations": [
+				{
+				  "type": "cadence",
+				  "request": "launch",
+				  "name": "Curent file",
+				  "program": "${file}",
+				  "stopOnEntry": true
+				}
+			  ]
+			}
+		}
+		],
 		"commands": [
 			{
 				"command": "cadence.restartServer",
