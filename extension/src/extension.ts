@@ -69,10 +69,6 @@ export class Extension {
     refreshCodeLenses()
   }
 
-  watchFileChanges (): void {
-
-  }
-
   checkDependencies (): void {
     this.#dependencyInstaller.checkDependencies()
   }
