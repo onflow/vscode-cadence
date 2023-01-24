@@ -5,6 +5,7 @@ import * as commandID from './command-constants'
 import { Disposable } from 'vscode-languageclient'
 import * as Telemetry from '../telemetry/telemetry'
 import { execDefault } from '../utils/utils'
+import { window } from 'vscode'
 
 export class CommandController {
   #cmds: Disposable[] // Hold onto commands
@@ -33,10 +34,8 @@ export class CommandController {
     // Extension dependencies
     this.#registerCommand(commandID.CHECK_DEPENDENCIES, this.#checkDependencies)
 
-    // Flow CLI super commands
-    this.#registerCommand(commandID.FLOW_SETUP, this.#flowSetup)
+    // Flow CLI commands
     this.#registerCommand(commandID.FLOW_DEV, this.#flowDev)
-    this.#registerCommand(commandID.FLOW_EXEC, this.#flowExec)
   }
 
   #restartServer (): void {
@@ -59,17 +58,18 @@ export class CommandController {
     void ext.checkDependencies()
   }
 
-  #flowSetup (): void {
-    // TODO: Does this need to be run before the emulator is started?
-    // TODO: Run flow setup in a shell? Needs to run in the right directory
-    execDefault("flow setup")
-  }
-
   #flowDev (): void {
-    
-  }
+    // TODO: Instead of showing the terminal, hide it and have an icon indicating if
+    // flow dev is active or insactive, which you can click on to activate or deactivate.
+    // Also, when flow dev updates the emulator we want to see a popup saying showing 
+    // what was updated. For now it could be fine to just open a terminal in vscode and
+    // run flow dev there.
+    let term = window.createTerminal({
+      name: 'Flow Dev',
+      hideFromUser: true,
+    })
 
-  #flowExec (): void {
-    
+    term.sendText("flow dev")
+    term.show()
   }
 }
