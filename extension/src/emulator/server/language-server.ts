@@ -5,7 +5,6 @@ import { ext } from '../../main'
 import * as Config from '../local/config'
 import { Settings } from '../../settings/settings'
 import * as response from './responses'
-import { watch } from 'fs/promises'
 
 // Identities for commands handled by the Language server
 const CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
@@ -102,8 +101,8 @@ export class LanguageServerAPI {
   }
 
   // Watch and reload flow configuration when changed.
-  watchFlowConfiguration () {
-    Config.watchFlowConfigChanges(async () => await this.#sendRequest(RELOAD_CONFIGURATION))
+  watchFlowConfiguration (): void {
+    void Config.watchFlowConfigChanges(async () => await this.#sendRequest(RELOAD_CONFIGURATION))
   }
 
   // Sends a request to create a new account. Returns the address of the new
