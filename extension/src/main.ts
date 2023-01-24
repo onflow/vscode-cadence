@@ -1,5 +1,5 @@
 /* VS Code Cadence Extension entry point */
-import { ExtensionContext, debug, DebugAdapterServer} from 'vscode'
+import { ExtensionContext, debug, DebugAdapterServer } from 'vscode'
 import { Extension } from './extension'
 import * as Telemetry from './telemetry/telemetry'
 
@@ -14,7 +14,7 @@ export async function activate (ctx: ExtensionContext): Promise<Extension> {
     createDebugAdapterDescriptor: (_session) => {
       return new DebugAdapterServer(2345)
     }
-  });
+  })
 
   // Initialize the extension
   Telemetry.withTelemetry(() => {
