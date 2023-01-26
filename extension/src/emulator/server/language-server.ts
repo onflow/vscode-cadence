@@ -6,6 +6,9 @@ import * as Config from '../local/config'
 import { Settings } from '../../settings/settings'
 import * as response from './responses'
 import sleepSynchronously from 'sleep-synchronously'
+import { Socket } from 'net'
+import portScanner = require('portscanner-sync')
+import awaitToJs = require('await-to-js')
 
 // Identities for commands handled by the Language server
 const CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
@@ -21,6 +24,8 @@ export class LanguageServerAPI {
   flowCommand: string
 
   #initializedClient: boolean
+  #firstInitialization: boolean
+  #emulatorConnected = false
 
   constructor () {
     const settings = Settings.getWorkspaceSettings()
@@ -30,8 +35,16 @@ export class LanguageServerAPI {
     // Init running state with false and update, when client is connected to server
     this.running = false
     this.#initializedClient = false
+    this.#firstInitialization = true
 
     void this.startClient()
+
+    // Monitor local emulator status and set LS emulator as required
+    const intervalSeconds = 5
+    sleepSynchronously(1000 * intervalSeconds)
+    setInterval(() => {
+      void this.watchEmulator()
+    }, 1000 * intervalSeconds)
   }
 
   deactivate (): void {
@@ -39,19 +52,63 @@ export class LanguageServerAPI {
       .catch((err) => { void err })
   }
 
+  async watchEmulator (): Promise<void> {
+    const emulatorFound = await this.scanForEmulator()
+
+    if (!this.#emulatorConnected && emulatorFound) {
+      void window.showInformationMessage('Local flow emulator found. Connecting...')
+    } else if (this.#emulatorConnected && !emulatorFound) {
+      void window.showWarningMessage('Flow emulator disconnected. Blockchain interaction features have ' +
+      'been disabled. Start a local emulator by running the \'flow emulator\' command in a terminal.')
+    } else {
+      return
+    }
+
+    // Restart LS
+    void this.stopClient()
+    void this.startClient()
+  }
+
+  async scanForEmulator (): Promise<boolean> {
+    // Scan default port for a running flow emulator
+    const defaultHost = '127.0.0.1'
+    const defaultPort = 3569
+    const sock = new Socket()
+    sock.setTimeout(2500)
+
+    const [err, status] = await awaitToJs.to(portScanner.checkPortStatus(defaultPort, defaultHost))
+    if (err != null) {
+      console.error(err)
+      return false
+    }
+    if (status !== 'open') {
+      return false
+    }
+
+    return true
+  }
+
   async startClient (): Promise<void> {
-    void window.showInformationMessage('Starting Cadence language server...')
     this.#initializedClient = false
     const configPath = await Config.getConfigPath()
     const numberOfAccounts = Settings.getWorkspaceSettings().numAccounts
     const accessCheckMode = Settings.getWorkspaceSettings().accessCheckMode
+
+    this.#emulatorConnected = await this.scanForEmulator()
+    const enableFlowClient = this.#emulatorConnected ? 'true' : 'false'
+
+    if (this.#emulatorConnected) {
+      void window.showInformationMessage('Starting Cadence language server with local connected emulator...')
+    } else {
+      void window.showInformationMessage('Starting Cadence language server with no emulator...')
+    }
 
     this.client = new LanguageClient(
       'cadence',
       'Cadence',
       {
         command: this.flowCommand,
-        args: ['cadence', 'language-server']
+        args: ['cadence', 'language-server']// '--enableFlowClient=' + enableFlowClient]
       },
       {
         documentSelector: [{ scheme: 'file', language: 'cadence' }],
@@ -59,9 +116,9 @@ export class LanguageServerAPI {
           configurationSection: 'cadence'
         },
         initializationOptions: {
-          configPath: configPath,
+          configPath,
           numberOfAccounts: `${numberOfAccounts}`,
-          accessCheckMode: accessCheckMode
+          accessCheckMode
         }
       }
     )
@@ -69,18 +126,18 @@ export class LanguageServerAPI {
     this.client.onDidChangeState((e: StateChangeEvent) => {
       this.running = e.newState === State.Running
       if (this.#initializedClient && !this.running) {
-        void window.showErrorMessage('Cadence language server stopped')
         sleepSynchronously(1000 * 5) // Wait enable flow-cli update
       } else if (this.running) {
-        void window.showInformationMessage('Cadence language server started')
+        if (this.#emulatorConnected) {
+          void window.showInformationMessage('Flow emulator connected')
+        }
       }
+
       void ext.emulatorStateChanged()
     })
 
-    // This also starts the hosted emulator
-    this.client.start()
+    void this.client.start()
       .then(() => {
-        void window.showInformationMessage('Cadence language server started')
         void ext.emulatorStateChanged()
         this.watchFlowConfiguration()
       })
@@ -88,6 +145,23 @@ export class LanguageServerAPI {
         void window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
       })
     this.#initializedClient = true
+
+    if (this.#firstInitialization && !this.#emulatorConnected) {
+      void window.showWarningMessage('Could not find instance of flow emulator. Start an emulator ' +
+      'to enable interacting with the blockchain by running \'flow emulator\' command in a terminal.')
+    }
+    this.#firstInitialization = false
+  }
+
+  async stopClient (): Promise<void> {
+    this.client.stop().catch((err: Error) => {
+      console.log(err)
+    })
+    void ext.emulatorStateChanged()
+  }
+
+  emulatorConnected (): boolean {
+    return this.#emulatorConnected
   }
 
   async #sendRequest (cmd: string, args: any[] = []): Promise<any> {
