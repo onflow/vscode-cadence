@@ -1,6 +1,6 @@
-import { spawn, ChildProcessWithoutNullStreams } from "child_process"
+import { spawn, ChildProcessWithoutNullStreams } from 'child_process'
 
-var emulator: ChildProcessWithoutNullStreams | null = null
+let emulator: ChildProcessWithoutNullStreams | null = null
 
 /* Helper functions and data for testing with Cypress */
 export const Accounts = {
@@ -46,7 +46,7 @@ export function switchAccount (cy: Cypress.cy, from: string, to: string): void {
 }
 
 export function startLocalEmulator (): void {
-  emulator = spawn("flow emulator");
+  emulator = spawn('flow emulator')
 }
 
 export function killLocalEmulator (): void {
