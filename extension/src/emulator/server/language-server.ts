@@ -70,7 +70,6 @@ export class LanguageServerAPI {
   }
 
   async scanForEmulator (): Promise<boolean> {
-    // Scan default port for a running flow emulator
     const defaultHost = '127.0.0.1'
     const defaultPort = 3569
     const sock = new Socket()

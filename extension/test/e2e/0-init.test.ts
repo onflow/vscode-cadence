@@ -1,5 +1,5 @@
 /* Contains cypress code to initialize the workspace before any other testing takes place */
-import { initTest } from './cypress-helpers'
+import { initTest, killLocalEmulator } from './cypress-helpers'
 
 describe('Initialize Workspace Settings', () => {
   beforeEach(() => {
@@ -7,6 +7,7 @@ describe('Initialize Workspace Settings', () => {
   })
 
   afterEach(() => {
+    killLocalEmulator()
     cy.wait(5000)
   })
 
