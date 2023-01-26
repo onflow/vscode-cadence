@@ -107,7 +107,7 @@ export class LanguageServerAPI {
       'Cadence',
       {
         command: this.flowCommand,
-        args: ['cadence', 'language-server']// '--enableFlowClient=' + enableFlowClient]
+        args: ['cadence', 'language-server']//'--enable-flow-client=false'
       },
       {
         documentSelector: [{ scheme: 'file', language: 'cadence' }],
@@ -128,7 +128,9 @@ export class LanguageServerAPI {
         sleepSynchronously(1000 * 5) // Wait enable flow-cli update
       } else if (this.running) {
         if (this.#emulatorConnected) {
-          void window.showInformationMessage('Flow emulator connected')
+          void window.showInformationMessage('Flow Emulator Connected')
+        } else {
+          void window.showInformationMessage('No connected Flow Emulator')
         }
       }
 
@@ -205,3 +207,4 @@ export class LanguageServerAPI {
     return new response.GetAccountsReponse(res)
   }
 }
+ 
