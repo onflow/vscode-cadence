@@ -9,8 +9,8 @@ import sleepSynchronously from 'sleep-synchronously'
 import { Socket } from 'net'
 import portScanner = require('portscanner-sync')
 import awaitToJs = require('await-to-js')
-import { exec } from 'child_process'
 import { Mutex } from 'async-mutex'
+import { exec } from 'child_process'
 
 // Identities for commands handled by the Language server
 const CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
@@ -20,31 +20,23 @@ const RESTART_SERVER = 'cadence.server.flow.restart'
 const RELOAD_CONFIGURATION = 'cadence.server.flow.reloadConfiguration'
 
 export class LanguageServerAPI {
-  client!: LanguageClient | null
+  client: LanguageClient | null = null
   #clientLock = new Mutex()
-  running: boolean
+  running: boolean = false
+
+  #initializedClient = false
+  #emulatorConnected = false
+
   accessCheckMode: string
   flowCommand: string
-
-  #initializedClient: boolean
-  #emulatorConnected = false
 
   constructor () {
     const settings = Settings.getWorkspaceSettings()
     this.accessCheckMode = settings.accessCheckMode
     this.flowCommand = settings.flowCommand
 
-    // Init running state with false and update, when client is connected to server
-    this.running = false
-    this.#initializedClient = false
-
     void this.startClient()
-
-    // Monitor local emulator status and set LS emulator as required
-    const intervalSeconds = 5
-    setInterval(() => {
-      void this.watchEmulator()
-    }, 1000 * intervalSeconds)
+    void this.watchEmulator()
   }
 
   deactivate (): void {
@@ -53,19 +45,22 @@ export class LanguageServerAPI {
   }
 
   async watchEmulator (): Promise<void> {
-    const emulatorFound = await this.scanForEmulator()
+    const seconds = 3
+    setInterval(async () => {
+      const emulatorFound = await this.scanForEmulator()
 
-    if (!this.#emulatorConnected && emulatorFound) {
-      void window.showInformationMessage('Local flow emulator found. Connecting...')
-    } else if (this.#emulatorConnected && !emulatorFound) {
-      console.log('Flow Emulator Disconnected')
-    } else {
-      return
-    }
-
-    // Restart LS
-    void this.stopClient()
-    void this.startClient()
+      if (!this.#emulatorConnected && emulatorFound) {
+        void window.showInformationMessage('Connecting to local flow emulator')
+      } else if (this.#emulatorConnected && !emulatorFound) {
+        console.log('Flow Emulator Disconnected')
+      } else {
+        return
+      }
+  
+      // Restart LS
+      void this.stopClient()
+      void this.startClient()
+    }, 1000 * seconds)
   }
 
   async scanForEmulator (): Promise<boolean> {
@@ -97,6 +92,8 @@ export class LanguageServerAPI {
     this.#emulatorConnected = await this.scanForEmulator()
     const enableFlowClient = this.#emulatorConnected ? 'true' : 'false'
 
+    //exec('killall dlv') // Uncomment when testing with a local language server
+
     this.client = new LanguageClient(
       'cadence',
       'Cadence',
@@ -121,16 +118,10 @@ export class LanguageServerAPI {
       this.running = e.newState === State.Running
       if (this.#initializedClient && !this.running) {
         sleepSynchronously(1000 * 5) // Wait enable flow-cli update
-      } else if (this.running) {
-        if (this.#emulatorConnected) {
-          void window.showInformationMessage('Flow Emulator Connected')
-        }
       }
 
       void ext.emulatorStateChanged()
     })
-
-    exec('killall dlv') // TODO: Is this needed? Also this is mac only.
 
     await this.client.start()
       .then(() => {
@@ -143,7 +134,7 @@ export class LanguageServerAPI {
     this.#initializedClient = true
 
     if (!this.#emulatorConnected) {
-      void window.showWarningMessage('Could not find instance of flow emulator. Start an emulator ' +
+      void window.showWarningMessage('Cannot find an instance of flow emulator. Start an emulator ' +
       'to enable interacting with the blockchain by running \'flow emulator\' command in a terminal.')
     }
 
