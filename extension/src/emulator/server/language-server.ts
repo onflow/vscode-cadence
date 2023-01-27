@@ -89,7 +89,7 @@ export class LanguageServerAPI {
     const accessCheckMode = Settings.getWorkspaceSettings().accessCheckMode
 
     if (this.flowCommand != 'flow') {
-      exec('killall dlv')
+      exec('killall dlv') // Required when running language server locally
     }
 
     this.client = new LanguageClient(
