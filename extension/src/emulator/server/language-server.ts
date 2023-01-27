@@ -90,7 +90,9 @@ export class LanguageServerAPI {
     }
 
     if (this.flowCommand !== 'flow') {
-      exec('killall dlv') // Required when running language server locally
+      try {
+        exec('killall dlv') // Required when running language server locally on mac
+      } catch (err) { void err }
     }
 
     this.client = new LanguageClient(
