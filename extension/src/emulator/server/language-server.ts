@@ -25,6 +25,7 @@ export class LanguageServerAPI {
 
   #initializedClient = false
   #emulatorConnected = false
+  #restarting = false
 
   accessCheckMode: string
   flowCommand: string
@@ -76,19 +77,17 @@ export class LanguageServerAPI {
   async startClient (enableFlow?: boolean): Promise<void> {
     await this.#clientLock.acquire()
 
-    if (enableFlow === undefined) {
-      console.log('enableFlow is undefined')
-      enableFlow = await this.emulatorExists()
-      this.#emulatorConnected = enableFlow
-    }
-    console.log(`enable Flow = ${enableFlow}`)
-
     this.#initializedClient = false
     const configPath = await Config.getConfigPath()
     const numberOfAccounts = Settings.getWorkspaceSettings().numAccounts
     const accessCheckMode = Settings.getWorkspaceSettings().accessCheckMode
 
-    if (this.flowCommand != 'flow') {
+    if (enableFlow === undefined) {
+      enableFlow = await this.emulatorExists()
+      this.#emulatorConnected = enableFlow
+    }
+
+    if (this.flowCommand !== 'flow') {
       exec('killall dlv') // Required when running language server locally
     }
 
@@ -114,7 +113,7 @@ export class LanguageServerAPI {
 
     this.client.onDidChangeState((e: StateChangeEvent) => {
       this.running = e.newState === State.Running
-      if (this.#initializedClient && !this.running) {
+      if (this.#initializedClient && !this.running && !this.#restarting) {
         sleepSynchronously(1000 * 5) // Wait enable flow-cli update
       }
 
@@ -150,9 +149,11 @@ export class LanguageServerAPI {
     this.#clientLock.release()
   }
 
-  restart (enableFlow: boolean): void {
-    void this.stopClient()
-    void this.startClient(enableFlow)
+  async restart (enableFlow: boolean): Promise<void> {
+    this.#restarting = true
+    await this.stopClient()
+    await this.startClient(enableFlow)
+    this.#restarting = false
   }
 
   emulatorConnected (): boolean {
