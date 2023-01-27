@@ -46,19 +46,21 @@ export class LanguageServerAPI {
 
   watchEmulator (): void {
     const seconds = 3
-    setInterval(async (): Promise<void> => {
-      await this.#clientLock.acquire() // Lock to prevent multiple restarts
-      const emulatorFound = await this.emulatorExists()
+    setInterval(() => {
+      void (async () => {
+        await this.#clientLock.acquire() // Lock to prevent multiple restarts
+        const emulatorFound = await this.emulatorExists()
 
-      if (this.#emulatorConnected === emulatorFound) {
+        if (this.#emulatorConnected === emulatorFound) {
+          this.#clientLock.release()
+          return // No changes in local emulator state
+        }
+
+        this.#emulatorConnected = emulatorFound
         this.#clientLock.release()
-        return // No changes in local emulator state
-      }
 
-      this.#emulatorConnected = emulatorFound
-      this.#clientLock.release()
-
-      this.restart(emulatorFound)
+        void this.restart(emulatorFound)
+      })()
     }, 1000 * seconds)
   }
 
@@ -96,7 +98,7 @@ export class LanguageServerAPI {
       'Cadence',
       {
         command: this.flowCommand,
-        args: ['cadence', 'language-server', `--enable-flow-client=${enableFlow}`]
+        args: ['cadence', 'language-server', `--enable-flow-client=${String(enableFlow)}`]
       },
       {
         documentSelector: [{ scheme: 'file', language: 'cadence' }],
