@@ -6,7 +6,6 @@ import * as Config from '../local/config'
 import { Settings } from '../../settings/settings'
 import * as response from './responses'
 import sleepSynchronously from 'sleep-synchronously'
-import { Socket } from 'net'
 import portScanner = require('portscanner-sync')
 import awaitToJs = require('await-to-js')
 import { Mutex } from 'async-mutex'
@@ -41,65 +40,64 @@ export class LanguageServerAPI {
 
   deactivate (): void {
     void this.client?.stop()
-      .catch((err) => { void err })
+      .catch((err) => { console.log(err) })
   }
 
-  async watchEmulator (): Promise<void> {
+  watchEmulator (): void {
     const seconds = 3
-    setInterval(async () => {
-      const emulatorFound = await this.scanForEmulator()
+    setInterval(async (): Promise<void> => {
+      await this.#clientLock.acquire() // Lock to prevent multiple restarts
+      const emulatorFound = await this.emulatorExists()
 
-      if (!this.#emulatorConnected && emulatorFound) {
-        void window.showInformationMessage('Connecting to local flow emulator')
-      } else if (this.#emulatorConnected && !emulatorFound) {
-        console.log('Flow Emulator Disconnected')
-      } else {
-        return
+      if (this.#emulatorConnected === emulatorFound) {
+        this.#clientLock.release()
+        return // No changes in local emulator state
       }
-  
-      // Restart LS
-      void this.stopClient()
-      void this.startClient()
+
+      this.#emulatorConnected = emulatorFound
+      this.#clientLock.release()
+
+      this.restart(emulatorFound)
     }, 1000 * seconds)
   }
 
-  async scanForEmulator (): Promise<boolean> {
+  async emulatorExists (): Promise<boolean> {
     const defaultHost = '127.0.0.1'
     const defaultPort = 3569
-    const sock = new Socket()
-    sock.setTimeout(2500)
-
     const [err, status] = await awaitToJs.to(portScanner.checkPortStatus(defaultPort, defaultHost))
     if (err != null) {
       console.error(err)
       return false
     }
-    if (status !== 'open') {
-      return false
-    }
 
-    return true
+    return status === 'open'
   }
 
-  async startClient (): Promise<void> {
+  async startClient (enableFlow?: boolean): Promise<void> {
     await this.#clientLock.acquire()
+
+    if (enableFlow === undefined) {
+      console.log('enableFlow is undefined')
+      enableFlow = await this.emulatorExists()
+      this.#emulatorConnected = enableFlow
+    }
+    console.log(`enable Flow = ${enableFlow}`)
 
     this.#initializedClient = false
     const configPath = await Config.getConfigPath()
     const numberOfAccounts = Settings.getWorkspaceSettings().numAccounts
     const accessCheckMode = Settings.getWorkspaceSettings().accessCheckMode
 
-    this.#emulatorConnected = await this.scanForEmulator()
-    const enableFlowClient = this.#emulatorConnected ? 'true' : 'false'
-
-    //exec('killall dlv') // Uncomment when testing with a local language server
+    if (this.flowCommand != 'flow') {
+      exec('killall dlv')
+    }
 
     this.client = new LanguageClient(
       'cadence',
       'Cadence',
       {
         command: this.flowCommand,
-        args: ['cadence', 'language-server', '--enable-flow-client=' + enableFlowClient]
+        args: ['cadence', 'language-server', `--enable-flow-client=${enableFlow}`]
       },
       {
         documentSelector: [{ scheme: 'file', language: 'cadence' }],
@@ -133,9 +131,12 @@ export class LanguageServerAPI {
       })
     this.#initializedClient = true
 
-    if (!this.#emulatorConnected) {
-      void window.showWarningMessage('Cannot find an instance of flow emulator. Start an emulator ' +
-      'to enable interacting with the blockchain by running \'flow emulator\' command in a terminal.')
+    if (!enableFlow) {
+      void window.showWarningMessage(`Couldn't connect to emulator. Run 'flow emulator' in a terminal 
+      to enable all extension features. If you want to deploy contracts, send transactions or execute 
+      scripts you need a running emulator.`)
+    } else {
+      void window.showInformationMessage('Flow Emulator Connected')
     }
 
     this.#clientLock.release()
@@ -147,6 +148,11 @@ export class LanguageServerAPI {
     this.client = null
     void ext.emulatorStateChanged()
     this.#clientLock.release()
+  }
+
+  restart (enableFlow: boolean): void {
+    void this.stopClient()
+    void this.startClient(enableFlow)
   }
 
   emulatorConnected (): boolean {
