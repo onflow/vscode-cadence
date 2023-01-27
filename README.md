@@ -23,12 +23,9 @@ Once installed, the extension will help you install other dependencies such as t
 
 ## Features
 
-### Start Emulator
-A Flow emulator is hosted for you on the language server once the extension is loaded. You can also switch between accounts and
-if your projects contains `flow.json` it gets automatically loaded by the emulator.
-
-#### Self-hosted emulator
-You may also choose to run your own Flow emulator locally. The extension will detect your running local emulator and connect to it automatically.
+### Flow Emulator Integration
+The extension will automatically connect to your local running Flow Emulator. This will enable
+blockchain interaction features such as deploying contracts, executing transaction & scripts, and enabling flow imports. If an emulator is not detected, basic language support is still provided.
 
 ### Deploy Contracts
 Deploy contracts to the emulator without leaving the VSCode editor. The address the contract
