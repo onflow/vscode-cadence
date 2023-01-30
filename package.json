@@ -161,7 +161,7 @@
 		"@types/glob": "^8.0.1",
 		"@types/mixpanel": "^2.14.4",
 		"@types/node": "^18.11.18",
-		"@types/semver": "^7.3.12",
+		"@types/semver": "^7.3.13",
 		"@types/uuid": "^9.0.0",
 		"@types/vscode": "^1.65.0",
 		"@vscode/test-electron": "^2.2.2",
