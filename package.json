@@ -158,7 +158,7 @@
 	"devDependencies": {
 		"@types/chai": "^4.3.4",
 		"@types/expect": "^24.3.0",
-		"@types/glob": "^7.1.4",
+		"@types/glob": "^8.0.1",
 		"@types/mixpanel": "^2.14.4",
 		"@types/node": "^18.11.18",
 		"@types/semver": "^7.3.12",
@@ -168,7 +168,7 @@
 		"chai": "^4.3.7",
 		"cypress": "^8.3.0",
 		"esbuild": "^0.17.4",
-		"glob": "^7.1.7",
+		"glob": "^8.1.0",
 		"mocha": "^10.1.0",
 		"nyc": "^15.1.0",
 		"ovsx": "^0.8.0",
