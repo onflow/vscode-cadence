@@ -6,10 +6,10 @@ import * as Config from '../local/config'
 import { Settings } from '../../settings/settings'
 import * as response from './responses'
 import sleepSynchronously from 'sleep-synchronously'
-import portScanner = require('portscanner-sync')
-import awaitToJs = require('await-to-js')
 import { Mutex } from 'async-mutex'
 import { exec } from 'child_process'
+import { checkEmulatorLocation } from '../local/emulatorScanner'
+import { emulatorExists } from '../local/emulatorScanner'
 
 // Identities for commands handled by the Language server
 const CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
@@ -49,7 +49,7 @@ export class LanguageServerAPI {
     setInterval(() => {
       void (async () => {
         await this.#clientLock.acquire() // Lock to prevent multiple restarts
-        const emulatorFound = await this.emulatorExists()
+        const emulatorFound = await emulatorExists()
 
         if (this.#emulatorConnected === emulatorFound) {
           this.#clientLock.release()
@@ -57,30 +57,12 @@ export class LanguageServerAPI {
         }
 
         this.#emulatorConnected = emulatorFound
-        void this.checkEmulatorLocation()
+
         this.#clientLock.release()
 
         void this.restart(emulatorFound)
       })()
     }, 1000 * seconds)
-  }
-
-  async emulatorExists (): Promise<boolean> {
-    const defaultHost = '127.0.0.1'
-    const defaultPort = 3569
-    const [err, status] = await awaitToJs.to(portScanner.checkPortStatus(defaultPort, defaultHost))
-    if (err != null) {
-      console.error(err)
-      return false
-    }
-
-    return status === 'open'
-  }
-
-  async checkEmulatorLocation (): Promise<void> {
-    // TODO: Detect if emulator was run in the same location as the current flow.json
-    // If not, warn user to run emulator from their project directory containing flow.json
-    return false
   }
 
   async startClient (enableFlow?: boolean): Promise<void> {
@@ -92,8 +74,10 @@ export class LanguageServerAPI {
     const accessCheckMode = Settings.getWorkspaceSettings().accessCheckMode
 
     if (enableFlow === undefined) {
-      enableFlow = await this.emulatorExists()
+      enableFlow = await emulatorExists()
       this.#emulatorConnected = enableFlow
+    } else if (enableFlow) {
+      checkEmulatorLocation(configPath)
     }
 
     if (this.flowCommand !== 'flow') {
