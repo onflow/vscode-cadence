@@ -57,6 +57,7 @@ export class LanguageServerAPI {
         }
 
         this.#emulatorConnected = emulatorFound
+        void this.checkEmulatorLocation()
         this.#clientLock.release()
 
         void this.restart(emulatorFound)
@@ -74,6 +75,12 @@ export class LanguageServerAPI {
     }
 
     return status === 'open'
+  }
+
+  async checkEmulatorLocation (): Promise<void> {
+    // TODO: Detect if emulator was run in the same location as the current flow.json
+    // If not, warn user to run emulator from their project directory containing flow.json
+    return false
   }
 
   async startClient (enableFlow?: boolean): Promise<void> {
