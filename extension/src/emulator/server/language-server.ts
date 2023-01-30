@@ -8,7 +8,6 @@ import * as response from './responses'
 import sleepSynchronously from 'sleep-synchronously'
 import { Mutex } from 'async-mutex'
 import { exec } from 'child_process'
-import { checkEmulatorLocation } from '../local/emulatorScanner'
 import { emulatorExists } from '../local/emulatorScanner'
 
 // Identities for commands handled by the Language server
@@ -76,8 +75,6 @@ export class LanguageServerAPI {
     if (enableFlow === undefined) {
       enableFlow = await emulatorExists()
       this.#emulatorConnected = enableFlow
-    } else if (enableFlow) {
-      checkEmulatorLocation(configPath)
     }
 
     if (this.flowCommand !== 'flow') {

@@ -3,6 +3,7 @@ import awaitToJs = require('await-to-js')
 import find = require('find-process');
 const { promisify } = require('util');
 const exec = promisify(require('child_process').exec)
+import { window } from 'vscode'
 
 export async function emulatorExists (): Promise<boolean> {
   const defaultHost = '127.0.0.1'
@@ -13,22 +14,28 @@ export async function emulatorExists (): Promise<boolean> {
     return false
   }
 
+  if (status !== 'open') {
+    return false
+  }
+
+  // TODO: Only consider an emulator as valid if it's in the same dir as flow.json
+  // TODO: Otherwise the LS will crash anyways, so we shouldn't connect to it and 
+  // TODO: give a warning instead
+  if (!await validEmulatorLocation()) {
+    window.showWarningMessage(`Emulator detected running in a different directory than your flow.json 
+    config. To connect an emulator, please run 'flow emulator' in the same directory as your flow.json`)
+  }
+
+
+
   return status === 'open'
 }
 
 // Warn user if running emulator in different directory from flow.json
-export async function checkEmulatorLocation (flowJsonDir: string): Promise<void> {
+async function validEmulatorLocation (configPath: string): Promise<boolean> {
+  let flowJsonDir = configPath.substring(0, configPath.lastIndexOf('/'))
   let emulatorDir = await emulatorRunPath()
-
-  console.log("flow.json dir: ", flowJsonDir)
-  console.log("flow emulator dir: ", emulatorDir)
-
-  //TODO: Make sure flowJsonDir doesn't have /flow.json at the end of it
-  if (emulatorDir !== flowJsonDir) {
-    // TODO: Warn user that the emulator they're running is not running from the
-    // TODO: same directory as their flow.json
-    //window.showWarningMessage(`Emulator is running from: ${emulatorPath}`)
-  }
+  return emulatorDir === flowJsonDir
 }
 
 
