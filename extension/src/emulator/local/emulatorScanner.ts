@@ -61,11 +61,9 @@ export async function validEmulatorLocation (): Promise<boolean> {
 export async function emulatorRunPath (): Promise<string | undefined> {
   try {
     const emuProccessInfo = (await find('name', 'flow emulator'))
-    const pid = emuProccessInfo[0].pid
+    const output = await promisifyExec(`lsof -p ${emuProccessInfo[0].pid} | grep cwd`)
     const cwdIndex = 8 // Runpath dir index in lsof command
-    const output = await promisifyExec(`lsof -p ${pid} | grep cwd`)
     const emulatorPath: string = output.stdout.trim().split(/\s+/)[cwdIndex]
-
     return emulatorPath
   } catch (err) {
     return undefined
