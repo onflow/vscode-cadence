@@ -8,7 +8,7 @@ import * as response from './responses'
 import sleepSynchronously from 'sleep-synchronously'
 import { Mutex } from 'async-mutex'
 import { exec } from 'child_process'
-import { emulatorExists } from '../local/emulatorScanner'
+import { emulatorExists, validEmulatorLocation } from '../local/emulatorScanner'
 
 // Identities for commands handled by the Language server
 const CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'

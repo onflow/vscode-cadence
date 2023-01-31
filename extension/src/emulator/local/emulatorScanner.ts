@@ -23,7 +23,7 @@ export async function emulatorExists (): Promise<boolean> {
     return false
   }
 
-  // Only connect to emulator if running from same dir as flow.json or else LS will crash
+  // Only connect to emulator if running in same dir as flow.json or else LS will crash
   if (!await validEmulatorLocation()) {
     if (showLocationWarning) {
       window.showWarningMessage(`Emulator detected running in a different directory than your flow.json 
@@ -38,19 +38,21 @@ export async function emulatorExists (): Promise<boolean> {
   return true
 }
 
-async function validEmulatorLocation (): Promise<boolean> {
+export async function validEmulatorLocation (): Promise<boolean> {
   const configPath = await Config.getConfigPath()
-  let flowJsonDir = configPath.substring(0, configPath.lastIndexOf('/'))
+  const flowJsonDir = configPath.substring(0, configPath.lastIndexOf('/'))
   let emulatorDir: string | undefined = undefined
 
   switch (os.platform()) {
     case 'darwin':
     case 'linux':
       emulatorDir = await emulatorRunPath()
+      break
     case 'win32':
-      emulatorDir = await emulatorRunPathWindows()
+      // No nice way to find location on Windows
     default:
-      console.log('Cannot find emulator runpath on ', os.platform())
+      console.log('Cannot verify emulator location on', os.platform())
+      return true // Allow connections to any emulator
   }
 
   return emulatorDir === flowJsonDir
@@ -69,28 +71,6 @@ export async function emulatorRunPath (): Promise<string | undefined> {
     let output = await exec(`lsof -p ${pid} | grep cwd`)
     let emulatorPath: string = output.stdout.trim().split(/\s+/)[cwdIndex]
 
-    return emulatorPath
-  } catch (err) {
-    return undefined
-  }
-}
-
-export async function emulatorRunPathWindows (): Promise<string | undefined> {
-  // TODO: Find path on Windows as well!!
-
-  try {
-    let emuProccessInfo = (await find('name', 'flow emulator'))
-    if (!emuProccessInfo) {
-      console.log('No running flow emulator process')
-      return undefined
-    }
-    
-    const pid = emuProccessInfo[0].pid
-    const cwdIndex = 8 // Dir index in lsof command
-    let output = await exec(`lsof -p ${pid} | grep cwd`)
-    let emulatorPath: string = output.stdout.trim().split(/\s+/)[cwdIndex]
-
-    console.log('Flow emulator with pid: ', pid, ' is running from: ', emulatorPath)
     return emulatorPath
   } catch (err) {
     return undefined
