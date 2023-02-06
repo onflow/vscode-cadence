@@ -164,7 +164,7 @@
 		"@types/semver": "^7.3.13",
 		"@types/uuid": "^9.0.0",
 		"@types/vscode": "^1.65.0",
-		"@vscode/test-electron": "^2.2.2",
+		"@vscode/test-electron": "^2.2.3",
 		"chai": "^4.3.7",
 		"cypress": "^8.3.0",
 		"esbuild": "^0.17.4",
