@@ -42,7 +42,7 @@ export class EmulatorController {
   }
 
   async syncEmulatorState (): Promise<void> {
-    if (this.api.running) {
+    if (this.api.emulatorConnected()) {
       this.#state = EmulatorState.Connected
       await this.#syncAccountData()
     } else {
@@ -96,7 +96,7 @@ export class EmulatorController {
         const label = `${prefix} ${account.fullName()}`
 
         return {
-          label: label,
+          label,
           target: account.index
         }
       })

@@ -78,6 +78,22 @@ async function readLocalConfig (): Promise<string> {
   return configFilePath
 }
 
+export async function watchFlowConfigChanges (changedEvent: () => {}): Promise<void> {
+  const path = await getConfigPath()
+  const configWatcher = workspace.createFileSystemWatcher(path)
+
+  let updateDelay: any = null
+  configWatcher.onDidChange(e => {
+    // request deduplication - we do this to avoid spamming requests in a short time period but rather aggragete into one
+    if (updateDelay == null) {
+      updateDelay = setTimeout(() => {
+        changedEvent()
+        updateDelay = null
+      }, 500)
+    }
+  })
+}
+
 // Called when configuration is changed
 function handleConfigChanges (): void {
   workspace.onDidChangeConfiguration((e) => {

@@ -1,4 +1,4 @@
-import { initTest, initExtension, openFile } from './cypress-helpers'
+import { initTest, initExtension, openFile, killLocalEmulator } from './cypress-helpers'
 
 describe('User Story test: Send Transaction', () => {
   beforeEach(() => {
@@ -6,7 +6,9 @@ describe('User Story test: Send Transaction', () => {
     initExtension(cy)
   })
 
-  afterEach(() => {})
+  afterEach(() => {
+    killLocalEmulator()
+  })
 
   it('Send Transaction using Emulator', () => {
     openFile(cy, 'Tx.cdc')

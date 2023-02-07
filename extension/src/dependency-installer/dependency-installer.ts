@@ -26,8 +26,6 @@ export class DependencyInstaller {
         'Install Missing Dependencies',
         () => { this.#installMissingDependencies() }
       )
-    } else {
-      void window.showInformationMessage('All dependencies are installed')
     }
   }
 

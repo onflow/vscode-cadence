@@ -6,50 +6,101 @@ import * as Config from '../local/config'
 import { Settings } from '../../settings/settings'
 import * as response from './responses'
 import sleepSynchronously from 'sleep-synchronously'
+import portScanner = require('portscanner-sync')
+import awaitToJs = require('await-to-js')
+import { Mutex } from 'async-mutex'
+import { exec } from 'child_process'
 
 // Identities for commands handled by the Language server
 const CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
 const SWITCH_ACCOUNT_SERVER = 'cadence.server.flow.switchActiveAccount'
 const GET_ACCOUNTS_SERVER = 'cadence.server.flow.getAccounts'
 const RESTART_SERVER = 'cadence.server.flow.restart'
+const RELOAD_CONFIGURATION = 'cadence.server.flow.reloadConfiguration'
 
 export class LanguageServerAPI {
-  client!: LanguageClient
-  running: boolean
+  client: LanguageClient | null = null
+  #clientLock = new Mutex()
+  running: boolean = false
+
+  #initializedClient = false
+  #emulatorConnected = false
+  #restarting = false
+
   accessCheckMode: string
   flowCommand: string
-
-  #initializedClient: boolean
 
   constructor () {
     const settings = Settings.getWorkspaceSettings()
     this.accessCheckMode = settings.accessCheckMode
     this.flowCommand = settings.flowCommand
 
-    // Init running state with false and update, when client is connected to server
-    this.running = false
-    this.#initializedClient = false
-
     void this.startClient()
+    void this.watchEmulator()
   }
 
   deactivate (): void {
-    void this.client.stop()
-      .catch((err) => { void err })
+    void this.client?.stop()
+      .catch((err) => { console.log(err) })
   }
 
-  async startClient (): Promise<void> {
-    void window.showInformationMessage('Starting Cadence language server...')
+  watchEmulator (): void {
+    const seconds = 3
+    setInterval(() => {
+      void (async () => {
+        await this.#clientLock.acquire() // Lock to prevent multiple restarts
+        const emulatorFound = await this.emulatorExists()
+
+        if (this.#emulatorConnected === emulatorFound) {
+          this.#clientLock.release()
+          return // No changes in local emulator state
+        }
+
+        this.#emulatorConnected = emulatorFound
+        this.#clientLock.release()
+
+        void this.restart(emulatorFound)
+      })()
+    }, 1000 * seconds)
+  }
+
+  async emulatorExists (): Promise<boolean> {
+    const defaultHost = '127.0.0.1'
+    const defaultPort = 3569
+    const [err, status] = await awaitToJs.to(portScanner.checkPortStatus(defaultPort, defaultHost))
+    if (err != null) {
+      console.error(err)
+      return false
+    }
+
+    return status === 'open'
+  }
+
+  async startClient (enableFlow?: boolean): Promise<void> {
+    await this.#clientLock.acquire()
+
     this.#initializedClient = false
     const configPath = await Config.getConfigPath()
     const numberOfAccounts = Settings.getWorkspaceSettings().numAccounts
+    const accessCheckMode = Settings.getWorkspaceSettings().accessCheckMode
+
+    if (enableFlow === undefined) {
+      enableFlow = await this.emulatorExists()
+      this.#emulatorConnected = enableFlow
+    }
+
+    if (this.flowCommand !== 'flow') {
+      try {
+        exec('killall dlv') // Required when running language server locally on mac
+      } catch (err) { void err }
+    }
 
     this.client = new LanguageClient(
       'cadence',
       'Cadence',
       {
         command: this.flowCommand,
-        args: ['cadence', 'language-server']
+        args: ['cadence', 'language-server', `--enable-flow-client=${String(enableFlow)}`]
       },
       {
         documentSelector: [{ scheme: 'file', language: 'cadence' }],
@@ -57,37 +108,64 @@ export class LanguageServerAPI {
           configurationSection: 'cadence'
         },
         initializationOptions: {
-          configPath: configPath,
-          numberOfAccounts: `${numberOfAccounts}`
+          configPath,
+          numberOfAccounts: `${numberOfAccounts}`,
+          accessCheckMode
         }
       }
     )
 
     this.client.onDidChangeState((e: StateChangeEvent) => {
       this.running = e.newState === State.Running
-      if (this.#initializedClient && !this.running) {
-        void window.showErrorMessage('Cadence language server stopped')
+      if (this.#initializedClient && !this.running && !this.#restarting) {
         sleepSynchronously(1000 * 5) // Wait enable flow-cli update
-      } else if (this.running) {
-        void window.showInformationMessage('Cadence language server started')
       }
+
       void ext.emulatorStateChanged()
     })
 
-    // This also starts the hosted emulator
-    this.client.start()
+    await this.client.start()
       .then(() => {
-        void window.showInformationMessage('Cadence language server started')
         void ext.emulatorStateChanged()
+        this.watchFlowConfiguration()
       })
       .catch((err: Error) => {
         void window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
       })
     this.#initializedClient = true
+
+    if (!enableFlow) {
+      void window.showWarningMessage(`Couldn't connect to emulator. Run 'flow emulator' in a terminal 
+      to enable all extension features. If you want to deploy contracts, send transactions or execute 
+      scripts you need a running emulator.`)
+    } else {
+      void window.showInformationMessage('Flow Emulator Connected')
+    }
+
+    this.#clientLock.release()
+  }
+
+  async stopClient (): Promise<void> {
+    await this.#clientLock.acquire()
+    await this.client?.stop().catch(() => {})
+    this.client = null
+    void ext.emulatorStateChanged()
+    this.#clientLock.release()
+  }
+
+  async restart (enableFlow: boolean): Promise<void> {
+    this.#restarting = true
+    await this.stopClient()
+    await this.startClient(enableFlow)
+    this.#restarting = false
+  }
+
+  emulatorConnected (): boolean {
+    return this.#emulatorConnected
   }
 
   async #sendRequest (cmd: string, args: any[] = []): Promise<any> {
-    return await this.client.sendRequest('workspace/executeCommand', {
+    return await this.client?.sendRequest('workspace/executeCommand', {
       command: cmd,
       arguments: args
     })
@@ -100,6 +178,11 @@ export class LanguageServerAPI {
   // Sends a request to switch the currently active account.
   async switchActiveAccount (account: Account): Promise<void> {
     return await this.#sendRequest(SWITCH_ACCOUNT_SERVER, [account.name])
+  }
+
+  // Watch and reload flow configuration when changed.
+  watchFlowConfiguration (): void {
+    void Config.watchFlowConfigChanges(async () => await this.#sendRequest(RELOAD_CONFIGURATION))
   }
 
   // Sends a request to create a new account. Returns the address of the new
