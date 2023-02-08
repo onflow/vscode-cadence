@@ -183,7 +183,6 @@
 		"ansi-regex": "^6.0.1",
 		"async-lock": "^1.4.0",
 		"async-mutex": "^0.4.0",
-		"find-process": "^1.4.7",
 		"mixpanel": "^0.17.0",
 		"node-fetch": "^3.3.0",
 		"os-name": "^5.0.1",
