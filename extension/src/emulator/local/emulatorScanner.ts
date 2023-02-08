@@ -51,7 +51,7 @@ export async function validEmulatorLocation (): Promise<boolean> {
     const response = await fetch(`http://${defaultHost}:${adminPort}/config`)
     const configInfo: ConfigInfo = JSON.parse(await response.text())
     emulatorDir = configInfo.startup_dir
-  } catch (err) {}
+  } catch (err) { void err }
 
   return emulatorDir === flowJsonDir
 }
