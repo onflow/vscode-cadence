@@ -1,19 +1,22 @@
 import portScanner = require('portscanner-sync')
 import awaitToJs = require('await-to-js')
-import find = require('find-process')
 import { window } from 'vscode'
 import * as Config from './config'
-import os = require('os')
-import { promisify } from 'util'
-import { exec } from 'child_process'
-const promisifyExec = promisify(exec)
+import fetch from 'node-fetch'
+
+const defaultHost = '127.0.0.1'
+const gRPCPort = 3569
+const adminPort = 8080
+
+interface ConfigInfo {
+  service_key: string
+  startup_dir: string
+}
 
 let showLocationWarning = true
 
 export async function emulatorExists (): Promise<boolean> {
-  const defaultHost = '127.0.0.1'
-  const defaultPort = 3569
-  const [err, status] = await awaitToJs.to(portScanner.checkPortStatus(defaultPort, defaultHost))
+  const [err, status] = await awaitToJs.to(portScanner.checkPortStatus(gRPCPort, defaultHost))
   if (err != null) {
     console.error(err)
     return false
@@ -42,30 +45,13 @@ export async function emulatorExists (): Promise<boolean> {
 export async function validEmulatorLocation (): Promise<boolean> {
   const configPath = await Config.getConfigPath()
   const flowJsonDir = configPath.substring(0, configPath.lastIndexOf('/'))
-  let emulatorDir: string | undefined
 
-  switch (os.platform()) {
-    case 'darwin':
-    case 'linux':
-      emulatorDir = await emulatorRunPath()
-      break
-    case 'win32': // No nice way to find location on Windows
-    default:
-      console.log('Cannot verify emulator location on', os.platform())
-      return true // Allow connections to any emulator
-  }
+  let emulatorDir: string | undefined
+  try {
+    const response = await fetch(`http://${defaultHost}:${adminPort}/config`)
+    const configInfo: ConfigInfo = JSON.parse(await response.text())
+    emulatorDir = configInfo.startup_dir
+  } catch (err) {}
 
   return emulatorDir === flowJsonDir
-}
-
-export async function emulatorRunPath (): Promise<string | undefined> {
-  try {
-    const emuProccessInfo = (await find('name', 'flow emulator'))
-    const output = await promisifyExec(`lsof -p ${emuProccessInfo[0].pid} | grep cwd`)
-    const cwdIndex = 8 // Runpath dir index in lsof command
-    const emulatorPath: string = output.stdout.trim().split(/\s+/)[cwdIndex]
-    return emulatorPath
-  } catch (err) {
-    return undefined
-  }
 }
