@@ -8,7 +8,7 @@ import * as response from './responses'
 import sleepSynchronously from 'sleep-synchronously'
 import { Mutex } from 'async-mutex'
 import { exec } from 'child_process'
-import { emulatorExists } from '../local/emulatorScanner'
+import { verifyEmulator } from '../local/emulatorScanner'
 
 // Identities for commands handled by the Language server
 const CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
@@ -48,7 +48,7 @@ export class LanguageServerAPI {
     setInterval(() => {
       void (async () => {
         await this.#clientLock.acquire() // Lock to prevent multiple restarts
-        const emulatorFound = await emulatorExists()
+        const emulatorFound = await verifyEmulator()
 
         if (this.#emulatorConnected === emulatorFound) {
           this.#clientLock.release()
@@ -73,7 +73,7 @@ export class LanguageServerAPI {
     const accessCheckMode = Settings.getWorkspaceSettings().accessCheckMode
 
     if (enableFlow === undefined) {
-      enableFlow = await emulatorExists()
+      enableFlow = await verifyEmulator()
       this.#emulatorConnected = enableFlow
     }
 
