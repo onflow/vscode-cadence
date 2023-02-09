@@ -40,13 +40,7 @@
 		"Programming Languages"
 	],
 	"icon": "images/icon.png",
-	"activationEvents": [
-		"onLanguage:cadence",
-		"onCommand:cadence.restartServer",
-		"onCommand:cadence.createAccount",
-		"onCommand:cadence.switchActiveAccount",
-		"onCommand:cadence.checkDepencencies"
-	],
+	"activationEvents": [],
 	"main": "./out/extension/src/main.js",
 	"contributes": {
 		"commands": [
