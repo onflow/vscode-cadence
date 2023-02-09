@@ -3,14 +3,15 @@ import awaitToJs = require('await-to-js')
 import { window } from 'vscode'
 import * as Config from './config'
 import fetch from 'node-fetch'
+import * as fs from 'fs'
 
 const defaultHost = '127.0.0.1'
 const gRPCPort = 3569
 const adminPort = 8080
+const emulatorConfigURL = `http://${defaultHost}:${adminPort}/emulator/config`
 
-interface ConfigInfo {
+interface EmulatorConfig {
   service_key: string
-  startup_dir: string
 }
 
 let showLocationWarning = true
@@ -43,15 +44,26 @@ export async function emulatorExists (): Promise<boolean> {
 }
 
 export async function validEmulatorLocation (): Promise<boolean> {
-  const configPath = await Config.getConfigPath()
-  const flowJsonDir = configPath.substring(0, configPath.lastIndexOf('/'))
+  const flowJsonPath = await Config.getConfigPath()
+  const flowJsonData = JSON.parse(fs.readFileSync(flowJsonPath, 'utf-8'))
 
-  let emulatorDir: string | undefined
+  let flowJsonKey: string
   try {
-    const response = await fetch(`http://${defaultHost}:${adminPort}/config`)
-    const configInfo: ConfigInfo = JSON.parse(await response.text())
-    emulatorDir = configInfo.startup_dir
-  } catch (err) { void err }
+    flowJsonKey = `0x${flowJsonData.accounts['emulator-account'].key as string}`
+  } catch (err) {
+    console.log(`Could not read emulator-account key from ${flowJsonPath}`)
+    return false
+  }
 
-  return emulatorDir === flowJsonDir
+  let emulatorKey: string
+  try {
+    const response = await fetch(emulatorConfigURL)
+    const config: EmulatorConfig = JSON.parse(await response.text())
+    emulatorKey = config.service_key
+  } catch (err) {
+    console.log(`Could not obtain emulator key from ${emulatorConfigURL}`)
+    return false
+  }
+
+  return emulatorKey === flowJsonKey
 }
