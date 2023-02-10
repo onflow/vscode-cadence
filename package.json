@@ -163,7 +163,7 @@
 		"@types/node": "^18.11.19",
 		"@types/semver": "^7.3.13",
 		"@types/uuid": "^9.0.0",
-		"@types/vscode": "^1.65.0",
+		"@types/vscode": "^1.75.0",
 		"@vscode/test-electron": "^2.2.2",
 		"chai": "^4.3.7",
 		"cypress": "^8.3.0",
