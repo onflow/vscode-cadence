@@ -1,7 +1,6 @@
 import { window } from 'vscode'
 import * as Config from './flowConfig'
 import fetch from 'node-fetch'
-import * as fs from 'fs'
 import { ec } from 'elliptic'
 
 const defaultHost = '127.0.0.1'
@@ -17,14 +16,14 @@ interface EmulatorConfig {
 let showLocationWarning = true
 
 export async function verifyEmulator (): Promise<boolean> {
-  let flowJsonPrivKey = await Config.getAccountKey(Config.EMULATOR_ACCOUNT)
+  const flowJsonPrivKey = await Config.getAccountKey(Config.EMULATOR_ACCOUNT)
   if (flowJsonPrivKey === undefined) {
     return false
   }
 
-  let emulatorPublicKey = await getEmulatorKey()
+  const emulatorPublicKey = await getEmulatorKey()
   if (emulatorPublicKey === undefined) {
-    showLocationWarning = true  // No emulator running, warn if detected in wrong location
+    showLocationWarning = true // No emulator running, warn if detected in wrong location
     return false
   }
 
@@ -40,13 +39,13 @@ export async function verifyEmulator (): Promise<boolean> {
   return true
 }
 
-function verifyKeys(privateKey: string, publicKey: string): boolean {
+function verifyKeys (privateKey: string, publicKey: string): boolean {
   const keyPair = ECDSA_P256.keyFromPrivate(privateKey)
   const testKey = keyPair.getPublic('hex').toString().substring(2)
   return testKey === publicKey
 }
 
-async function getEmulatorKey(): Promise<string | undefined> {
+async function getEmulatorKey (): Promise<string | undefined> {
   let emulatorPublicKey: string | undefined
   try {
     const response = await fetch(emulatorConfigURL)

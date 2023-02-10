@@ -58,14 +58,14 @@ export async function loadConfig (): Promise<FlowConfig> {
   return flowConfig
 }
 
-export async function getAccountKey(accountName: string): Promise<string | undefined> {
+export async function getAccountKey (accountName: string): Promise<string | undefined> {
   const fc = await loadConfig()
 
   let emulatorKey: string | undefined
   try {
     emulatorKey = fc.accounts[accountName].key
   } catch (err) {
-    console.log(`Missing key for ${accountName} in ${configPath}`)
+    console.log(`Missing key for ${accountName} in ${configPath as string}`)
   }
 
   return emulatorKey
