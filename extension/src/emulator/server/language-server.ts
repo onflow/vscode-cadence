@@ -2,7 +2,7 @@ import { LanguageClient, State, StateChangeEvent } from 'vscode-languageclient/n
 import { window } from 'vscode'
 import { Account } from '../account'
 import { ext } from '../../main'
-import * as Config from '../local/config'
+import * as Config from '../local/flowConfig'
 import { Settings } from '../../settings/settings'
 import * as response from './responses'
 import sleepSynchronously from 'sleep-synchronously'

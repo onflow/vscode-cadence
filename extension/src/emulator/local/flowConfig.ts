@@ -10,6 +10,35 @@ const exec = util.promisify(cp.exec)
 
 // Path to flow.json file
 let configPath: string | undefined
+let flowConfig: FlowConfig | undefined
+
+export const EMULATOR_ACCOUNT = 'emulator-account'
+
+interface FlowConfig {
+  emulators: {
+    [name: string]: {
+      port: string
+      serviceAccount: string
+    }
+  }
+  contracts: {
+    [name: string]: string
+  }
+  networks: {
+    [name: string]: string
+  }
+  accounts: {
+    [name: string]: {
+      address: string
+      key: string
+    }
+  }
+  deployments: {
+    [network: string]: {
+      [account: string]: [string]
+    }
+  }
+}
 
 // Call this function to get the path to flow.json
 export async function getConfigPath (): Promise<string> {
@@ -18,6 +47,28 @@ export async function getConfigPath (): Promise<string> {
     handleConfigChanges()
   }
   return configPath
+}
+
+export async function loadConfig (): Promise<FlowConfig> {
+  if (flowConfig === undefined) {
+    const flowJsonPath = await getConfigPath()
+    const fc: FlowConfig = JSON.parse(fs.readFileSync(flowJsonPath, 'utf-8'))
+    flowConfig = fc
+  }
+  return flowConfig
+}
+
+export async function getAccountKey(accountName: string): Promise<string | undefined> {
+  const fc = await loadConfig()
+
+  let emulatorKey: string | undefined
+  try {
+    emulatorKey = fc.accounts[accountName].key
+  } catch (err) {
+    console.log(`Missing key for ${accountName} in ${configPath}`)
+  }
+
+  return emulatorKey
 }
 
 async function retrieveConfigPath (): Promise<string> {
