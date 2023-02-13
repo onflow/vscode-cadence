@@ -40,13 +40,7 @@
 		"Programming Languages"
 	],
 	"icon": "images/icon.png",
-	"activationEvents": [
-		"onLanguage:cadence",
-		"onCommand:cadence.restartServer",
-		"onCommand:cadence.createAccount",
-		"onCommand:cadence.switchActiveAccount",
-		"onCommand:cadence.checkDepencencies"
-	],
+	"activationEvents": [],
 	"main": "./out/extension/src/main.js",
 	"contributes": {
 		"commands": [
@@ -183,10 +177,10 @@
 		"ansi-regex": "^6.0.1",
 		"async-lock": "^1.4.0",
 		"async-mutex": "^0.4.0",
+		"elliptic": "^6.5.4",
 		"mixpanel": "^0.17.0",
 		"node-fetch": "^3.3.0",
 		"os-name": "^5.0.1",
-		"portscanner-sync": "^1.0.1",
 		"sleep-synchronously": "^2.0.0",
 		"uuid": "^9.0.0",
 		"vsce": "^2.15.0",
