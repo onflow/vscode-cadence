@@ -167,7 +167,7 @@
 		"@vscode/test-electron": "^2.2.2",
 		"chai": "^4.3.7",
 		"cypress": "^8.3.0",
-		"esbuild": "^0.17.4",
+		"esbuild": "^0.17.7",
 		"glob": "^8.1.0",
 		"mocha": "^10.1.0",
 		"nyc": "^15.1.0",
