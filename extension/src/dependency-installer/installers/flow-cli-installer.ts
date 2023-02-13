@@ -10,7 +10,7 @@ import fetch from 'node-fetch'
 
 // Command to check flow-cli
 const CHECK_FLOW_CLI_CMD = 'flow version'
-const COMPATIBLE_FLOW_CLI_VERSIONS = '>=0.45.0'
+const COMPATIBLE_FLOW_CLI_VERSIONS = '>=0.45.4' // TODO: Update version to new CLI release
 
 // Flow CLI with homebrew
 const CHECK_HOMEBREW_CMD = 'brew help help' // Run this to check if brew is executable
