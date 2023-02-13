@@ -41,19 +41,25 @@ that afternoon coffee. How? Use the snippets provided by VSCode extension.
 
 
 ### Debugging
-Use the debugger build into VSCode on Cadence files by creating a launch.json file.
-Here is an example configuration:
-`
-  {
-    "type": "cadence",
-    "request": "launch",
-    "name": "Curent file",
-    "program": "${file}",
-    "stopOnEntry": true
-  }
-`
+Use the debugger build into VSCode on Cadence files by creating a launch.json file. Make sure to have an emulator connected to enable debugging. 
 
-But wait, there's much more than meets the eye. VSCode Cadence extension also offers:
+##### Example launch.json
+```
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "cadence",
+      "request": "launch",
+      "name": "Curent file",
+      "program": "${file}",
+      "stopOnEntry": true
+    }
+  ]
+}
+```
+
+#### But wait, there's much more than meets the eye. VSCode Cadence extension also offers:
 
 - Syntax highlighting (including in Markdown code fences)
 - Diagnostics (errors and warnings)
