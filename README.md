@@ -40,7 +40,26 @@ that afternoon coffee. How? Use the snippets provided by VSCode extension.
 ![Code Generation](./docs/code_gen.gif)
 
 
-But wait, there's much more than meets the eye. VSCode Cadence extension also offers:
+### Debugging
+Use the debugger build into VSCode on Cadence files by creating a launch.json file. Make sure to have an emulator connected to enable debugging. 
+
+##### Example launch.json
+```
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "cadence",
+      "request": "launch",
+      "name": "Curent file",
+      "program": "${file}",
+      "stopOnEntry": true
+    }
+  ]
+}
+```
+
+#### But wait, there's much more than meets the eye. VSCode Cadence extension also offers:
 
 - Syntax highlighting (including in Markdown code fences)
 - Diagnostics (errors and warnings)
