@@ -37,7 +37,8 @@ suite('Language Server Integration Tests', () => {
 
   test('Emulator Connection', async () => {
     // Start emulator in a terminal
-    const emulatorCommand = 'flow emulator'
+    const settings = getMockSettings()
+    const emulatorCommand = `${settings.flowCommand} emulator`
     const terminal = vscode.window.createTerminal('Flow Emulator')
     terminal.show()
     terminal.sendText(emulatorCommand)
@@ -50,6 +51,7 @@ suite('Language Server Integration Tests', () => {
 
     assert.strictEqual(LS.emulatorConnected(), false)
   }).timeout(MaxTimeout)
+
   // TODO: Test Account Switching
   // TODO: Test Account Creation
 })
