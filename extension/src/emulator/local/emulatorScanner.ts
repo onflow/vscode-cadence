@@ -21,7 +21,6 @@ export async function verifyEmulator (): Promise<boolean> {
     return false
   }
 
-  console.log('GETTING EMULATOR PUBLIC KEY')
   const emulatorPublicKey = await getEmulatorKey()
   if (emulatorPublicKey === undefined) {
     showLocationWarning = true // No emulator running, warn if detected in wrong location
@@ -49,7 +48,6 @@ export function verifyKeys (privateKey: string, publicKey: string): boolean {
 async function getEmulatorKey (): Promise<string | undefined> {
   let emulatorPublicKey: string | undefined
   try {
-    console.log('fetching emulator public key...')
     const response = await fetch(emulatorConfigURL)
     const config: EmulatorConfig = JSON.parse(await response.text())
     emulatorPublicKey = config.service_key.replace('0x', '')
