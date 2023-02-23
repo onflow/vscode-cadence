@@ -11,6 +11,8 @@ import { Account } from '../../src/emulator/account'
 import Mocha = require('mocha')
 
 const MaxTimeout = 100000
+const CONNECTED = true
+const DISCONNECTED = false
 
 // Note: Dependency installation must run before LS tests
 suite('Dependency Installer Integration Test', () => {
@@ -41,6 +43,18 @@ suite('Language Server Integration Tests', () => {
     return terminal
   }
 
+  // Waits for emulator to be connected/ disconnected
+  async function waitForEmulator (connected: boolean): Promise<boolean> {
+    const timeoutSeconds = 10
+    for (let i = 0; i < timeoutSeconds; i++) {
+      if (LS.emulatorConnected() === connected) {
+        return true
+      }
+      await delay(1)
+    }
+    return false
+  }
+
   Mocha.afterEach(() => {
     terminal?.dispose()
     terminal = null
@@ -55,17 +69,14 @@ suite('Language Server Integration Tests', () => {
 
   test('Emulator Connection', async () => {
     startEmulatorInTerminal()
-    await delay(5)
-    assert.strictEqual(LS.emulatorConnected(), true)
+    assert.strictEqual(await waitForEmulator(CONNECTED), true)
     terminal?.dispose()
-    await delay(5)
-    assert.strictEqual(LS.emulatorConnected(), false)
+    assert.strictEqual(await waitForEmulator(DISCONNECTED), true)
   }).timeout(MaxTimeout)
 
   test('Account Switching', async () => {
     startEmulatorInTerminal()
-    await delay(5)
-    assert.strictEqual(LS.emulatorConnected(), true)
+    assert.strictEqual(await waitForEmulator(CONNECTED), true)
 
     // Get active account
     const accounts: GetAccountsReponse = await LS.getAccounts()
@@ -86,8 +97,7 @@ suite('Language Server Integration Tests', () => {
 
   test('Account Creation', async () => {
     startEmulatorInTerminal()
-    await delay(5)
-    assert.strictEqual(LS.emulatorConnected(), true)
+    assert.strictEqual(await waitForEmulator(CONNECTED), true)
 
     const createAccounts = 10
     for (let i = 0; i < createAccounts; i++) {
