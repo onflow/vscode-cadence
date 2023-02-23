@@ -58,7 +58,6 @@ suite('Language Server Integration Tests', () => {
   Mocha.afterEach(async () => {
     terminal?.dispose()
     terminal = null
-    await waitForEmulator(DISCONNECTED)
   })
 
   test('Language Server Client', async () => {
@@ -106,7 +105,7 @@ suite('Language Server Integration Tests', () => {
       await LS.switchActiveAccount(newAccount)
       const activeAccount = (await LS.getAccounts()).getActiveAccount()
       assert.equal(newAccount.address, activeAccount?.address)
-      await delay(1)
+      await delay(0.5)
     }
   }).timeout(MaxTimeout)
 })
