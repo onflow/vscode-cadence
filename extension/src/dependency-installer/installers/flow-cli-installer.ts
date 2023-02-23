@@ -169,7 +169,7 @@ export class InstallFlowCLI extends Installer {
   verifyInstall (): boolean {
     console.log('VERIFYING INSTALL OF FLOW-CLI')
     // Check if flow-cli is executable
-    if (!execDefault(CHECK_FLOW_CLI_CMD)) return false
+    if (!execPowerShell(CHECK_FLOW_CLI_CMD)) return false
 
     // Check flow-cli version number
     return this.checkVersion()
