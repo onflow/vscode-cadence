@@ -123,7 +123,7 @@ export class LanguageServerAPI {
     )
 
     this.client.onDidChangeState(async (e: StateChangeEvent) => {
-      const sleepSynchronously = (milliseconds: number) => import('sleep-synchronously')
+      const sleepSynchronously = async (milliseconds: number): Promise<void> => await import('sleep-synchronously')
         .then(({ default: sleepSynchronously }) => sleepSynchronously(milliseconds))
 
       this.running = e.newState === State.Running

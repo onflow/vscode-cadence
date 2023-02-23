@@ -29,7 +29,7 @@ export class Settings {
   }
 
   constructor (skipInitialization?: boolean) {
-    if (skipInitialization) {
+    if (skipInitialization !== undefined && skipInitialization) {
       return
     }
     // Retrieve workspace settings
