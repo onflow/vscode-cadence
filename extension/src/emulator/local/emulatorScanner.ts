@@ -1,7 +1,7 @@
 import { window } from 'vscode'
 import * as Config from './flowConfig'
 import { ec } from 'elliptic'
-import { RequestInfo, RequestInit } from "node-fetch"
+import fetch from 'node-fetch'
 
 const defaultHost = '127.0.0.1'
 const adminPort = 8080
@@ -21,6 +21,7 @@ export async function verifyEmulator (): Promise<boolean> {
     return false
   }
 
+  console.log('GETTING EMULATOR PUBLIC KEY')
   const emulatorPublicKey = await getEmulatorKey()
   if (emulatorPublicKey === undefined) {
     showLocationWarning = true // No emulator running, warn if detected in wrong location
@@ -46,10 +47,9 @@ export function verifyKeys (privateKey: string, publicKey: string): boolean {
 }
 
 async function getEmulatorKey (): Promise<string | undefined> {  
-  const fetch = (url: RequestInfo, init?: RequestInit) => import("node-fetch")
-    .then(({ default: fetch }) => fetch(url, init))
   let emulatorPublicKey: string | undefined
   try {
+    console.log('fetching emulator public key...')
     const response = await fetch(emulatorConfigURL)
     const config: EmulatorConfig = JSON.parse(await response.text())
     emulatorPublicKey = config.service_key.replace('0x', '')

@@ -4,38 +4,54 @@ import { delay } from '../index'
 import { getMockSettings } from '../mock/mockSettings'
 import { LanguageServerAPI } from '../../src/emulator/server/language-server'
 import * as flowConfig from '../../src/emulator/local/flowConfig'
+import * as vscode from 'vscode'
+import * as depInstaller from '../../src/dependency-installer/dependency-installer'
 
-// TODO: Package with flow binary and call that instead of 'flow'?
-// TODO: Or can we test the installer and make sure that's working as well?
+const MaxTimeout = 100000
+
+// Note: Dependency installation must run before LS tests
+suite('Dependency Installer Integration Test', () => {
+  test('Install Missing Dependencies', async () => {
+    const dependencyInstaller = new depInstaller.DependencyInstaller()
+    const noError = dependencyInstaller.installMissingDependencies()
+    assert.equal(noError, true)
+  }).timeout(MaxTimeout)
+})
 
 suite ('Language Server Integration Tests', () => {
   var LS: LanguageServerAPI
 
   before(async () => {
+    // Initialize language server
     const settings = getMockSettings()
     flowConfig.setConfigPath(settings.customConfigPath)
-
     LS = new LanguageServerAPI(settings)
   })
 
-  test('Language Server Initialization Test', async () => {
+  test('Language Server Client', async () => {
     await LS.startClient(false)
-  
-    delay(10)
-
     assert.notStrictEqual(LS.client, undefined)
     assert.strictEqual(LS.client?.isRunning(), true)
     assert.strictEqual(LS.emulatorConnected(), false)
-
-    console.log("LS Client Running: ", LS.client?.isRunning())    
   })
 
-  test('Connect Emulator', async () => {
-    console.log("LS Client Running: ", LS.client?.isRunning())
+  test('Emulator Connection', async () => {
+    // Start emulator in a terminal
+    const emulatorCommand = 'flow emulator'
+    let terminal = vscode.window.createTerminal('Flow Emulator')
+    terminal.show()
+    terminal.sendText(emulatorCommand)
+  
+    await delay(10)
+    assert.strictEqual(LS.emulatorConnected(), true)
 
-    // TODO: Start emulator in same directory
-    //assert.strictEqual(LS.emulatorConnected(), true)
-  })
+    terminal.dispose()
+    await delay(10)
 
+    assert.strictEqual(LS.emulatorConnected(), false)
+  }).timeout(MaxTimeout)
+  
+  // TODO: Test Account Switching
+
+  // TODO: Test Account Creation
 })
-

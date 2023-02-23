@@ -6,7 +6,8 @@ import { Installer } from '../installer'
 import { execSync } from 'child_process'
 import { parseFlowCliVersion } from './version-parsers'
 import * as semver from 'semver'
-import { RequestInfo, RequestInit } from "node-fetch"
+//import { RequestInfo, RequestInit } from "node-fetch"
+import fetch from 'node-fetch'
 
 // Command to check flow-cli
 const CHECK_FLOW_CLI_CMD = 'flow version'
@@ -101,33 +102,30 @@ export class InstallFlowCLI extends Installer {
   }
 
   async findLatestVersion (currentVersion: semver.SemVer): Promise<void> {
-    const fetch = (url: RequestInfo, init?: RequestInit) => import("node-fetch")
-      .then(({ default: fetch }) => fetch(url, init))
-    void fetch(VERSION_INFO_URL)
-      .then(async response => await response.text())
-      .then(text => {
-        let latestStr: string | null = parseFlowCliVersion(text)
-        latestStr = semver.clean(text)
-        const latest: semver.SemVer | null = semver.parse(latestStr)
+    const response = await fetch(VERSION_INFO_URL)
+    const text = await response.text()
 
-        // Check if latest version > current version
-        if (latest != null && latestStr != null && semver.compare(latest, currentVersion) === 1) {
-          promptUserInfoMessage(
-            'There is a new Flow CLI version available: ' + latestStr,
-            'Install latest Flow CLI',
-            () => {
-              void window.showInformationMessage('Running Flow CLI installer, please wait...')
-              this.install()
-              if (!this.verifyInstall()) {
-                void window.showErrorMessage('Failed to install Flow CLI')
-                return
-              }
-              void window.showInformationMessage('Flow CLI installed sucessfully. ' +
-              'You may need to reload the extension.')
-            }
-          )
+    let latestStr: string | null = parseFlowCliVersion(text)
+    latestStr = semver.clean(text)
+    const latest: semver.SemVer | null = semver.parse(latestStr)
+
+    // Check if latest version > current version
+    if (latest != null && latestStr != null && semver.compare(latest, currentVersion) === 1) {
+      promptUserInfoMessage(
+        'There is a new Flow CLI version available: ' + latestStr,
+        'Install latest Flow CLI',
+        () => {
+          void window.showInformationMessage('Running Flow CLI installer, please wait...')
+          this.install()
+          if (!this.verifyInstall()) {
+            void window.showErrorMessage('Failed to install Flow CLI')
+            return
+          }
+          void window.showInformationMessage('Flow CLI installed sucessfully. ' +
+          'You may need to reload the extension.')
         }
-      })
+      )
+    }
   }
 
   checkVersion (): boolean {

@@ -40,29 +40,7 @@ jobs:
       - name: Package
         run: npm run package
 
-  unittest:
-    needs: build
-    name: Unit Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Package
-        run: npm run package-test
-
-      - name: Unit Tests
-        run: npm run unit-test
-
-  integration:
+  test:
     needs: build
     name: Integration Tests
     runs-on: macos-latest
@@ -79,40 +57,7 @@ jobs:
         run: npm ci
 
       - name: Integration Tests
-        run: npm run integration-test
-
-# TODO: Remove cypress completely
-#  cypress:
-#    needs: build
-#    name: Cypress End to End Tests
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v3
-#
-#      - name: Use Node.js ${{ matrix.node-version }}
-#        uses: actions/setup-node@v3
-#        with:
-#          node-version: ${{ matrix.node-version }}
-#
-#      - name: Install dependencies
-#        run: npm ci
-#
-#      - name: Package
-#        run: npm run package-test
-#
-#      - name: Start vscode Docker Container
-#        run: npm run vscode-start
-#
-#      - name: Cypress
-#        uses: cypress-io/github-action@v5
-#        with:
-#          wait-on: 'http://localhost:8888'
-#          record: true
-#          browser: chrome
-#        env:
-#          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run test
 
   windows-build:
     name: Windows Build
@@ -132,29 +77,7 @@ jobs:
       - name: Package
         run: npm run package-windows
 
-  windows-unittest:
-    needs: windows-build
-    name: Windows Unit Tests
-    runs-on: windows-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Package
-        run: npm run package-test-windows
-
-      - name: Unit Tests
-        run: npm run unit-test-windows
-
-  windows-integration:
+  windows-test:
     needs: windows-build
     name: Windows Integration Tests
     runs-on: windows-latest
@@ -171,4 +94,4 @@ jobs:
         run: npm ci
 
       - name: Integration Tests
-        run: npm run integration-test-windows
+        run: npm run test-windows
