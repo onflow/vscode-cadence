@@ -6,7 +6,7 @@ export function getMockSettings (): Settings {
   mockSettings.accessCheckMode = 'strict'
   mockSettings.customConfigPath = path.join(__dirname, '../integration/fixtures/workspace/flow.json')
   mockSettings.flowCommand = 'flow'
-  if (process.platform == 'win32') {
+  if (process.platform === 'win32') {
     mockSettings.flowCommand = 'flow.exe'
   }
   mockSettings.numAccounts = 3
