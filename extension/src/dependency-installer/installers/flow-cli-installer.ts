@@ -37,9 +37,7 @@ export class InstallFlowCLI extends Installer {
         this.#install_macos()
         break
       case 'win32':
-        CHECK_FLOW_CLI_CMD = '"$($Env:Appdata)\\Flow\\flow.exe version"'
-        console.log('exec: ', '"$($Env:Appdata)\\Flow\\flow.exe"')
-        execPowerShell('"$($Env:Appdata)\\Flow\\flow.exe"')
+        CHECK_FLOW_CLI_CMD = 'C:\\Users\\runneradmin\\AppData\\Roaming\\Flow\\flow.exe version'
         this.#install_windows()
         break
       default:
