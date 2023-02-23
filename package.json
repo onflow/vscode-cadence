@@ -224,7 +224,6 @@
 		"async-lock": "^1.4.0",
 		"async-mutex": "^0.4.0",
 		"elliptic": "^6.5.4",
-		"fix-esm": "^1.0.1",
 		"mixpanel": "^0.17.0",
 		"node-fetch": "^2.6.1",
 		"os-name": "^5.0.1",
