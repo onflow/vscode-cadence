@@ -38,6 +38,8 @@ export class InstallFlowCLI extends Installer {
         break
       case 'win32':
         CHECK_FLOW_CLI_CMD = '"$($Env:Appdata)\\Flow\\flow.exe version"'
+        console.log('exec: ', '"$($Env:Appdata)\\Flow\\flow.exe"')
+        execPowerShell('"$($Env:Appdata)\\Flow\\flow.exe"')
         this.#install_windows()
         break
       default:
