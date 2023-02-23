@@ -89,6 +89,7 @@ export class InstallFlowCLI extends Installer {
   }
 
   #install_windows (): void {
+    console.log('INSTALL WINDOWS FLOW-CLI')
     execPowerShell(POWERSHELL_INSTALL_CMD)
   }
 
@@ -166,6 +167,7 @@ export class InstallFlowCLI extends Installer {
   }
 
   verifyInstall (): boolean {
+    console.log('VERIFYING INSTALL OF FLOW-CLI')
     // Check if flow-cli is executable
     if (!execDefault(CHECK_FLOW_CLI_CMD)) return false
 
