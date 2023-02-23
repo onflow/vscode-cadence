@@ -28,7 +28,7 @@ export class Settings {
     return Settings.#instance
   }
 
-  private constructor () {
+  constructor () {
     // Retrieve workspace settings
     const cadenceConfig = workspace.getConfiguration('cadence')
 

@@ -24,9 +24,13 @@ export class DependencyInstaller {
       promptUserErrorMessage(
         'Not all dependencies are installed: ' + missing.join(', '),
         'Install Missing Dependencies',
-        () => { this.#installMissingDependencies() }
+        () => { void this.#installMissingDependencies() }
       )
     }
+  }
+
+  installMissingDependencies (): boolean {
+    return this.#installMissingDependencies()
   }
 
   prettyPrintDepencencies (): void {
@@ -62,17 +66,20 @@ export class DependencyInstaller {
     return this.registeredInstallers.find(installer => !installer.isInstalled()) == null
   }
 
-  #installMissingDependencies (): void {
+  #installMissingDependencies (): boolean {
+    var noInstallErrors = true
     this.registeredInstallers.forEach((installer) => {
       try {
         installer.runInstall()
       } catch (err) {
         if (err instanceof InstallError) {
           void window.showErrorMessage(err.message)
+          noInstallErrors = false
         } else {
           throw err
         }
       }
     })
+    return noInstallErrors
   }
 }

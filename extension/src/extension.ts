@@ -12,9 +12,11 @@ import { DependencyInstaller } from './dependency-installer/dependency-installer
 export class Extension {
   // The extension singleton
   static #instance: Extension
+  static initialized = false
 
   static initialize (ctx: ExtensionContext): Extension {
     Extension.#instance = new Extension(ctx)
+    Extension.initialized = true
     return Extension.#instance
   }
 
@@ -71,5 +73,9 @@ export class Extension {
 
   checkDependencies (): void {
     this.#dependencyInstaller.checkDependencies()
+  }
+
+  installMissingDependencies(): boolean {
+    return this.#dependencyInstaller.installMissingDependencies()
   }
 }

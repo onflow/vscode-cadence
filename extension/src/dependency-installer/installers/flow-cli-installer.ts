@@ -6,7 +6,7 @@ import { Installer } from '../installer'
 import { execSync } from 'child_process'
 import { parseFlowCliVersion } from './version-parsers'
 import * as semver from 'semver'
-import fetch from 'node-fetch'
+import { RequestInfo, RequestInit } from "node-fetch"
 
 // Command to check flow-cli
 const CHECK_FLOW_CLI_CMD = 'flow version'
@@ -100,7 +100,9 @@ export class InstallFlowCLI extends Installer {
     return execDefault(CHECK_HOMEBREW_CMD)
   }
 
-  findLatestVersion (currentVersion: semver.SemVer): void {
+  async findLatestVersion (currentVersion: semver.SemVer): Promise<void> {
+    const fetch = (url: RequestInfo, init?: RequestInit) => import("node-fetch")
+      .then(({ default: fetch }) => fetch(url, init))
     void fetch(VERSION_INFO_URL)
       .then(async response => await response.text())
       .then(text => {
@@ -161,7 +163,7 @@ export class InstallFlowCLI extends Installer {
     }
 
     // Check for newer version
-    this.findLatestVersion(version)
+    void this.findLatestVersion(version)
 
     return true
   }

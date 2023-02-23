@@ -30,3 +30,9 @@ export function deactivate (): Thenable<void> | undefined {
   void Telemetry.deactivate()
   return (ext === undefined ? undefined : ext.deactivate())
 }
+
+export function emulatorStateChanged (): void {
+  if (Extension.initialized) {
+    ext.emulatorStateChanged()
+  }
+}

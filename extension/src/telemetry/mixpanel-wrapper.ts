@@ -1,6 +1,5 @@
 /* Wrapper functions for Mixpanel analytics */
 import * as mixpanel from 'mixpanel'
-import osName from 'os-name'
 
 // Mixpanel vscode-cadence
 const MIXPANEL_TOKEN: string = '69e592a84fef909bee58668b5c764ae4'
@@ -25,6 +24,7 @@ export enum Events {
 }
 
 export async function mixpanelInit (activate: boolean, uid: string, version: string): Promise<void> {
+  let osName = await import('os-name')
   mixpanelActivated = activate
   if (!mixpanelActivated) return
 
@@ -33,7 +33,7 @@ export async function mixpanelInit (activate: boolean, uid: string, version: str
   userInfo = {
     vscode_cadence_version: version,
     distinct_id: uid,
-    operating_system: osName()
+    operating_system: osName.default()
   }
 }
 

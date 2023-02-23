@@ -5,7 +5,7 @@ import { runTests } from '@vscode/test-electron'
 async function main (): Promise<void> {
   try {
     const extensionDevelopmentPath = path.resolve(__dirname, '../src/')
-    const extensionTestsPath = path.resolve(__dirname, './integration/index.js')
+    const extensionTestsPath = path.resolve(__dirname, './index.js')
     const testWorkspace = path.resolve(__dirname, './integration/fixtures/workspace')
 
     // Download VS Code, unzip it and run the integration test

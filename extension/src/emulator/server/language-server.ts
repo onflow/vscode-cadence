@@ -1,11 +1,10 @@
 import { LanguageClient, State, StateChangeEvent } from 'vscode-languageclient/node'
 import { window } from 'vscode'
 import { Account } from '../account'
-import { ext } from '../../main'
+import { emulatorStateChanged } from '../../main'
 import * as Config from '../local/flowConfig'
 import { Settings } from '../../settings/settings'
 import * as response from './responses'
-import sleepSynchronously from 'sleep-synchronously'
 import { Mutex } from 'async-mutex'
 import { exec } from 'child_process'
 import { verifyEmulator } from '../local/emulatorScanner'
@@ -26,11 +25,21 @@ export class LanguageServerAPI {
   #emulatorConnected = false
   #restarting = false
 
+  optionalSettings: Settings | undefined
+
   accessCheckMode: string
   flowCommand: string
 
-  constructor () {
-    const settings = Settings.getWorkspaceSettings()
+  constructor (optionalSettings?: Settings) {
+    this.optionalSettings = optionalSettings
+
+    var settings: Settings
+    if (optionalSettings !== undefined) {
+      settings = optionalSettings
+    } else {
+      settings = Settings.getWorkspaceSettings()
+    }
+
     this.accessCheckMode = settings.accessCheckMode
     this.flowCommand = settings.flowCommand
 
@@ -68,9 +77,19 @@ export class LanguageServerAPI {
     await this.#clientLock.acquire()
 
     this.#initializedClient = false
-    const configPath = await Config.getConfigPath()
-    const numberOfAccounts = Settings.getWorkspaceSettings().numAccounts
-    const accessCheckMode = Settings.getWorkspaceSettings().accessCheckMode
+    let configPath: string
+    let numberOfAccounts: number
+    let accessCheckMode: string
+
+    if (this.optionalSettings !== undefined) {
+      configPath = this.optionalSettings.customConfigPath
+      numberOfAccounts = this.optionalSettings.numAccounts
+      accessCheckMode = this.optionalSettings.accessCheckMode
+    } else {
+      configPath = await Config.getConfigPath()
+      numberOfAccounts = Settings.getWorkspaceSettings().numAccounts
+      accessCheckMode = Settings.getWorkspaceSettings().accessCheckMode
+    }
 
     if (enableFlow === undefined) {
       enableFlow = await verifyEmulator()
@@ -103,18 +122,21 @@ export class LanguageServerAPI {
       }
     )
 
-    this.client.onDidChangeState((e: StateChangeEvent) => {
+    this.client.onDidChangeState(async (e: StateChangeEvent) => {
+      const sleepSynchronously = (milliseconds: number) => import("sleep-synchronously")
+        .then(({ default: sleepSynchronously }) => sleepSynchronously(milliseconds))
+
       this.running = e.newState === State.Running
       if (this.#initializedClient && !this.running && !this.#restarting) {
         sleepSynchronously(1000 * 5) // Wait enable flow-cli update
       }
 
-      void ext.emulatorStateChanged()
+      void emulatorStateChanged()
     })
 
     await this.client.start()
       .then(() => {
-        void ext.emulatorStateChanged()
+        void emulatorStateChanged()
         this.watchFlowConfiguration()
       })
       .catch((err: Error) => {
@@ -137,7 +159,7 @@ export class LanguageServerAPI {
     await this.#clientLock.acquire()
     await this.client?.stop().catch(() => {})
     this.client = null
-    void ext.emulatorStateChanged()
+    void emulatorStateChanged()
     this.#clientLock.release()
   }
 
