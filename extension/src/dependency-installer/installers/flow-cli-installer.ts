@@ -37,7 +37,7 @@ export class InstallFlowCLI extends Installer {
         this.#install_macos()
         break
       case 'win32':
-        CHECK_FLOW_CLI_CMD = '"$($Env:Appdata)\\flow.exe version"'
+        CHECK_FLOW_CLI_CMD = '"$($Env:Appdata)\\Flow\\flow.exe version"'
         this.#install_windows()
         break
       default:

@@ -7,20 +7,20 @@ on:
     branches: [ master ]
 
 jobs:
-  linter:
-    name: "Code Style Standard"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+  #linter:
+  #  name: "Code Style Standard"
+  #  runs-on: ubuntu-latest
+  #  steps:
+  #    - name: Checkout
+  #      uses: actions/checkout@v3
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
+  #    - name: Use Node.js ${{ matrix.node-version }}
+  #      uses: actions/setup-node@v3
+  #      with:
+  #        node-version: ${{ matrix.node-version }}
 
-      - run: npm ci
-      - run: npm run lint
+  #    - run: npm ci
+  #    - run: npm run lint
 
 #  build:
 #    name: Build

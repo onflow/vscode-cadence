@@ -7,7 +7,7 @@ export function getMockSettings (): Settings {
   mockSettings.customConfigPath = path.join(__dirname, '../integration/fixtures/workspace/flow.json')
   mockSettings.flowCommand = 'flow'
   if (process.platform === 'win32') {
-    mockSettings.flowCommand = '"$($Env:Appdata)\\flow.exe"'
+    mockSettings.flowCommand = '"$($Env:Appdata)\\Flow\\flow.exe"'
   }
   mockSettings.numAccounts = 3
   return mockSettings
