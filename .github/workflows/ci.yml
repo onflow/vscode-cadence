@@ -41,7 +41,6 @@ jobs:
         run: npm run package
 
   test:
-    needs: build
     name: Tests
     runs-on: macos-latest
     steps:
@@ -78,7 +77,6 @@ jobs:
         run: npm run package-windows
 
   windows-test:
-    needs: windows-build
     name: Windows Tests
     runs-on: windows-latest
     steps:
