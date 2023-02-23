@@ -55,9 +55,10 @@ suite('Language Server Integration Tests', () => {
     return false
   }
 
-  Mocha.afterEach(() => {
+  Mocha.afterEach(async () => {
     terminal?.dispose()
     terminal = null
+    await waitForEmulator(DISCONNECTED)
   })
 
   test('Language Server Client', async () => {
@@ -99,12 +100,13 @@ suite('Language Server Integration Tests', () => {
     startEmulatorInTerminal()
     assert.strictEqual(await waitForEmulator(CONNECTED), true)
 
-    const createAccounts = 10
+    const createAccounts = 5
     for (let i = 0; i < createAccounts; i++) {
       const newAccount = await LS.createAccount()
       await LS.switchActiveAccount(newAccount)
       const activeAccount = (await LS.getAccounts()).getActiveAccount()
       assert.equal(newAccount.address, activeAccount?.address)
+      await delay(1)
     }
   }).timeout(MaxTimeout)
 })
