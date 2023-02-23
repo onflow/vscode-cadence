@@ -9,7 +9,7 @@ import * as semver from 'semver'
 import fetch from 'node-fetch'
 
 // Command to check flow-cli
-const CHECK_FLOW_CLI_CMD = 'flow version'
+let CHECK_FLOW_CLI_CMD = 'flow version'
 const COMPATIBLE_FLOW_CLI_VERSIONS = '>=0.45.4'
 
 // Flow CLI with homebrew
@@ -37,6 +37,7 @@ export class InstallFlowCLI extends Installer {
         this.#install_macos()
         break
       case 'win32':
+        CHECK_FLOW_CLI_CMD = 'flow.exe version'
         this.#install_windows()
         break
       default:

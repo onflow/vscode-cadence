@@ -5,10 +5,8 @@ export const FILE_PATH_EMPTY = ''
 // Execute a command in powershell; returns false on error
 export function execPowerShell (cmd: string): boolean {
   try {
-    let output = execSync(cmd, { shell: 'powershell.exe' })
-    console.log('Exec sync output', output.toString())
+    execSync(cmd, { shell: 'powershell.exe' })
   } catch (err) {
-    console.log('EXEC POWERSHELL ERROR: ', err)
     return false
   }
   return true
