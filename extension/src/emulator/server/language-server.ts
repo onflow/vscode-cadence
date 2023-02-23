@@ -33,7 +33,7 @@ export class LanguageServerAPI {
   constructor (optionalSettings?: Settings) {
     this.optionalSettings = optionalSettings
 
-    var settings: Settings
+    let settings: Settings
     if (optionalSettings !== undefined) {
       settings = optionalSettings
     } else {
@@ -123,12 +123,12 @@ export class LanguageServerAPI {
     )
 
     this.client.onDidChangeState(async (e: StateChangeEvent) => {
-      const sleepSynchronously = (milliseconds: number) => import("sleep-synchronously")
+      const sleepSynchronously = (milliseconds: number) => import('sleep-synchronously')
         .then(({ default: sleepSynchronously }) => sleepSynchronously(milliseconds))
 
       this.running = e.newState === State.Running
       if (this.#initializedClient && !this.running && !this.#restarting) {
-        sleepSynchronously(1000 * 5) // Wait enable flow-cli update
+        await sleepSynchronously(1000 * 5) // Wait enable flow-cli update
       }
 
       void emulatorStateChanged()

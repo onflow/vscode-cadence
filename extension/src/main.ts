@@ -33,6 +33,6 @@ export function deactivate (): Thenable<void> | undefined {
 
 export function emulatorStateChanged (): void {
   if (Extension.initialized) {
-    ext.emulatorStateChanged()
+    void ext.emulatorStateChanged()
   }
 }

@@ -67,7 +67,7 @@ export class DependencyInstaller {
   }
 
   #installMissingDependencies (): boolean {
-    var noInstallErrors = true
+    let noInstallErrors = true
     this.registeredInstallers.forEach((installer) => {
       try {
         installer.runInstall()

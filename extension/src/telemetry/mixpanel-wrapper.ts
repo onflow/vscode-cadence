@@ -24,7 +24,7 @@ export enum Events {
 }
 
 export async function mixpanelInit (activate: boolean, uid: string, version: string): Promise<void> {
-  let osName = await import('os-name')
+  const osName = await import('os-name')
   mixpanelActivated = activate
   if (!mixpanelActivated) return
 

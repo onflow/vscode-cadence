@@ -6,7 +6,6 @@ import { Installer } from '../installer'
 import { execSync } from 'child_process'
 import { parseFlowCliVersion } from './version-parsers'
 import * as semver from 'semver'
-//import { RequestInfo, RequestInit } from "node-fetch"
 import fetch from 'node-fetch'
 
 // Command to check flow-cli

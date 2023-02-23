@@ -46,7 +46,7 @@ export function verifyKeys (privateKey: string, publicKey: string): boolean {
   return testKey === publicKey
 }
 
-async function getEmulatorKey (): Promise<string | undefined> {  
+async function getEmulatorKey (): Promise<string | undefined> {
   let emulatorPublicKey: string | undefined
   try {
     console.log('fetching emulator public key...')

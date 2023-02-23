@@ -18,8 +18,8 @@ suite('Dependency Installer Integration Test', () => {
   }).timeout(MaxTimeout)
 })
 
-suite ('Language Server Integration Tests', () => {
-  var LS: LanguageServerAPI
+suite('Language Server Integration Tests', () => {
+  let LS: LanguageServerAPI
 
   before(async () => {
     // Initialize language server
@@ -38,10 +38,10 @@ suite ('Language Server Integration Tests', () => {
   test('Emulator Connection', async () => {
     // Start emulator in a terminal
     const emulatorCommand = 'flow emulator'
-    let terminal = vscode.window.createTerminal('Flow Emulator')
+    const terminal = vscode.window.createTerminal('Flow Emulator')
     terminal.show()
     terminal.sendText(emulatorCommand)
-  
+
     await delay(10)
     assert.strictEqual(LS.emulatorConnected(), true)
 
@@ -50,8 +50,6 @@ suite ('Language Server Integration Tests', () => {
 
     assert.strictEqual(LS.emulatorConnected(), false)
   }).timeout(MaxTimeout)
-  
   // TODO: Test Account Switching
-
   // TODO: Test Account Creation
 })

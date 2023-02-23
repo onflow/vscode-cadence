@@ -1,7 +1,7 @@
 import { ASSERT_EQUAL } from '../utils'
 import { Account } from '../../src/emulator/account'
 
-suite ('Account Unit Tests', () => {
+suite('Account Unit Tests', () => {
   test('Basic Account', async () => {
     const a1 = new Account('Foo', '0x1')
     a1.setIndex(2)
