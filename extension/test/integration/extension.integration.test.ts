@@ -8,7 +8,6 @@ import * as vscode from 'vscode'
 import * as depInstaller from '../../src/dependency-installer/dependency-installer'
 import { GetAccountsReponse } from '../../src/emulator/server/responses'
 import { Account } from '../../src/emulator/account'
-import Mocha = require('mocha')
 import { Settings } from '../../src/settings/settings'
 
 const MaxTimeout = 100000
