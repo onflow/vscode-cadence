@@ -9,6 +9,7 @@ import * as depInstaller from '../../src/dependency-installer/dependency-install
 import { GetAccountsReponse } from '../../src/emulator/server/responses'
 import { Account } from '../../src/emulator/account'
 import Mocha = require('mocha')
+import { Settings } from '../../src/settings/settings'
 
 const MaxTimeout = 100000
 const CONNECTED = true
@@ -26,21 +27,28 @@ suite('Dependency Installer Integration Test', () => {
 suite('Language Server Integration Tests', () => {
   let LS: LanguageServerAPI
   let terminal: vscode.Terminal | null = null
+  let settings: Settings
+  let emulatorCommand: string
 
   before(async () => {
     // Initialize language server
-    const settings = getMockSettings()
+    settings = getMockSettings()
     flowConfig.setConfigPath(settings.customConfigPath)
+    emulatorCommand = `${settings.flowCommand} emulator`
     LS = new LanguageServerAPI(settings)
   })
 
-  function startEmulatorInTerminal (): vscode.Terminal {
-    const settings = getMockSettings()
-    const emulatorCommand = `${settings.flowCommand} emulator`
+  async function startTerminalEmulator (): Promise<boolean> {
+    if (terminal !== null) {
+      terminal.dispose()
+      terminal = null
+    }
+    await waitForEmulator(DISCONNECTED)
+
     terminal = vscode.window.createTerminal('Flow Emulator')
     terminal.show()
     terminal.sendText(emulatorCommand)
-    return terminal
+    return await waitForEmulator(CONNECTED)
   }
 
   // Waits for emulator to be connected/ disconnected
@@ -55,11 +63,6 @@ suite('Language Server Integration Tests', () => {
     return false
   }
 
-  Mocha.afterEach(async () => {
-    terminal?.dispose()
-    terminal = null
-  })
-
   test('Language Server Client', async () => {
     await LS.startClient(false)
     assert.notStrictEqual(LS.client, undefined)
@@ -68,15 +71,13 @@ suite('Language Server Integration Tests', () => {
   })
 
   test('Emulator Connection', async () => {
-    startEmulatorInTerminal()
-    assert.strictEqual(await waitForEmulator(CONNECTED), true)
+    assert.strictEqual(await startTerminalEmulator(), true)
     terminal?.dispose()
     assert.strictEqual(await waitForEmulator(DISCONNECTED), true)
   }).timeout(MaxTimeout)
 
   test('Account Switching', async () => {
-    startEmulatorInTerminal()
-    assert.strictEqual(await waitForEmulator(CONNECTED), true)
+    assert.strictEqual(await startTerminalEmulator(), true)
 
     // Get active account
     const accounts: GetAccountsReponse = await LS.getAccounts()
@@ -96,8 +97,7 @@ suite('Language Server Integration Tests', () => {
   }).timeout(MaxTimeout)
 
   test('Account Creation', async () => {
-    startEmulatorInTerminal()
-    assert.strictEqual(await waitForEmulator(CONNECTED), true)
+    assert.strictEqual(await startTerminalEmulator(), true)
 
     const createAccounts = 5
     for (let i = 0; i < createAccounts; i++) {
