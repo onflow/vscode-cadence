@@ -8,6 +8,7 @@ import { Account } from './account'
 import { window, env } from 'vscode'
 import { GetAccountsReponse } from './server/responses'
 import { promptCopyAccountAddress } from '../ui/prompts'
+import { Settings } from '../settings/settings'
 
 export enum EmulatorState {
   Connected = 0,
@@ -24,8 +25,9 @@ export class EmulatorController {
     // Initialize state
     this.#state = EmulatorState.Disconnected
 
-    // Initialize the language server and hosted emulator
-    this.api = new LanguageServerAPI()
+    // Initialize the language server
+    const settings = Settings.getWorkspaceSettings()
+    this.api = new LanguageServerAPI(settings)
 
     // Initialize account data
     this.#accountData = new GetAccountsReponse(null)

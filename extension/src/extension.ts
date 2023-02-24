@@ -75,7 +75,7 @@ export class Extension {
     this.#dependencyInstaller.checkDependencies()
   }
 
-  installMissingDependencies (): boolean {
-    return this.#dependencyInstaller.installMissingDependencies()
+  installMissingDependencies (): void {
+    this.#dependencyInstaller.installMissing()
   }
 }

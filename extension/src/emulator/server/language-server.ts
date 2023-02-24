@@ -25,24 +25,10 @@ export class LanguageServerAPI {
   #emulatorConnected = false
   #restarting = false
 
-  optionalSettings: Settings | undefined
+  settings: Settings
 
-  accessCheckMode: string
-  flowCommand: string
-
-  constructor (optionalSettings?: Settings) {
-    this.optionalSettings = optionalSettings
-
-    let settings: Settings
-    if (optionalSettings !== undefined) {
-      settings = optionalSettings
-    } else {
-      settings = Settings.getWorkspaceSettings()
-    }
-
-    this.accessCheckMode = settings.accessCheckMode
-    this.flowCommand = settings.flowCommand
-
+  constructor (settings: Settings) {
+    this.settings = settings
     void this.startClient()
     void this.watchEmulator()
   }
@@ -77,18 +63,12 @@ export class LanguageServerAPI {
     await this.#clientLock.acquire()
 
     this.#initializedClient = false
-    let configPath: string
-    let numberOfAccounts: number
-    let accessCheckMode: string
+    const numberOfAccounts: number = this.settings.numAccounts
+    const accessCheckMode: string = this.settings.accessCheckMode
+    let configPath = this.settings.customConfigPath
 
-    if (this.optionalSettings !== undefined) {
-      configPath = this.optionalSettings.customConfigPath
-      numberOfAccounts = this.optionalSettings.numAccounts
-      accessCheckMode = this.optionalSettings.accessCheckMode
-    } else {
+    if (configPath === '' || configPath === undefined) {
       configPath = await Config.getConfigPath()
-      numberOfAccounts = Settings.getWorkspaceSettings().numAccounts
-      accessCheckMode = Settings.getWorkspaceSettings().accessCheckMode
     }
 
     if (enableFlow === undefined) {
@@ -96,7 +76,7 @@ export class LanguageServerAPI {
       this.#emulatorConnected = enableFlow
     }
 
-    if (this.flowCommand !== 'flow') {
+    if (this.settings.flowCommand !== 'flow') {
       try {
         exec('killall dlv') // Required when running language server locally on mac
       } catch (err) { void err }
@@ -106,7 +86,7 @@ export class LanguageServerAPI {
       'cadence',
       'Cadence',
       {
-        command: this.flowCommand,
+        command: this.settings.flowCommand,
         args: ['cadence', 'language-server', `--enable-flow-client=${String(enableFlow)}`]
       },
       {
@@ -128,7 +108,10 @@ export class LanguageServerAPI {
 
       this.running = e.newState === State.Running
       if (this.#initializedClient && !this.running && !this.#restarting) {
-        await sleepSynchronously(1000 * 5) // Wait enable flow-cli update
+        // Need to wait in case Windows flow-cli installer is trying to update
+        // There must be a small timeframe for this update to occur before
+        // restarting the LS, or else the update will fail.
+        await sleepSynchronously(1000 * 5)
       }
 
       void emulatorStateChanged()

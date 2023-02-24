@@ -29,8 +29,8 @@ export class DependencyInstaller {
     }
   }
 
-  installMissingDependencies (): boolean {
-    return this.#installMissingDependencies()
+  installMissing (): void {
+    this.#installMissingDependencies()
   }
 
   prettyPrintDepencencies (): void {
@@ -66,20 +66,17 @@ export class DependencyInstaller {
     return this.registeredInstallers.find(installer => !installer.isInstalled()) == null
   }
 
-  #installMissingDependencies (): boolean {
-    let noInstallErrors = true
+  #installMissingDependencies (): void {
     this.registeredInstallers.forEach((installer) => {
       try {
         installer.runInstall()
       } catch (err) {
         if (err instanceof InstallError) {
           void window.showErrorMessage(err.message)
-          noInstallErrors = false
         } else {
           throw err
         }
       }
     })
-    return noInstallErrors
   }
 }

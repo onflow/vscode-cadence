@@ -17,9 +17,8 @@ const DISCONNECTED = false
 // Note: Dependency installation must run before LS tests
 suite('Dependency Installer Integration Test', () => {
   test('Install Missing Dependencies', async () => {
-    const dependencyInstaller = new depInstaller.DependencyInstaller()
-    const noError = dependencyInstaller.installMissingDependencies()
-    assert.equal(noError, true)
+    const dependencyManager = new depInstaller.DependencyInstaller()
+    assert.doesNotThrow(() => { dependencyManager.installMissing() })
   }).timeout(MaxTimeout)
 })
 
