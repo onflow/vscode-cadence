@@ -230,7 +230,7 @@
 		"sleep-synchronously": "^2.0.0",
 		"uuid": "^9.0.0",
 		"vsce": "^2.15.0",
-		"vscode-languageclient": "^8.0.2"
+		"vscode-languageclient": "^8.1.0"
 	},
 	"__metadata": {
 		"id": "94920651-05f7-4ba0-bf76-379f4fef81ac",
