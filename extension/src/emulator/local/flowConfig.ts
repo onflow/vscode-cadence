@@ -14,7 +14,11 @@ let flowConfig: FlowConfig | undefined
 
 export const EMULATOR_ACCOUNT = 'emulator-account'
 
-interface FlowConfig {
+export function setConfigPath (path: string): void {
+  configPath = path
+}
+
+export interface FlowConfig {
   emulators: {
     [name: string]: {
       port: string

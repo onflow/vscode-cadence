@@ -14,24 +14,16 @@
 		"esbuild": "npm run -S esbuild-base -- --sourcemap",
 		"esbuild-watch": "npm run -S esbuild-base -- --sourcemap --watch",
 		"check": "tsc extension/src/main.ts",
-		"unit-test": "ts-mocha ./**/*.unit.test.ts",
-		"unit-test-windows": "ts-mocha .\\**\\*.unit.test.ts",
 		"copy-test-fixtures": "rm -rf ./out/extension/test/integration/fixtures && cp -R ./extension/test/fixtures ./out/extension/test/integration/fixtures",
-		"integration-test": "npm run esbuild && tsc -p ./ && npm run copy-test-fixtures && node ./out/extension/test/run-integration-tests.js",
-		"integration-test-windows": "npm run esbuild && tsc -p .\\ && npm run copy-test-fixtures && node .\\out\\extension\\test\\run-integration-tests.js",
+		"test": "npm run esbuild && tsc -p ./ && npm run copy-test-fixtures && node ./out/extension/test/run-tests.js",
+		"test-windows": "npm run esbuild && tsc -p .\\ && npm run copy-test-fixtures && node .\\out\\extension\\test\\run-tests.js",
 		"package": "./node_modules/.bin/vsce package",
 		"package-windows": ".\\node_modules\\.bin\\vsce.cmd package",
 		"install-extension": "code --install-extension cadence-*.vsix",
 		"package-test": "./node_modules/.bin/vsce package --out ./extension/test/fixtures/workspace/cadence.vsix",
 		"package-test-windows": ".\\node_modules\\.bin\\vsce.cmd package --out .\\extension\\test\\fixtures\\workspace\\cadence.vsix",
 		"lint": "ts-standard",
-		"lint-fix": "ts-standard --fix",
-		"docker-install-extension": "docker exec vscode code-server --install-extension /source/cadence.vsix",
-		"docker-install-flow-cli": "docker exec vscode sh -ci \"$(curl -fsSL https://storage.googleapis.com/flow-cli/install.sh)\"",
-		"vscode-start": "docker-compose up -d && npm run docker-install-extension && npm run docker-install-flow-cli",
-		"vscode-stop": "docker-compose down",
-		"cypress": "./node_modules/.bin/cypress run",
-		"e2e-test": "npm run package-test && npm run vscode-start && npm run cypress && npm run vscode-stop"
+		"lint-fix": "ts-standard --fix"
 	},
 	"engines": {
 		"vscode": "^1.65.0"
@@ -47,58 +39,55 @@
 	"contributes": {
 		"breakpoints": [
 			{
-			  "language": "cadence"
+				"language": "cadence"
 			}
-		  ],
+		],
 		"debuggers": [
-		{
-			  "type": "cadence",
-			  "languages": [
-				"cadence"
-			  ],
-			  "label": "Cadence Debug",
-			  "configurationAttributes": {
-				"launch": {
-				  "required": [
-					"program"
-				  ],
-				  "properties": {
-					"program": {
-					  "type": "string",
-					  "description": "Absolute path to a file.",
-					  "default": "${file}"
+			{
+				"type": "cadence",
+				"languages": [
+					"cadence"
+				],
+				"label": "Cadence Debug",
+				"configurationAttributes": {
+					"launch": {
+						"required": [
+							"program"
+						],
+						"properties": {
+							"program": {
+								"type": "string",
+								"description": "Absolute path to a file.",
+								"default": "${file}"
+							},
+							"stopOnEntry": {
+								"type": "boolean",
+								"description": "Automatically stop after launch.",
+								"default": true
+							}
+						}
 					},
-					"stopOnEntry": {
-					  "type": "boolean",
-					  "description": "Automatically stop after launch.",
-					  "default": true
-					}
-					
-					
-				  }
-				},
-				"attach": {
-				  "required": [
-				  ],
-				  "properties": {
-					"stopOnEntry": {
-					  "type": "boolean",
-					  "description": "Automatically stop after attach.",
-					  "default": true
-					}
+					"attach": {
+						"required": [],
+						"properties": {
+							"stopOnEntry": {
+								"type": "boolean",
+								"description": "Automatically stop after attach.",
+								"default": true
+							}
+						}
+					},
+					"initialConfigurations": [
+						{
+							"type": "cadence",
+							"request": "launch",
+							"name": "Curent file",
+							"program": "${file}",
+							"stopOnEntry": true
+						}
+					]
 				}
-			  },
-			  "initialConfigurations": [
-				{
-				  "type": "cadence",
-				  "request": "launch",
-				  "name": "Curent file",
-				  "program": "${file}",
-				  "stopOnEntry": true
-				}
-			  ]
 			}
-		}
 		],
 		"commands": [
 			{
@@ -211,13 +200,13 @@
 		"@types/expect": "^24.3.0",
 		"@types/glob": "^8.0.1",
 		"@types/mixpanel": "^2.14.4",
+		"@types/mocha": "^10.0.1",
 		"@types/node": "^18.14.0",
 		"@types/semver": "^7.3.13",
 		"@types/uuid": "^9.0.0",
 		"@types/vscode": "^1.65.0",
 		"@vscode/test-electron": "^2.2.3",
 		"chai": "^4.3.7",
-		"cypress": "^8.3.0",
 		"esbuild": "^0.17.9",
 		"glob": "^8.1.0",
 		"mocha": "^10.2.0",
@@ -236,7 +225,7 @@
 		"async-mutex": "^0.4.0",
 		"elliptic": "^6.5.4",
 		"mixpanel": "^0.17.0",
-		"node-fetch": "^3.3.0",
+		"node-fetch": "^2.6.1",
 		"os-name": "^5.0.1",
 		"sleep-synchronously": "^2.0.0",
 		"uuid": "^9.0.0",

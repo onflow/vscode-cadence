@@ -1,11 +1,10 @@
 import { LanguageClient, State, StateChangeEvent } from 'vscode-languageclient/node'
 import { window } from 'vscode'
 import { Account } from '../account'
-import { ext } from '../../main'
+import { emulatorStateChanged } from '../../main'
 import * as Config from '../local/flowConfig'
 import { Settings } from '../../settings/settings'
 import * as response from './responses'
-import sleepSynchronously from 'sleep-synchronously'
 import { Mutex } from 'async-mutex'
 import { exec } from 'child_process'
 import { verifyEmulator } from '../local/emulatorScanner'
@@ -26,14 +25,10 @@ export class LanguageServerAPI {
   #emulatorConnected = false
   #restarting = false
 
-  accessCheckMode: string
-  flowCommand: string
+  settings: Settings
 
-  constructor () {
-    const settings = Settings.getWorkspaceSettings()
-    this.accessCheckMode = settings.accessCheckMode
-    this.flowCommand = settings.flowCommand
-
+  constructor (settings: Settings) {
+    this.settings = settings
     void this.startClient()
     void this.watchEmulator()
   }
@@ -68,16 +63,20 @@ export class LanguageServerAPI {
     await this.#clientLock.acquire()
 
     this.#initializedClient = false
-    const configPath = await Config.getConfigPath()
-    const numberOfAccounts = Settings.getWorkspaceSettings().numAccounts
-    const accessCheckMode = Settings.getWorkspaceSettings().accessCheckMode
+    const numberOfAccounts: number = this.settings.numAccounts
+    const accessCheckMode: string = this.settings.accessCheckMode
+    let configPath = this.settings.customConfigPath
+
+    if (configPath === '' || configPath === undefined) {
+      configPath = await Config.getConfigPath()
+    }
 
     if (enableFlow === undefined) {
       enableFlow = await verifyEmulator()
       this.#emulatorConnected = enableFlow
     }
 
-    if (this.flowCommand !== 'flow') {
+    if (this.settings.flowCommand !== 'flow') {
       try {
         exec('killall dlv') // Required when running language server locally on mac
       } catch (err) { void err }
@@ -87,7 +86,7 @@ export class LanguageServerAPI {
       'cadence',
       'Cadence',
       {
-        command: this.flowCommand,
+        command: this.settings.flowCommand,
         args: ['cadence', 'language-server', `--enable-flow-client=${String(enableFlow)}`]
       },
       {
@@ -103,18 +102,24 @@ export class LanguageServerAPI {
       }
     )
 
-    this.client.onDidChangeState((e: StateChangeEvent) => {
+    this.client.onDidChangeState(async (e: StateChangeEvent) => {
+      const sleepSynchronously = async (milliseconds: number): Promise<void> => await import('sleep-synchronously')
+        .then(({ default: sleepSynchronously }) => sleepSynchronously(milliseconds))
+
       this.running = e.newState === State.Running
       if (this.#initializedClient && !this.running && !this.#restarting) {
-        sleepSynchronously(1000 * 5) // Wait enable flow-cli update
+        // Need to wait in case Windows flow-cli installer is trying to update
+        // There must be a small timeframe for this update to occur before
+        // restarting the LS, or else the update will fail.
+        await sleepSynchronously(1000 * 5)
       }
 
-      void ext.emulatorStateChanged()
+      void emulatorStateChanged()
     })
 
     await this.client.start()
       .then(() => {
-        void ext.emulatorStateChanged()
+        void emulatorStateChanged()
         this.watchFlowConfiguration()
       })
       .catch((err: Error) => {
@@ -137,7 +142,7 @@ export class LanguageServerAPI {
     await this.#clientLock.acquire()
     await this.client?.stop().catch(() => {})
     this.client = null
-    void ext.emulatorStateChanged()
+    void emulatorStateChanged()
     this.#clientLock.release()
   }
 

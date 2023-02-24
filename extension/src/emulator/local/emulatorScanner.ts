@@ -1,7 +1,7 @@
 import { window } from 'vscode'
 import * as Config from './flowConfig'
-import fetch from 'node-fetch'
 import { ec } from 'elliptic'
+import fetch from 'node-fetch'
 
 const defaultHost = '127.0.0.1'
 const adminPort = 8080
@@ -39,7 +39,7 @@ export async function verifyEmulator (): Promise<boolean> {
   return true
 }
 
-function verifyKeys (privateKey: string, publicKey: string): boolean {
+export function verifyKeys (privateKey: string, publicKey: string): boolean {
   const keyPair = ECDSA_P256.keyFromPrivate(privateKey)
   const testKey = keyPair.getPublic('hex').toString().substring(2)
   return testKey === publicKey

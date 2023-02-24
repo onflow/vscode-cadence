@@ -24,9 +24,13 @@ export class DependencyInstaller {
       promptUserErrorMessage(
         'Not all dependencies are installed: ' + missing.join(', '),
         'Install Missing Dependencies',
-        () => { this.#installMissingDependencies() }
+        () => { void this.#installMissingDependencies() }
       )
     }
+  }
+
+  installMissing (): void {
+    this.#installMissingDependencies()
   }
 
   prettyPrintDepencencies (): void {

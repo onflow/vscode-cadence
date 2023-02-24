@@ -1,47 +1,109 @@
-// import * as assert from 'assert'
-// import * as cmd from '../../src/commands/command-constants'
-// import { EmulatorState } from '../../src/emulator/emulator-controller'
-// import { delay } from './index'
-import * as vscode from 'vscode'
-import * as path from 'path'
+import * as assert from 'assert'
 import { before } from 'mocha'
-import { delay } from './index'
+import { delay } from '../index'
+import { getMockSettings } from '../mock/mockSettings'
+import { LanguageServerAPI } from '../../src/emulator/server/language-server'
+import * as flowConfig from '../../src/emulator/local/flowConfig'
+import * as vscode from 'vscode'
+import * as depInstaller from '../../src/dependency-installer/dependency-installer'
+import { GetAccountsReponse } from '../../src/emulator/server/responses'
+import { Account } from '../../src/emulator/account'
+import { Settings } from '../../src/settings/settings'
 
-suite('Extension Test Suite', () => {
-  before(() => {
-    vscode.window.showInformationMessage('Start all tests.')
-      .then(() => {}, () => {})
+const MaxTimeout = 100000
+const CONNECTED = true
+const DISCONNECTED = false
+
+// Note: Dependency installation must run before LS tests
+suite('Dependency Installer Integration Test', () => {
+  test('Install Missing Dependencies', async () => {
+    const dependencyManager = new depInstaller.DependencyInstaller()
+    assert.doesNotThrow(() => { dependencyManager.installMissing() })
+  }).timeout(MaxTimeout)
+})
+
+suite('Language Server Integration Tests', () => {
+  let LS: LanguageServerAPI
+  let terminal: vscode.Terminal | null = null
+  let settings: Settings
+  let emulatorCommand: string
+
+  before(async () => {
+    // Initialize language server
+    settings = getMockSettings()
+    flowConfig.setConfigPath(settings.customConfigPath)
+    emulatorCommand = `${settings.flowCommand} emulator`
+    LS = new LanguageServerAPI(settings)
   })
 
-  test('Extension commands', async () => {
-    console.log('Activate Extension')
-    const extension = vscode.extensions.getExtension('onflow.cadence')
-    const ext = await extension?.activate()
+  async function startTerminalEmulator (): Promise<boolean> {
+    if (terminal !== null) {
+      terminal.dispose()
+      terminal = null
+    }
+    await waitForEmulator(DISCONNECTED)
 
-    console.log('Open NonFungibleToken.cdc')
-    const setting: vscode.Uri = vscode.Uri.parse(path.join(__dirname, '/fixtures/workspace/NonFungibleToken.cdc'))
-    vscode.workspace.openTextDocument(setting).then((a: vscode.TextDocument) => {
-      void vscode.window.showTextDocument(a, 1, false).then(e => {})
-    }, (error: any) => {
-      console.error(error)
-    })
+    terminal = vscode.window.createTerminal('Flow Emulator')
+    terminal.show()
+    terminal.sendText(emulatorCommand)
+    return await waitForEmulator(CONNECTED)
+  }
 
-    await delay(2)
+  // Waits for emulator to be connected/ disconnected
+  async function waitForEmulator (connected: boolean): Promise<boolean> {
+    const timeoutSeconds = 10
+    for (let i = 0; i < timeoutSeconds; i++) {
+      if (LS.emulatorConnected() === connected) {
+        return true
+      }
+      await delay(1)
+    }
+    return false
+  }
 
-    // assert.strictEqual(extension?.isActive, true)
-    void ext
+  test('Language Server Client', async () => {
+    await LS.startClient(false)
+    assert.notStrictEqual(LS.client, undefined)
+    assert.strictEqual(LS.client?.isRunning(), true)
+    assert.strictEqual(LS.emulatorConnected(), false)
+  })
 
-    // await vscode.commands.executeCommand(cmd.RESTART_SERVER)
-    // assert.strictEqual(ext.getEmulatorState(), EmulatorState.Stopped)
+  test('Emulator Connection', async () => {
+    assert.strictEqual(await startTerminalEmulator(), true)
+    terminal?.dispose()
+    assert.strictEqual(await waitForEmulator(DISCONNECTED), true)
+  }).timeout(MaxTimeout)
 
-    // await delay(10)
+  test('Account Switching', async () => {
+    assert.strictEqual(await startTerminalEmulator(), true)
 
-    // console.log('Start Emulator')
-    // await vscode.commands.executeCommand(cmd.START_EMULATOR)
-    // await delay(3)
-    // assert.strictEqual(ext.getEmulatorState(), EmulatorState.Started)
+    // Get active account
+    const accounts: GetAccountsReponse = await LS.getAccounts()
+    const numAccounts = accounts.getAccounts().length
+    let activeAccount: Account | null = accounts.getActiveAccount()
 
-    // await vscode.commands.executeCommand(cmd.CREATE_ACCOUNT)
-    // assert.strictEqual(ext.getActiveAccount()?.address, 'e03daebed8ca0615')
-  }).timeout(100000)
+    for (let i = 0; i < numAccounts; i++) {
+      if (activeAccount == null) {
+        assert.fail('active account is null')
+      }
+
+      const nextAccount = accounts.getAccounts()[(activeAccount.index + 1) % numAccounts]
+      await LS.switchActiveAccount(nextAccount)
+      activeAccount = (await LS.getAccounts()).getActiveAccount()
+      assert.equal(activeAccount?.address, nextAccount.address)
+    }
+  }).timeout(MaxTimeout)
+
+  test('Account Creation', async () => {
+    assert.strictEqual(await startTerminalEmulator(), true)
+
+    const createAccounts = 5
+    for (let i = 0; i < createAccounts; i++) {
+      const newAccount = await LS.createAccount()
+      await LS.switchActiveAccount(newAccount)
+      const activeAccount = (await LS.getAccounts()).getActiveAccount()
+      assert.equal(newAccount.address, activeAccount?.address)
+      await delay(0.5)
+    }
+  }).timeout(MaxTimeout)
 })
