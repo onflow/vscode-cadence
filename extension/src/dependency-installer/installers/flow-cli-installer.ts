@@ -4,7 +4,6 @@ import { execDefault, execPowerShell } from '../../utils/utils'
 import { promptUserInfoMessage, promptUserErrorMessage } from '../../ui/prompts'
 import { Installer } from '../installer'
 import { execSync } from 'child_process'
-import { parseFlowCliVersion } from './version-parsers'
 import * as semver from 'semver'
 import fetch from 'node-fetch'
 
@@ -173,4 +172,8 @@ export class InstallFlowCLI extends Installer {
     // Check flow-cli version number
     return this.checkVersion()
   }
+}
+
+export function parseFlowCliVersion (buffer: Buffer | string): string {
+  return (buffer.toString().split('\n')[0]).split(' ')[1]
 }

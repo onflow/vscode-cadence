@@ -7,6 +7,7 @@ import { UIController } from './ui/ui-controller'
 import { ExtensionContext } from 'vscode'
 import { DEBUG_LOG } from './utils/debug'
 import { DependencyInstaller } from './dependency-installer/dependency-installer'
+import { Settings } from './settings/settings'
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -36,7 +37,8 @@ export class Extension {
     this.#dependencyInstaller = new DependencyInstaller()
 
     // Initialize Emulator
-    this.emulatorCtrl = new EmulatorController()
+    const settings = Settings.getWorkspaceSettings()
+    this.emulatorCtrl = new EmulatorController(settings)
 
     // Initialize ExtensionCommands
     this.#commands = new CommandController()

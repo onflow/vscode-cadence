@@ -5,22 +5,20 @@ import { getMockSettings } from '../mock/mockSettings'
 import { LanguageServerAPI } from '../../src/emulator/server/language-server'
 import * as flowConfig from '../../src/emulator/local/flowConfig'
 import * as vscode from 'vscode'
-import * as depInstaller from '../../src/dependency-installer/dependency-installer'
 import { GetAccountsReponse } from '../../src/emulator/server/responses'
 import { Account } from '../../src/emulator/account'
 import { Settings } from '../../src/settings/settings'
+import {CONNECTED, DISCONNECTED, MaxTimeout} from '../globals'
+import * as depInstaller from '../../src/dependency-installer/dependency-installer'
 
-const MaxTimeout = 100000
-const CONNECTED = true
-const DISCONNECTED = false
-
-// Note: Dependency installation must run before LS tests
+// Note: Dependency installation must run before other integration tests
 suite('Dependency Installer Integration Test', () => {
   test('Install Missing Dependencies', async () => {
     const dependencyManager = new depInstaller.DependencyInstaller()
     assert.doesNotThrow(() => { dependencyManager.installMissing() })
   }).timeout(MaxTimeout)
 })
+
 
 suite('Language Server Integration Tests', () => {
   let LS: LanguageServerAPI

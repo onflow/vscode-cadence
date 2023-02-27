@@ -21,12 +21,11 @@ export class EmulatorController {
   // Syncronized account data with the LS
   #accountData: GetAccountsReponse
 
-  constructor () {
+  constructor (settings: Settings) {
     // Initialize state
     this.#state = EmulatorState.Disconnected
 
     // Initialize the language server
-    const settings = Settings.getWorkspaceSettings()
     this.api = new LanguageServerAPI(settings)
 
     // Initialize account data
