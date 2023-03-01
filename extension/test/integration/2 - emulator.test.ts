@@ -3,7 +3,7 @@ import { getMockSettings } from '../mock/mockSettings'
 import * as flowConfig from '../../src/emulator/local/flowConfig'
 import { Settings } from '../../src/settings/settings'
 import { MaxTimeout } from '../globals'
-import { before } from 'mocha'
+import { before, after } from 'mocha'
 import * as assert from 'assert'
 import { closeTerminalEmulator, startTerminalEmulator } from './terminal-emulator'
 import { env } from 'vscode'
@@ -12,10 +12,17 @@ suite('Emulator Controller', () => {
   let emuCtrl: EmulatorController
   let settings: Settings
 
-  before(() => {
+  before(function () {
+    this.timeout(MaxTimeout)
     settings = getMockSettings()
     flowConfig.setConfigPath(settings.customConfigPath)
     emuCtrl = new EmulatorController(settings)
+  })
+
+  after(async function () {
+    this.timeout(MaxTimeout)
+    await closeTerminalEmulator(emulatorClosed)
+    emuCtrl.deactivate()
   })
 
   async function emulatorActive (): Promise<boolean> {
@@ -29,7 +36,7 @@ suite('Emulator Controller', () => {
   }
 
   test('Sync Emulator State', async () => {
-    await startTerminalEmulator(emulatorActive, emulatorClosed)
+    assert.strictEqual(await startTerminalEmulator(emulatorActive, emulatorClosed), true)
     await emuCtrl.syncEmulatorState()
     assert.strictEqual(emuCtrl.getState(), EmulatorState.Connected)
 
@@ -37,17 +44,19 @@ suite('Emulator Controller', () => {
     await emuCtrl.syncEmulatorState()
     assert.strictEqual(emuCtrl.getState(), EmulatorState.Disconnected)
 
-    await startTerminalEmulator(emulatorActive, emulatorClosed)
+    assert.strictEqual(await startTerminalEmulator(emulatorActive, emulatorClosed), true)
     await emuCtrl.syncEmulatorState()
     assert.strictEqual(emuCtrl.getState(), EmulatorState.Connected)
   }).timeout(MaxTimeout)
 
   test('Get Active Account', async () => {
+    assert.strictEqual(await startTerminalEmulator(emulatorActive, emulatorClosed), true)
     const activeAccount = emuCtrl.getActiveAccount()
     assert.strictEqual(activeAccount?.getName(), 'Alice')
   }).timeout(MaxTimeout)
 
   test('Create New Account', async () => {
+    assert.strictEqual(await startTerminalEmulator(emulatorActive, emulatorClosed), true)
     await emuCtrl.createNewAccount()
     await emuCtrl.syncEmulatorState()
     const activeAccount = emuCtrl.getActiveAccount()
@@ -55,6 +64,7 @@ suite('Emulator Controller', () => {
   }).timeout(MaxTimeout)
 
   test('Copy Account to Clipboard', async () => {
+    assert.strictEqual(await startTerminalEmulator(emulatorActive, emulatorClosed), true)
     const activeAccount = emuCtrl.getActiveAccount()
     emuCtrl.copyActiveAccount()
     const clip = await env.clipboard.readText()

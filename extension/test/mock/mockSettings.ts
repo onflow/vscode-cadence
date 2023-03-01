@@ -7,7 +7,7 @@ export function getMockSettings (): Settings {
   mockSettings.customConfigPath = path.join(__dirname, '../integration/fixtures/workspace/flow.json')
   mockSettings.flowCommand = 'flow'
   if (process.platform === 'win32') {
-    // Use GitHub Windows runner location for flow command
+    // Target GitHub Windows runner location for flow command
     mockSettings.flowCommand = 'C:\\Users\\runneradmin\\AppData\\Roaming\\Flow\\flow.exe'
   }
   mockSettings.numAccounts = 3

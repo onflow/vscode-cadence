@@ -14,7 +14,6 @@ import { delay } from '../../utils/utils'
 const CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
 const SWITCH_ACCOUNT_SERVER = 'cadence.server.flow.switchActiveAccount'
 const GET_ACCOUNTS_SERVER = 'cadence.server.flow.getAccounts'
-const RESTART_SERVER = 'cadence.server.flow.restart'
 const RELOAD_CONFIGURATION = 'cadence.server.flow.reloadConfiguration'
 
 export class LanguageServerAPI {
@@ -163,7 +162,8 @@ export class LanguageServerAPI {
   }
 
   async reset (): Promise<void> {
-    await this.#sendRequest(RESTART_SERVER)
+    const enableFlow = await verifyEmulator()
+    await this.restart(enableFlow)
   }
 
   // Sends a request to switch the currently active account.

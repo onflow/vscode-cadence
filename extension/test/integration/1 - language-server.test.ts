@@ -1,5 +1,5 @@
 import * as assert from 'assert'
-import { before } from 'mocha'
+import { before, after } from 'mocha'
 import { delay } from '../index'
 import { getMockSettings } from '../mock/mockSettings'
 import { LanguageServerAPI } from '../../src/emulator/server/language-server'
@@ -14,11 +14,18 @@ suite('Language Server & Emulator Integration', () => {
   let LS: LanguageServerAPI
   let settings: Settings
 
-  before(async () => {
+  before(async function () {
+    this.timeout(MaxTimeout)
     // Initialize language server
     settings = getMockSettings()
     flowConfig.setConfigPath(settings.customConfigPath)
     LS = new LanguageServerAPI(settings)
+  })
+
+  after(async function () {
+    this.timeout(MaxTimeout)
+    await closeTerminalEmulator(emulatorClosed)
+    LS.deactivate()
   })
 
   async function emulatorActive (): Promise<boolean> {
@@ -73,5 +80,6 @@ suite('Language Server & Emulator Integration', () => {
       assert.equal(newAccount.address, activeAccount?.address)
       await delay(0.5)
     }
+
   }).timeout(MaxTimeout)
 })
