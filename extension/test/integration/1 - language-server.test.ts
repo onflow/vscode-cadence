@@ -80,6 +80,5 @@ suite('Language Server & Emulator Integration', () => {
       assert.equal(newAccount.address, activeAccount?.address)
       await delay(0.5)
     }
-
   }).timeout(MaxTimeout)
 })
