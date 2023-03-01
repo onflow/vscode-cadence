@@ -4,59 +4,29 @@ import { delay } from '../index'
 import { getMockSettings } from '../mock/mockSettings'
 import { LanguageServerAPI } from '../../src/emulator/server/language-server'
 import * as flowConfig from '../../src/emulator/local/flowConfig'
-import * as vscode from 'vscode'
 import { GetAccountsReponse } from '../../src/emulator/server/responses'
 import { Account } from '../../src/emulator/account'
 import { Settings } from '../../src/settings/settings'
-import {CONNECTED, DISCONNECTED, MaxTimeout} from '../globals'
-import * as depInstaller from '../../src/dependency-installer/dependency-installer'
+import { CONNECTED, DISCONNECTED, MaxTimeout } from '../globals'
+import { closeTerminalEmulator, startTerminalEmulator, waitForEmulator } from './terminal-emulator'
 
-// Note: Dependency installation must run before other integration tests
-suite('Dependency Installer Integration Test', () => {
-  test('Install Missing Dependencies', async () => {
-    const dependencyManager = new depInstaller.DependencyInstaller()
-    assert.doesNotThrow(() => { dependencyManager.installMissing() })
-  }).timeout(MaxTimeout)
-})
-
-
-suite('Language Server Integration Tests', () => {
+suite('Language Server & Emulator Integration', () => {
   let LS: LanguageServerAPI
-  let terminal: vscode.Terminal | null = null
   let settings: Settings
-  let emulatorCommand: string
 
   before(async () => {
     // Initialize language server
     settings = getMockSettings()
     flowConfig.setConfigPath(settings.customConfigPath)
-    emulatorCommand = `${settings.flowCommand} emulator`
     LS = new LanguageServerAPI(settings)
   })
 
-  async function startTerminalEmulator (): Promise<boolean> {
-    if (terminal !== null) {
-      terminal.dispose()
-      terminal = null
-    }
-    await waitForEmulator(DISCONNECTED)
-
-    terminal = vscode.window.createTerminal('Flow Emulator')
-    terminal.show()
-    terminal.sendText(emulatorCommand)
-    return await waitForEmulator(CONNECTED)
+  async function emulatorActive (): Promise<boolean> {
+    return LS.emulatorConnected() === CONNECTED
   }
 
-  // Waits for emulator to be connected/ disconnected
-  async function waitForEmulator (connected: boolean): Promise<boolean> {
-    const timeoutSeconds = 10
-    for (let i = 0; i < timeoutSeconds; i++) {
-      if (LS.emulatorConnected() === connected) {
-        return true
-      }
-      await delay(1)
-    }
-    return false
+  async function emulatorClosed (): Promise<boolean> {
+    return LS.emulatorConnected() === DISCONNECTED
   }
 
   test('Language Server Client', async () => {
@@ -67,13 +37,13 @@ suite('Language Server Integration Tests', () => {
   })
 
   test('Emulator Connection', async () => {
-    assert.strictEqual(await startTerminalEmulator(), true)
-    terminal?.dispose()
-    assert.strictEqual(await waitForEmulator(DISCONNECTED), true)
+    assert.strictEqual(await startTerminalEmulator(emulatorActive, emulatorClosed), true)
+    await closeTerminalEmulator(emulatorClosed)
+    assert.strictEqual(await waitForEmulator(emulatorClosed), true)
   }).timeout(MaxTimeout)
 
   test('Account Switching', async () => {
-    assert.strictEqual(await startTerminalEmulator(), true)
+    assert.strictEqual(await startTerminalEmulator(emulatorActive, emulatorClosed), true)
 
     // Get active account
     const accounts: GetAccountsReponse = await LS.getAccounts()
@@ -93,7 +63,7 @@ suite('Language Server Integration Tests', () => {
   }).timeout(MaxTimeout)
 
   test('Account Creation', async () => {
-    assert.strictEqual(await startTerminalEmulator(), true)
+    assert.strictEqual(await startTerminalEmulator(emulatorActive, emulatorClosed), true)
 
     const createAccounts = 5
     for (let i = 0; i < createAccounts; i++) {

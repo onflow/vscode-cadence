@@ -2,12 +2,13 @@
 import { ExtensionContext, debug, DebugAdapterServer } from 'vscode'
 import { Extension } from './extension'
 import * as Telemetry from './telemetry/telemetry'
+import { Settings } from './settings/settings'
 
 // Global extension variable to update UI
-export let ext: Extension
+export let ext: Extension | null = null
 
 // Called by VS Code when the extension starts up
-export async function activate (ctx: ExtensionContext): Promise<Extension> {
+export async function activate (ctx: ExtensionContext): Promise<Extension | null> {
   await Telemetry.initialize(ctx)
 
   debug.registerDebugAdapterDescriptorFactory('cadence', {
@@ -18,7 +19,8 @@ export async function activate (ctx: ExtensionContext): Promise<Extension> {
 
   // Initialize the extension
   Telemetry.withTelemetry(() => {
-    ext = Extension.initialize(ctx)
+    const settings = Settings.getWorkspaceSettings()
+    ext = Extension.initialize(settings, ctx)
     void ext.emulatorStateChanged()
   })
 
@@ -28,11 +30,16 @@ export async function activate (ctx: ExtensionContext): Promise<Extension> {
 // Called by VS Code when the extension terminates
 export function deactivate (): Thenable<void> | undefined {
   void Telemetry.deactivate()
-  return (ext === undefined ? undefined : ext.deactivate())
+  return (ext === undefined ? undefined : ext?.deactivate())
 }
 
 export function emulatorStateChanged (): void {
   if (Extension.initialized) {
-    void ext.emulatorStateChanged()
+    void ext?.emulatorStateChanged()
   }
+}
+
+export async function testActivate (settings: Settings): Promise<Extension> {
+  ext = Extension.initialize(settings)
+  return ext
 }

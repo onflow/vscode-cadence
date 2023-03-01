@@ -7,10 +7,20 @@ import * as Telemetry from '../telemetry/telemetry'
 
 export class CommandController {
   #cmds: Disposable[] // Hold onto commands
+  #mappings = new Map<string, () => void>()
 
   constructor () {
     this.#cmds = []
     Telemetry.withTelemetry(this.#registerCommands.bind(this))
+  }
+
+  executeCommand (command: string): boolean {
+    const cmd = this.#mappings.get(command)
+    if (cmd !== undefined) {
+      cmd()
+      return true
+    }
+    return false
   }
 
   // Registers a command with VS Code so it can be invoked by the user.
@@ -18,6 +28,7 @@ export class CommandController {
     const commandCallback = (): void => { Telemetry.withTelemetry(callback.bind(this)) }
     const cmd: Disposable = commands.registerCommand(command, commandCallback)
     this.#cmds.push(cmd)
+    this.#mappings.set(command, commandCallback)
   }
 
   // Registers all commands that are handled by the extension (as opposed to
@@ -31,22 +42,22 @@ export class CommandController {
   }
 
   #restartServer (): void {
-    ext.emulatorCtrl.restartServer()
+    ext?.emulatorCtrl.restartServer()
   }
 
   #createAccount (): void {
-    void ext.emulatorCtrl.createNewAccount()
+    void ext?.emulatorCtrl.createNewAccount()
   }
 
   #switchActiveAccount (): void {
-    void ext.emulatorCtrl.switchActiveAccount()
+    void ext?.emulatorCtrl.switchActiveAccount()
   }
 
   #copyActiveAccount (): void {
-    void ext.emulatorCtrl.copyActiveAccount()
+    void ext?.emulatorCtrl.copyActiveAccount()
   }
 
   #checkDependencies (): void {
-    void ext.checkDependencies()
+    void ext?.checkDependencies()
   }
 }

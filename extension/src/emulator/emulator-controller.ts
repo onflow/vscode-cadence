@@ -80,7 +80,7 @@ export class EmulatorController {
     promptCopyAccountAddress(account)
 
     // Update UI
-    await ext.emulatorStateChanged()
+    await ext?.emulatorStateChanged()
   }
 
   // Switches the active account to the option selected by the user. The selection
@@ -129,7 +129,7 @@ export class EmulatorController {
 
       promptCopyAccountAddress(setActive)
 
-      await ext.emulatorStateChanged()
+      await ext?.emulatorStateChanged()
     }, () => {})
   }
 

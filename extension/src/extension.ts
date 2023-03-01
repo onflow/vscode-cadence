@@ -15,19 +15,19 @@ export class Extension {
   static #instance: Extension
   static initialized = false
 
-  static initialize (ctx: ExtensionContext): Extension {
-    Extension.#instance = new Extension(ctx)
+  static initialize (settings: Settings, ctx?: ExtensionContext): Extension {
+    Extension.#instance = new Extension(settings, ctx)
     Extension.initialized = true
     return Extension.#instance
   }
 
-  ctx: ExtensionContext
+  ctx: ExtensionContext | undefined
   #dependencyInstaller: DependencyInstaller
   #uiCtrl: UIController
   #commands: CommandController
   emulatorCtrl: EmulatorController
 
-  private constructor (ctx: ExtensionContext) {
+  private constructor (settings: Settings, ctx: ExtensionContext | undefined) {
     this.ctx = ctx
 
     // Initialize UI
@@ -37,7 +37,6 @@ export class Extension {
     this.#dependencyInstaller = new DependencyInstaller()
 
     // Initialize Emulator
-    const settings = Settings.getWorkspaceSettings()
     this.emulatorCtrl = new EmulatorController(settings)
 
     // Initialize ExtensionCommands
@@ -79,5 +78,9 @@ export class Extension {
 
   installMissingDependencies (): void {
     this.#dependencyInstaller.installMissing()
+  }
+
+  executeCommand (command: string): boolean {
+    return this.#commands.executeCommand(command)
   }
 }

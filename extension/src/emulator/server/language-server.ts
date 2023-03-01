@@ -8,6 +8,7 @@ import * as response from './responses'
 import { Mutex } from 'async-mutex'
 import { exec } from 'child_process'
 import { verifyEmulator } from '../local/emulatorScanner'
+import { delay } from '../../utils/utils'
 
 // Identities for commands handled by the Language server
 const CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
@@ -103,15 +104,12 @@ export class LanguageServerAPI {
     )
 
     this.client.onDidChangeState(async (e: StateChangeEvent) => {
-      const sleepSynchronously = async (milliseconds: number): Promise<void> => await import('sleep-synchronously')
-        .then(({ default: sleepSynchronously }) => sleepSynchronously(milliseconds))
-
       this.running = e.newState === State.Running
       if (this.#initializedClient && !this.running && !this.#restarting) {
         // Need to wait in case Windows flow-cli installer is trying to update
         // There must be a small timeframe for this update to occur before
         // restarting the LS, or else the update will fail.
-        await sleepSynchronously(1000 * 5)
+        await delay(5)
       }
 
       void emulatorStateChanged()
