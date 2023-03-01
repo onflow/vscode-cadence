@@ -25,7 +25,7 @@ suite('Language Server & Emulator Integration', () => {
   after(async function () {
     this.timeout(MaxTimeout)
     await closeTerminalEmulator(emulatorClosed)
-    LS.deactivate()
+    await LS.deactivate()
   })
 
   async function emulatorActive (): Promise<boolean> {

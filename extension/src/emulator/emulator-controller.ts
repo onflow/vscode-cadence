@@ -32,9 +32,9 @@ export class EmulatorController {
     this.#accountData = new GetAccountsReponse(null)
   }
 
-  deactivate (): void {
+  async deactivate (): Promise<void> {
     // Disconnect from language server
-    this.api.deactivate()
+    await this.api.deactivate()
   }
 
   // Called whenever the emulator is updated

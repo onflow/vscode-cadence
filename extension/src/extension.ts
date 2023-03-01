@@ -46,7 +46,7 @@ export class Extension {
   // Called on exit
   async deactivate (): Promise<void> {
     try {
-      this.emulatorCtrl.deactivate()
+      await this.emulatorCtrl.deactivate()
     } catch (err) {
       if (err instanceof Error) {
         DEBUG_LOG('Extension deactivate error: ' + err.message)

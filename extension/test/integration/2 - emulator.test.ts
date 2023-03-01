@@ -22,7 +22,7 @@ suite('Emulator Controller', () => {
   after(async function () {
     this.timeout(MaxTimeout)
     await closeTerminalEmulator(emulatorClosed)
-    emuCtrl.deactivate()
+    await emuCtrl.deactivate()
   })
 
   async function emulatorActive (): Promise<boolean> {
@@ -69,6 +69,5 @@ suite('Emulator Controller', () => {
     emuCtrl.copyActiveAccount()
     const clip = await env.clipboard.readText()
     assert.strictEqual(clip, activeAccount?.fullName())
-    await closeTerminalEmulator(emulatorClosed)
   }).timeout(MaxTimeout)
 })

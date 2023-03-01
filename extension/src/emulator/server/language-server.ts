@@ -33,8 +33,8 @@ export class LanguageServerAPI {
     void this.watchEmulator()
   }
 
-  deactivate (): void {
-    void this.client?.stop()
+  async deactivate (): Promise<void> {
+    await this.client?.stop()
       .catch((err) => { console.log(err) })
   }
 
