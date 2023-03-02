@@ -1,4 +1,4 @@
-import { ASSERT_EQUAL } from '../utils'
+import { ASSERT_EQUAL } from '../globals'
 import { Account } from '../../src/emulator/account'
 
 suite('Account Unit Tests', () => {

@@ -38,6 +38,7 @@ export async function mixpanelInit (activate: boolean, uid: string, version: str
 }
 
 export function captureException (err: any): void {
+  if (!mixpanelActivated) return
   const errProperties = Object.getOwnPropertyNames(err)
   const mixpanelProperties: mixpanel.PropertyDict = {}
 

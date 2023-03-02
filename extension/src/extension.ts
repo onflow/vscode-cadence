@@ -7,6 +7,7 @@ import { UIController } from './ui/ui-controller'
 import { ExtensionContext } from 'vscode'
 import { DEBUG_LOG } from './utils/debug'
 import { DependencyInstaller } from './dependency-installer/dependency-installer'
+import { Settings } from './settings/settings'
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -14,19 +15,19 @@ export class Extension {
   static #instance: Extension
   static initialized = false
 
-  static initialize (ctx: ExtensionContext): Extension {
-    Extension.#instance = new Extension(ctx)
+  static initialize (settings: Settings, ctx?: ExtensionContext): Extension {
+    Extension.#instance = new Extension(settings, ctx)
     Extension.initialized = true
     return Extension.#instance
   }
 
-  ctx: ExtensionContext
+  ctx: ExtensionContext | undefined
   #dependencyInstaller: DependencyInstaller
   #uiCtrl: UIController
   #commands: CommandController
   emulatorCtrl: EmulatorController
 
-  private constructor (ctx: ExtensionContext) {
+  private constructor (settings: Settings, ctx: ExtensionContext | undefined) {
     this.ctx = ctx
 
     // Initialize UI
@@ -36,7 +37,7 @@ export class Extension {
     this.#dependencyInstaller = new DependencyInstaller()
 
     // Initialize Emulator
-    this.emulatorCtrl = new EmulatorController()
+    this.emulatorCtrl = new EmulatorController(settings)
 
     // Initialize ExtensionCommands
     this.#commands = new CommandController()
@@ -45,7 +46,7 @@ export class Extension {
   // Called on exit
   async deactivate (): Promise<void> {
     try {
-      this.emulatorCtrl.deactivate()
+      await this.emulatorCtrl.deactivate()
     } catch (err) {
       if (err instanceof Error) {
         DEBUG_LOG('Extension deactivate error: ' + err.message)
@@ -77,5 +78,9 @@ export class Extension {
 
   installMissingDependencies (): void {
     this.#dependencyInstaller.installMissing()
+  }
+
+  executeCommand (command: string): boolean {
+    return this.#commands.executeCommand(command)
   }
 }

@@ -53,17 +53,22 @@ export async function getConfigPath (): Promise<string> {
   return configPath
 }
 
-export async function loadConfig (): Promise<FlowConfig> {
+export async function loadConfig (filePath?: string): Promise<FlowConfig> {
   if (flowConfig === undefined) {
-    const flowJsonPath = await getConfigPath()
+    let flowJsonPath = ''
+    if (filePath !== undefined) {
+      flowJsonPath = filePath
+    } else {
+      flowJsonPath = await getConfigPath()
+    }
     const fc: FlowConfig = JSON.parse(fs.readFileSync(flowJsonPath, 'utf-8'))
     flowConfig = fc
   }
   return flowConfig
 }
 
-export async function getAccountKey (accountName: string): Promise<string | undefined> {
-  const fc = await loadConfig()
+export async function getAccountKey (accountName: string, filePath?: string): Promise<string | undefined> {
+  const fc = await loadConfig(filePath)
 
   let emulatorKey: string | undefined
   try {

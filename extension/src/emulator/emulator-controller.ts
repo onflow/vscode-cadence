@@ -21,21 +21,20 @@ export class EmulatorController {
   // Syncronized account data with the LS
   #accountData: GetAccountsReponse
 
-  constructor () {
+  constructor (settings: Settings) {
     // Initialize state
     this.#state = EmulatorState.Disconnected
 
     // Initialize the language server
-    const settings = Settings.getWorkspaceSettings()
     this.api = new LanguageServerAPI(settings)
 
     // Initialize account data
     this.#accountData = new GetAccountsReponse(null)
   }
 
-  deactivate (): void {
+  async deactivate (): Promise<void> {
     // Disconnect from language server
-    this.api.deactivate()
+    await this.api.deactivate()
   }
 
   // Called whenever the emulator is updated
@@ -81,7 +80,7 @@ export class EmulatorController {
     promptCopyAccountAddress(account)
 
     // Update UI
-    await ext.emulatorStateChanged()
+    await ext?.emulatorStateChanged()
   }
 
   // Switches the active account to the option selected by the user. The selection
@@ -130,7 +129,7 @@ export class EmulatorController {
 
       promptCopyAccountAddress(setActive)
 
-      await ext.emulatorStateChanged()
+      await ext?.emulatorStateChanged()
     }, () => {})
   }
 

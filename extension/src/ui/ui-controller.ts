@@ -13,7 +13,9 @@ export class UIController {
 
   emulatorStateChanged (): void {
     // Update status bar with current emulator state and active account
-    this.#statusBar.emulatorStateChanged(ext.getEmulatorState(), ext.getActiveAccount())
+    if (ext != null) {
+      this.#statusBar.emulatorStateChanged(ext.getEmulatorState(), ext.getActiveAccount())
+    }
   }
 
   hideUI (): void {
