@@ -206,7 +206,7 @@
 		"@types/semver": "^7.3.13",
 		"@types/uuid": "^9.0.0",
 		"@types/vscode": "^1.65.0",
-		"@vscode/test-electron": "^2.2.3",
+		"@vscode/test-electron": "^2.3.0",
 		"chai": "^4.3.7",
 		"esbuild": "^0.17.9",
 		"glob": "^8.1.0",
