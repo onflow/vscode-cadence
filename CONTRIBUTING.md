@@ -25,7 +25,7 @@ Use your best judgment, and feel free to propose changes to this document in a p
 # Developing the Extension
 
 Note that most editing features (type checking, code completion, etc.) are implemented
-in the [Cadence Language Server](https://github.com/onflow/cadence/tree/master/languageserver).
+in the [Cadence Language Server](https://github.com/onflow/cadence-tools/tree/master/languageserver).
 
 ## Pre-requisites
 
