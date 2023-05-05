@@ -9,6 +9,7 @@ import { Mutex } from 'async-mutex'
 import { exec } from 'child_process'
 import { verifyEmulator } from '../local/emulatorScanner'
 import { delay } from '../../utils/utils'
+import { CodeLensParams, CodeLensRequest, ExecuteCommandRequest, TextDocumentIdentifier } from 'vscode-languageclient'
 
 // Identities for commands handled by the Language server
 const CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
@@ -155,10 +156,16 @@ export class LanguageServerAPI {
   }
 
   async #sendRequest (cmd: string, args: any[] = []): Promise<any> {
-    return await this.client?.sendRequest('workspace/executeCommand', {
+    return await this.client?.sendRequest(ExecuteCommandRequest.type, {
       command: cmd,
       arguments: args
     })
+  }
+
+  async refreshCodeLens () {
+    const textDocumentUri = window.activeTextEditor?.document.uri
+    if (textDocumentUri == null) return
+    return await this.client?.sendRequest(CodeLensRequest.type, <CodeLensParams>{ textDocument: TextDocumentIdentifier.create(textDocumentUri.toString()) })
   }
 
   async reset (): Promise<void> {
