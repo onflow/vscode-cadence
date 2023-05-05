@@ -68,7 +68,6 @@ export class Extension {
 
     // Update UI
     this.#uiCtrl.emulatorStateChanged()
-    this.emulatorCtrl.api.refreshCodeLens()
   }
 
   checkDependencies (): void {
