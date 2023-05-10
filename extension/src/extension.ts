@@ -1,7 +1,6 @@
 /* The extension */
 import { EmulatorState, EmulatorController } from './emulator/emulator-controller'
 import { CommandController } from './commands/command-controller'
-import { refreshCodeLenses } from './utils/codelens'
 import { Account } from './emulator/account'
 import { UIController } from './ui/ui-controller'
 import { ExtensionContext } from 'vscode'
@@ -69,7 +68,6 @@ export class Extension {
 
     // Update UI
     this.#uiCtrl.emulatorStateChanged()
-    refreshCodeLenses()
   }
 
   checkDependencies (): void {
