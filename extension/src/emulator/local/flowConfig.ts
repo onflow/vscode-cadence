@@ -5,6 +5,7 @@ import * as cp from 'child_process'
 import { FILE_PATH_EMPTY } from '../../utils/utils'
 import { Settings } from '../../settings/settings'
 import * as fs from 'fs'
+import * as path from 'path'
 
 const exec = util.promisify(cp.exec)
 
@@ -121,7 +122,7 @@ async function readLocalConfig (): Promise<string> {
 
   if (settings.customConfigPath !== '') {
     // Check custom flow.json path
-    const file = settings.customConfigPath
+    const file = path.resolve(settings.customConfigPath)
     if (!fs.existsSync(file)) {
       throw new Error('Can\'t access custom flow.json file: ' + file)
     }
