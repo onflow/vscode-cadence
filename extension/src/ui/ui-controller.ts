@@ -1,7 +1,7 @@
 /* UIController initializes and updates all UI components of the extension */
 import { StatusBarUI } from './components/status-bar'
 import { ext } from '../main'
-import { EmulatorState } from '../emulator/emulator-controller'
+import { EmulatorState } from '../emulator/server/language-server'
 
 export class UIController {
   #statusBar: StatusBarUI

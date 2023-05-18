@@ -11,8 +11,6 @@ import { promptCopyAccountAddress } from '../ui/prompts'
 import { Settings } from '../settings/settings'
 import { EmulatorStateData } from './emulator-state-data'
 
-export { EmulatorState }
-
 export class EmulatorController {
   api: LanguageServerAPI
   // Syncronized account data with the LS

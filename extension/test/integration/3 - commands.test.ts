@@ -5,11 +5,11 @@ import { MaxTimeout } from '../globals'
 import { before, after } from 'mocha'
 import * as assert from 'assert'
 import { ext, testActivate } from '../../src/main'
-import { EmulatorState } from '../../src/emulator/emulator-controller'
 import { closeTerminalEmulator, startTerminalEmulator } from './terminal-emulator'
 import * as commands from '../../src/commands/command-constants'
 import { delay } from '..'
 import { filter, firstValueFrom } from 'rxjs'
+import { EmulatorState } from '../../src/emulator/server/language-server'
 
 const executionDelay = 5
 

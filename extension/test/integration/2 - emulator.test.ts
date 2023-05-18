@@ -1,4 +1,4 @@
-import { EmulatorController, EmulatorState } from '../../src/emulator/emulator-controller'
+import { EmulatorController } from '../../src/emulator/emulator-controller'
 import { getMockSettings } from '../mock/mockSettings'
 import * as flowConfig from '../../src/emulator/local/flowConfig'
 import { Settings } from '../../src/settings/settings'
@@ -8,6 +8,7 @@ import * as assert from 'assert'
 import { closeTerminalEmulator, startTerminalEmulator } from './terminal-emulator'
 import { env } from 'vscode'
 import { filter, firstValueFrom } from 'rxjs'
+import { EmulatorState } from '../../src/emulator/server/language-server'
 
 suite('Emulator Controller', () => {
   let emuCtrl: EmulatorController
