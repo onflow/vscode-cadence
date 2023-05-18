@@ -46,7 +46,7 @@ export class LanguageServerAPI {
           return EmulatorState.Disconnected
         }
       })
-    ).subscribe(this.emulatorState$.next)
+    ).subscribe((state) => this.emulatorState$.next(state))
 
     // Subscribe to emulator state changes
     this.emulatorState$.subscribe(emulatorStateChanged)
