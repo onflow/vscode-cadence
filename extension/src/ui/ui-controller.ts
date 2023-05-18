@@ -11,10 +11,10 @@ export class UIController {
     this.#statusBar = new StatusBarUI(EmulatorState.Disconnected, null)
   }
 
-  emulatorStateChanged (): void {
+  async emulatorStateChanged (): Promise<void> {
     // Update status bar with current emulator state and active account
     if (ext != null) {
-      this.#statusBar.emulatorStateChanged(ext.getEmulatorState(), ext.getActiveAccount())
+      this.#statusBar.emulatorStateChanged(ext.getEmulatorState(), await ext.getActiveAccount())
     }
   }
 

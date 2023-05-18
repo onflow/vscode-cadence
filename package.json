@@ -228,6 +228,7 @@
 		"mixpanel": "^0.17.0",
 		"node-fetch": "^2.6.1",
 		"os-name": "^5.0.1",
+		"rxjs": "^7.8.1",
 		"sleep-synchronously": "^2.0.0",
 		"uuid": "^9.0.0",
 		"vsce": "^2.15.0",

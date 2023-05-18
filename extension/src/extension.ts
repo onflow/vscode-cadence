@@ -37,6 +37,9 @@ export class Extension {
 
     // Initialize Emulator
     this.emulatorCtrl = new EmulatorController(settings)
+    this.emulatorCtrl.api.emulatorState$.subscribe(() => {
+      void this.emulatorStateChanged()
+    })
 
     // Initialize ExtensionCommands
     this.#commands = new CommandController()
@@ -58,16 +61,13 @@ export class Extension {
     return this.emulatorCtrl.getState()
   }
 
-  getActiveAccount (): Account | null {
-    return this.emulatorCtrl.getActiveAccount()
+  async getActiveAccount (): Promise<Account | null> {
+    return await this.emulatorCtrl.getActiveAccount()
   }
 
   async emulatorStateChanged (): Promise<void> {
-    // Sync emulator with LS
-    await this.emulatorCtrl.syncEmulatorState()
-
     // Update UI
-    this.#uiCtrl.emulatorStateChanged()
+    await this.#uiCtrl.emulatorStateChanged()
   }
 
   checkDependencies (): void {

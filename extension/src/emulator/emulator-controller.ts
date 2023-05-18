@@ -3,33 +3,29 @@ EmulatorController is used to communicate with the language server
 and synchronize account data with the hosted emulator
 */
 import { ext } from '../main'
-import { LanguageServerAPI } from './server/language-server'
+import { LanguageServerAPI, EmulatorState } from './server/language-server'
 import { Account } from './account'
 import { window, env } from 'vscode'
 import { GetAccountsReponse } from './server/responses'
 import { promptCopyAccountAddress } from '../ui/prompts'
 import { Settings } from '../settings/settings'
+import { EmulatorStateData } from './emulator-state-data'
 
-export enum EmulatorState {
-  Connected = 0,
-  Disconnected,
-}
+export { EmulatorState }
 
 export class EmulatorController {
   api: LanguageServerAPI
-  #state: EmulatorState
   // Syncronized account data with the LS
-  #accountData: GetAccountsReponse
+  #accountData: EmulatorStateData<GetAccountsReponse> = new EmulatorStateData(new GetAccountsReponse(null))
 
   constructor (settings: Settings) {
-    // Initialize state
-    this.#state = EmulatorState.Disconnected
-
     // Initialize the language server
     this.api = new LanguageServerAPI(settings)
 
-    // Initialize account data
-    this.#accountData = new GetAccountsReponse(null)
+    // Subscribe to state changes
+    this.api.emulatorState$.subscribe(() => {
+      void this.syncEmulatorState()
+    })
   }
 
   async deactivate (): Promise<void> {
@@ -37,27 +33,30 @@ export class EmulatorController {
     await this.api.deactivate()
   }
 
-  // Called whenever the emulator is updated
-  async #syncAccountData (): Promise<void> {
-    this.#accountData = await this.api.getAccounts()
+  invalidateEmulatorState (): void {
+    this.#accountData.invalidate()
   }
 
   async syncEmulatorState (): Promise<void> {
+    this.invalidateEmulatorState()
+
     if (this.api.emulatorConnected()) {
-      this.#state = EmulatorState.Connected
       await this.#syncAccountData()
-    } else {
-      this.#state = EmulatorState.Disconnected
     }
   }
 
-  getState (): EmulatorState {
-    return this.#state
+  // Called whenever the emulator is updated
+  async #syncAccountData (): Promise<void> {
+    this.#accountData.setValue(await this.api.getAccounts())
   }
 
-  getActiveAccount (): Account | null {
-    if (this.#state === EmulatorState.Connected) {
-      return this.#accountData.getActiveAccount()
+  getState (): EmulatorState {
+    return this.api.emulatorState$.getValue()
+  }
+
+  async getActiveAccount (): Promise<Account | null> {
+    if (this.getState() === EmulatorState.Connected) {
+      return (await this.#accountData.getValue()).getActiveAccount()
     } else {
       return null
     }
@@ -80,27 +79,27 @@ export class EmulatorController {
     promptCopyAccountAddress(account)
 
     // Update UI
-    await ext?.emulatorStateChanged()
+    void this.syncEmulatorState()
   }
 
   // Switches the active account to the option selected by the user. The selection
   // is propagated to the Language Server.
-  switchActiveAccount (): void {
+  async switchActiveAccount (): Promise<void> {
     // Create the options (mark the active account with an 'active' prefix)
-    const accountOptions = Object.values(this.#accountData.getAccounts())
+    const accountOptions = await Promise.all(Object.values((await this.#accountData.getValue()).getAccounts())
     // Mark the active account with a `*` in the dialog
-      .map((account) => {
+      .map(async (account) => {
         const ACTIVE_PREFIX = '🟢'
         const INACTIVE_PREFIX = '⚫️'
         const prefix: string =
-            account.index === this.#accountData.getActiveAccountIndex() ? ACTIVE_PREFIX : INACTIVE_PREFIX
+            account.index === (await this.#accountData.getValue()).getActiveAccountIndex() ? ACTIVE_PREFIX : INACTIVE_PREFIX
         const label = `${prefix} ${account.fullName()}`
 
         return {
           label,
           target: account.index
         }
-      })
+      }))
 
     // Add option to create a new account
     const ADD_NEW_PREFIX = '🐣'
@@ -124,7 +123,7 @@ export class EmulatorController {
       }
 
       // Switch active account to selected
-      const setActive: Account = this.#accountData.getAccounts()[selected.target]
+      const setActive: Account = (await this.#accountData.getValue()).getAccounts()[selected.target]
       await this.api.switchActiveAccount(setActive)
 
       promptCopyAccountAddress(setActive)
@@ -133,9 +132,9 @@ export class EmulatorController {
     }, () => {})
   }
 
-  copyActiveAccount (): void {
-    if (this.#state === EmulatorState.Disconnected) return
-    const activeAccount = this.#accountData.getActiveAccount()
+  async copyActiveAccount (): Promise<void> {
+    if (this.getState() === EmulatorState.Disconnected) return
+    const activeAccount = (await this.#accountData.getValue()).getActiveAccount()
     if (activeAccount !== null) {
       void env.clipboard.writeText(`${activeAccount.fullName()}`)
         .then(() => {
