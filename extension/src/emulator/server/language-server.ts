@@ -80,7 +80,7 @@ export class LanguageServerAPI {
       } catch (err) {
         console.log(err)
       } finally {
-        setTimeout(loop.bind(this), pollingIntervalMs)
+        setTimeout(() => { void loop.bind(this)() }, pollingIntervalMs)
       }
     }.bind(this))()
   }

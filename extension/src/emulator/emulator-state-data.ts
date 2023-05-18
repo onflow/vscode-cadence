@@ -16,7 +16,7 @@ export class EmulatorStateData<T> {
 
   async getValue (): Promise<T> {
     // Wait for data to be valid then return
-    return firstValueFrom(this.valid$.pipe(filter(x => x === true))).then(() => this.#value)
+    return await firstValueFrom(this.valid$.pipe(filter(x => x))).then(() => this.#value)
   }
 
   invalidate (): void {
