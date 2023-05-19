@@ -9,16 +9,22 @@ import { window, env } from 'vscode'
 import { GetAccountsReponse } from './server/responses'
 import { promptCopyAccountAddress } from '../ui/prompts'
 import { Settings } from '../settings/settings'
-import { EmulatorStateData } from './emulator-state-data'
+import { StateCache } from '../utils/state-cache'
 
 export class EmulatorController {
   api: LanguageServerAPI
   // Syncronized account data with the LS
-  #accountData: EmulatorStateData<GetAccountsReponse> = new EmulatorStateData(new GetAccountsReponse(null))
+  #accountData: StateCache<GetAccountsReponse>
 
   constructor (settings: Settings) {
     // Initialize the language server
     this.api = new LanguageServerAPI(settings)
+
+    // Initialize account data
+    this.#accountData = new StateCache(async () => {
+      if (this.api.emulatorState$.getValue() !== EmulatorState.Connected) return await Promise.resolve(new GetAccountsReponse(null))
+      return await this.api.getAccounts()
+    })
 
     // Subscribe to state changes
     this.api.emulatorState$.subscribe(() => {
@@ -45,7 +51,7 @@ export class EmulatorController {
 
   // Called whenever the emulator is updated
   async #syncAccountData (): Promise<void> {
-    this.#accountData.setValue(await this.api.getAccounts())
+    this.#accountData.invalidate()
   }
 
   getState (): EmulatorState {
