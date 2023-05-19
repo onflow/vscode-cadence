@@ -51,12 +51,15 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies
         run: npm ci
 
       - name: Integration Tests
         run: npm run test
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   windows-build:
     name: Windows Build
@@ -93,3 +96,5 @@ jobs:
 
       - name: Integration Tests
         run: npm run test-windows
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
