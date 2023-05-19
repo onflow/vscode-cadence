@@ -6,23 +6,27 @@ import * as pkg from '../../../package.json'
 import * as uuid from 'uuid'
 import { DEBUG_ACTIVE } from '../utils/debug'
 
-export async function getUID (ctx: ExtensionContext): Promise<string> {
-  let uid: string | undefined = ctx.globalState.get<string>('uid')
+var extensionContext: ExtensionContext
+
+export async function getUID (): Promise<string> {
+  let uid: string | undefined = extensionContext.globalState.get<string>('uid')
   if (uid === undefined) {
     // Generate new uid and add it to global state
     uid = uuid.v4()
-    await ctx.globalState.update('uid', uid)
+    await extensionContext.globalState.update('uid', uid)
   }
   return uid
 }
 
 // Called in main to setup telemetry
 export async function initialize (ctx: ExtensionContext): Promise<void> {
+  extensionContext = ctx
+
   // Check if user is allowing telemetry for vscode globally
   const activate: boolean = env.isTelemetryEnabled && !DEBUG_ACTIVE
 
   // Get unique UID
-  const uid = await getUID(ctx)
+  const uid = await getUID()
 
   // Initialize Sentry
   await sentry.sentryInit(activate, uid, pkg.version)
@@ -52,4 +56,31 @@ export function withTelemetry (callback: (...args: any[]) => any): void {
     mixpanel.captureException(err)
     throw err
   }
+}
+
+// State of projects converted from Flow Playground
+enum ProjectState{
+  OPENED = 'OPENED',
+  DEPLOYED = 'DEPLOYED'
+}
+
+// TODO: Check workspace for .vscode/*.play file
+async function sendPlaygroundProjectOpened (projectID: string): Promise<void> {
+  let projectState: string | undefined = extensionContext.globalState.get<string>(projectID)
+  if (projectState !== undefined) {
+    // Project was already reported
+    return
+  }
+  await extensionContext.globalState.update(projectID, ProjectState.OPENED)
+  mixpanel.captureEvent(mixpanel.Events.PlaygroundProjectOpened)
+}
+
+async function sendPlaygroundProjectDeployed (projectID: string): Promise<void> {
+  let projectState: string | undefined = extensionContext.globalState.get<string>(projectID)
+  if (projectState === ProjectState.DEPLOYED) {
+    // Project deployment was already reported
+    return
+  }
+  await extensionContext.globalState.update(projectID, ProjectState.DEPLOYED)
+  mixpanel.captureEvent(mixpanel.Events.PlaygroundProjectDeployed)
 }

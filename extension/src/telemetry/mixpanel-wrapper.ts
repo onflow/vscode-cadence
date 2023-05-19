@@ -20,7 +20,9 @@ let userInfo: {
 // Events to capture
 export enum Events {
   ExtensionActivated = 'Extension Activated',
-  UnhandledException = 'Unhandled Exception'
+  UnhandledException = 'Unhandled Exception',
+  PlaygroundProjectOpened = 'Playground Project Opened',
+  PlaygroundProjectDeployed = 'Playground Project Deployed'
 }
 
 export async function mixpanelInit (activate: boolean, uid: string, version: string): Promise<void> {
