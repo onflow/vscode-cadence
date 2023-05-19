@@ -18,12 +18,14 @@ const BASH_INSTALL_HOMEBREW = '/bin/bash -c "$(curl -fsSL https://raw.githubuser
 // Shell install commands
 const BREW_UPDATE = 'brew update'
 const BREW_INSTALL_FLOW_CLI = 'brew install flow-cli'
-const POWERSHELL_INSTALL_CMD = (githubToken?: string): string => `iex "& { $(irm 'https://raw.githubusercontent.com/onflow/flow-cli/master/install.ps1') } ${
-  githubToken != null ? `-GitHubToken ${githubToken}` : ''
-}}"`
-const BASH_INSTALL_FLOW_CLI = (githubToken?: string): string => `(${
-  githubToken != null ? `export GITHUB_TOKEN=${githubToken} && ` : ''
-}sh -ci "$(curl -fsSL https://raw.githubusercontent.com/onflow/flow-cli/master/install.sh))`
+const POWERSHELL_INSTALL_CMD = (githubToken?: string): string =>
+  `iex "& { $(irm 'https://raw.githubusercontent.com/onflow/flow-cli/master/install.ps1') ${
+    githubToken != null ? `-GitHubToken ${githubToken}` : ''
+  }}"`
+const BASH_INSTALL_FLOW_CLI = (githubToken?: string): string =>
+  `(${
+    githubToken != null ? `export GITHUB_TOKEN=${githubToken} && ` : ''
+  }sh -ci "$(curl -fsSL https://raw.githubusercontent.com/onflow/flow-cli/master/install.sh))`
 const VERSION_INFO_URL = 'https://raw.githubusercontent.com/onflow/flow-cli/master/version.txt'
 
 export class InstallFlowCLI extends Installer {
