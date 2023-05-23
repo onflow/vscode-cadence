@@ -31,7 +31,7 @@ suite('State Cache Unit Tests', () => {
     }
     let val = 0
     const stateCache = new StateCache(fetcher)
-    
+
     val += 1
     stateCache.invalidate()
 
@@ -72,11 +72,11 @@ suite('State Cache Unit Tests', () => {
     const fetcher = async (): Promise<string> => {
       count++
       if (count === 1) throw new Error('Fetch failed')
-      else return "foobar"
+      else return 'foobar'
     }
     let count = 0
     const stateCache = new StateCache(fetcher)
 
-    ASSERT_EQUAL(await stateCache.getValue(), "foobar")
+    ASSERT_EQUAL(await stateCache.getValue(), 'foobar')
   }).timeout(2000)
 })
