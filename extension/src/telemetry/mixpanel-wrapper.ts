@@ -3,12 +3,21 @@ import * as mixpanel from 'mixpanel'
 
 // Mixpanel vscode-cadence
 const MIXPANEL_TOKEN: string = '69e592a84fef909bee58668b5c764ae4'
+const DEV_FUNNEL_TOKEN: string = '776159d170484f49f19c3c2f7339f297'
+
+export enum MixpanelSelector {
+  VSCODE = 0,
+  DEV_FUNNEL = 1
+}
 
 // True when mixpanel telemetry is active
 let mixpanelActivated: boolean = false
 
 // Mixpanel instance
 let mixPanel: mixpanel.Mixpanel
+
+// Dev funnel Mixpanel
+let devFunnel: mixpanel.Mixpanel
 
 // User information
 let userInfo: {
@@ -31,6 +40,7 @@ export async function mixpanelInit (activate: boolean, uid: string, version: str
   if (!mixpanelActivated) return
 
   mixPanel = mixpanel.init(MIXPANEL_TOKEN)
+  devFunnel = mixpanel.init(DEV_FUNNEL_TOKEN)
 
   userInfo = {
     vscode_cadence_version: version,
@@ -50,10 +60,10 @@ export function captureException (err: any): void {
     mixpanelProperties[elem] = err[elem as ObjectKey]
   })
 
-  captureEvent(Events.UnhandledException, mixpanelProperties)
+  captureEvent(MixpanelSelector.VSCODE, Events.UnhandledException, mixpanelProperties)
 }
 
-export function captureEvent (eventName: string, properties: mixpanel.PropertyDict = {}): void {
+export function captureEvent (selector: MixpanelSelector, eventName: string, properties: mixpanel.PropertyDict = {}): void {
   if (!mixpanelActivated) return
 
   // Add user information
@@ -62,5 +72,14 @@ export function captureEvent (eventName: string, properties: mixpanel.PropertyDi
   properties.$os = userInfo.operating_system
 
   // Track event data
-  mixPanel.track(eventName, properties)
+  switch (selector) {
+    case MixpanelSelector.VSCODE:
+      mixPanel.track(eventName, properties)
+      break
+    case MixpanelSelector.DEV_FUNNEL:
+      devFunnel.track(eventName, properties)
+      break
+    default:
+      console.log('Unknown mixpanel selector type')
+  }
 }

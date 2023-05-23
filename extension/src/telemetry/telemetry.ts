@@ -51,7 +51,7 @@ export async function deactivate (): Promise<void> {
 }
 
 function sendActivationStatistics (): void {
-  mixpanel.captureEvent(mixpanel.Events.ExtensionActivated)
+  mixpanel.captureEvent(mixpanel.MixpanelSelector.VSCODE, mixpanel.Events.ExtensionActivated)
 }
 
 // Wrap a function call with telemetry
@@ -79,7 +79,9 @@ async function sendPlaygroundProjectOpened (projectHash: string): Promise<void> 
     return
   }
   await extensionContext.globalState.update(projectHash, playground.ProjectState.OPENED)
-  mixpanel.captureEvent(mixpanel.Events.PlaygroundProjectOpened)
+  mixpanel.captureEvent(
+    mixpanel.MixpanelSelector.DEV_FUNNEL, 
+    mixpanel.Events.PlaygroundProjectOpened)
 }
 
 async function sendPlaygroundProjectDeployed (projectHash: string): Promise<void> {
@@ -89,5 +91,7 @@ async function sendPlaygroundProjectDeployed (projectHash: string): Promise<void
     return
   }
   await extensionContext.globalState.update(projectHash, playground.ProjectState.DEPLOYED)
-  mixpanel.captureEvent(mixpanel.Events.PlaygroundProjectDeployed)
+  mixpanel.captureEvent(
+    mixpanel.MixpanelSelector.DEV_FUNNEL, 
+    mixpanel.Events.PlaygroundProjectDeployed)
 }
