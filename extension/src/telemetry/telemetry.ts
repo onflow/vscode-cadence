@@ -80,7 +80,7 @@ async function sendPlaygroundProjectOpened (projectHash: string): Promise<void> 
   }
   await extensionContext.globalState.update(projectHash, playground.ProjectState.OPENED)
   mixpanel.captureEvent(
-    mixpanel.MixpanelSelector.DEV_FUNNEL, 
+    mixpanel.MixpanelSelector.DEV_FUNNEL,
     mixpanel.Events.PlaygroundProjectOpened)
 }
 
@@ -92,6 +92,6 @@ async function sendPlaygroundProjectDeployed (projectHash: string): Promise<void
   }
   await extensionContext.globalState.update(projectHash, playground.ProjectState.DEPLOYED)
   mixpanel.captureEvent(
-    mixpanel.MixpanelSelector.DEV_FUNNEL, 
+    mixpanel.MixpanelSelector.DEV_FUNNEL,
     mixpanel.Events.PlaygroundProjectDeployed)
 }
