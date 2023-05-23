@@ -2,7 +2,7 @@
 import * as mixpanel from 'mixpanel'
 
 // Mixpanel vscode-cadence
-const MIXPANEL_TOKEN: string = '776159d170484f49f19c3c2f7339f297'
+const MIXPANEL_TOKEN: string = '69e592a84fef909bee58668b5c764ae4'
 
 // True when mixpanel telemetry is active
 let mixpanelActivated: boolean = false
