@@ -1,61 +1,65 @@
-<br />
 <p align="center">
   <a href="https://docs.onflow.org/vscode-extension/">
-    <img src="./vscode-banner.png" alt="Logo" width="600" height="auto">
+    <img src="./images/vscode-banner.png" alt="Logo" width="600" height="auto">
   </a>
 
   <p align="center">
     <i>Bringing Cadence, the resource-oriented smart contract language of Flow, to your VSCode Editor.</i>
     <br />
-    <a href="https://docs.onflow.org/vscode-extension/"><strong>Read the docs»</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/onflow/vscode-cadence/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/onflow/vscode-cadence/blob/master/CONTRIBUTING.md">Contribute</a>
   </p>
 </p>
 <br />
-<br />
+
+[![CI](https://github.com/onflow/vscode-cadence/actions/workflows/ci.yml/badge.svg)](https://github.com/onflow/vscode-cadence/actions/workflows/ci.yml)
+[![Docs](https://img.shields.io/badge/Read%20The-Docs-blue)](https://developers.flow.com/tools/vscode-extension)
+[![Report Bug](https://img.shields.io/badge/-Report%20Bug-orange)](https://github.com/onflow/vscode-cadence/issues)
+[![Contribute](https://img.shields.io/badge/-Contribute-purple)](https://github.com/onflow/vscode-cadence/blob/master/CONTRIBUTING.md)
 
 ## Installation
+#### Install the Cadence extension from the **[Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=onflow.cadence)**
+#### The extension is also available on the **[Open VSX Registry](https://open-vsx.org/extension/onflow/cadence)**
 
-### Prerequisites
-To install the extension, ensure you have:
-- **installed the [Flow CLI](https://docs.onflow.org/flow-cli/install/)**
-- **installed the [VS Code](https://code.visualstudio.com/docs/setup/setup-overview)**
-- **configured the [code command line interface](https://code.visualstudio.com/docs/setup/mac#_launching-from-the-command-line)**
-
-### Install from marketplace
-
-Install the extension via Visual Studio Code marketplace.
-The extension can be found here:
-
-**[Cadence Extension](https://marketplace.visualstudio.com/items?itemName=onflow.cadence)**
-
-https://marketplace.visualstudio.com/items?itemName=onflow.cadence
+Once installed, the extension will help you install other dependencies such as the [Flow CLI](https://docs.onflow.org/flow-cli/install/).
 
 ## Features
 
-### Start Emulator
-Starting the Flow emulator is as simple as one click. You can also switch between accounts and
-if your projects contains `flow.json` it gets automatically loaded by the emulator.
-
-![start emulator](https://storage.googleapis.com/flow-resources/documentation-assets/vscode-extension/start-emulator-min.gif)
+### Flow Emulator Integration
+The extension will automatically connect to your local running Flow Emulator. This will enable
+blockchain interaction features such as deploying contracts, executing transaction & scripts, and enabling flow imports. If an emulator is not detected, basic language support is still provided.
 
 ### Deploy Contracts
 Deploy contracts to the emulator without leaving the VSCode editor. The address the contract
 gets deployed to is returned and available for copying.
 
-![deploy contracts](https://storage.googleapis.com/flow-resources/documentation-assets/vscode-extension/deploy-contract-min.gif)
+![Deploy Contracts](./docs/deploy_contracts.gif)
 
 ### Code Generation
 Write cadence code with the speed of light and get your product live before
 that afternoon coffee. How? Use the snippets provided by VSCode extension.
 
-![code generation](https://storage.googleapis.com/flow-resources/documentation-assets/vscode-extension/code-generation-min.gif)
+![Code Generation](./docs/code_gen.gif)
 
-But wait, there's much more than meets the eye. VSCode Cadence extension also offers:
+
+### Debugging
+Use the debugger build into VSCode on Cadence files by creating a launch.json file. Make sure to have an emulator connected to enable debugging. 
+
+##### Example launch.json
+```
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "cadence",
+      "request": "launch",
+      "name": "Curent file",
+      "program": "${file}",
+      "stopOnEntry": true
+    }
+  ]
+}
+```
+
+#### But wait, there's much more than meets the eye. VSCode Cadence extension also offers:
 
 - Syntax highlighting (including in Markdown code fences)
 - Diagnostics (errors and warnings)

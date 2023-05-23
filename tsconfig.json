@@ -3,13 +3,16 @@
 		"module": "commonjs",
 		"target": "es6",
 		"outDir": "out",
+		"resolveJsonModule": true,
 		"lib": [
 			"es6", "dom"
 		],
 		"sourceMap": true,
 		"strict": true,
 		"noImplicitReturns": true,
-		"types": ["cypress"]
+		"types": [
+			"node"
+		]
 	},
 	"exclude": [
 		"node_modules",

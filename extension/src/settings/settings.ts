@@ -5,6 +5,7 @@ export class Settings {
   static CONFIG_FLOW_COMMAND = 'flowCommand'
   static CONFIG_NUM_ACCOUNTS = 'numAccounts'
   static CONFIG_ACCESS_CHECK_MODE = 'accessCheckMode'
+  static CONFIG_CUSTOM_CONFIG_PATH = 'customConfigPath'
 
   // Workspace settings singleton
   static #instance: Settings | undefined
@@ -12,6 +13,7 @@ export class Settings {
   flowCommand!: string // The name of the Flow CLI executable.
   numAccounts!: number
   accessCheckMode!: string
+  customConfigPath!: string // If empty then search the workspace for flow.json
 
   static getWorkspaceSettings (): Settings {
     if (Settings.#instance === undefined) {
@@ -26,7 +28,10 @@ export class Settings {
     return Settings.#instance
   }
 
-  private constructor () {
+  constructor (skipInitialization?: boolean) {
+    if (skipInitialization !== undefined && skipInitialization) {
+      return
+    }
     // Retrieve workspace settings
     const cadenceConfig = workspace.getConfiguration('cadence')
 
@@ -38,11 +43,11 @@ export class Settings {
     }
     this.flowCommand = flowCommand
 
-    const numAccounts: number | undefined = cadenceConfig.get(
+    let numAccounts: number | undefined = cadenceConfig.get(
       Settings.CONFIG_NUM_ACCOUNTS
     )
-    if (numAccounts === undefined) {
-      throw new Error(`Missing ${Settings.CONFIG_NUM_ACCOUNTS} config`)
+    if (numAccounts === undefined || numAccounts <= 0) {
+      numAccounts = 3
     }
     this.numAccounts = numAccounts
 
@@ -53,5 +58,13 @@ export class Settings {
       accessCheckMode = 'strict'
     }
     this.accessCheckMode = accessCheckMode
+
+    let customConfigPath: string | undefined = cadenceConfig.get(
+      Settings.CONFIG_CUSTOM_CONFIG_PATH
+    )
+    if (customConfigPath === undefined) {
+      customConfigPath = ''
+    }
+    this.customConfigPath = customConfigPath
   }
 }

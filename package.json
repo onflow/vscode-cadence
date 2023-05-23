@@ -3,28 +3,28 @@
 	"displayName": "Cadence",
 	"publisher": "onflow",
 	"description": "This extension integrates Cadence, the resource-oriented smart contract programming language of Flow, into Visual Studio Code.",
-	"version": "0.7.0",
+	"version": "1.2.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/onflow/vscode-cadence.git"
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run -S esbuild-base -- --minify",
-		"esbuild-base": "esbuild ./extension/src/main.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
+		"esbuild-base": "esbuild ./extension/src/main.ts --bundle --outfile=out/extension/src/main.js --external:vscode --format=cjs --platform=node",
 		"esbuild": "npm run -S esbuild-base -- --sourcemap",
 		"esbuild-watch": "npm run -S esbuild-base -- --sourcemap --watch",
 		"check": "tsc extension/src/main.ts",
-		"unit-test": "ts-mocha **/*.unit.test.ts",
-		"integration-test": "npm run esbuild && tsc -p ./ && node ./out/test/run-test.js",
+		"copy-test-fixtures": "rm -rf ./out/extension/test/integration/fixtures && cp -R ./extension/test/fixtures ./out/extension/test/integration/fixtures",
+		"clean-test": "rm -rf ./out",
+		"test": "npm run clean-test && npm run esbuild && tsc -p ./ && npm run copy-test-fixtures && node ./out/extension/test/run-tests.js",
+		"test-windows": "npm run esbuild && tsc -p .\\ && npm run copy-test-fixtures && node .\\out\\extension\\test\\run-tests.js",
 		"package": "./node_modules/.bin/vsce package",
+		"package-windows": ".\\node_modules\\.bin\\vsce.cmd package",
 		"install-extension": "code --install-extension cadence-*.vsix",
 		"package-test": "./node_modules/.bin/vsce package --out ./extension/test/fixtures/workspace/cadence.vsix",
+		"package-test-windows": ".\\node_modules\\.bin\\vsce.cmd package --out .\\extension\\test\\fixtures\\workspace\\cadence.vsix",
 		"lint": "ts-standard",
-		"lint-fix": "ts-standard --fix",
-		"vscode-start": "docker-compose up -d && docker exec vscode code-server --install-extension /source/cadence.vsix",
-		"vscode-stop": "docker-compose down",
-		"cypress": "./node_modules/.bin/cypress run",
-		"e2e-test": "npm run package-test && npm run vscode-start && npm run cypress && npm run vscode-stop"
+		"lint-fix": "ts-standard --fix"
 	},
 	"engines": {
 		"vscode": "^1.65.0"
@@ -34,30 +34,67 @@
 	],
 	"icon": "images/icon.png",
 	"activationEvents": [
-		"onLanguage:cadence",
-		"onCommand:cadence.restartServer",
-		"onCommand:cadence.runEmulator",
-		"onCommand:cadence.stopEmulator",
-		"onCommand:cadence.createAccount",
-		"onCommand:cadence.switchActiveAccount"
+		"onLanguage:cadence"
 	],
-	"main": "./out/main.js",
+	"main": "./out/extension/src/main.js",
 	"contributes": {
+		"breakpoints": [
+			{
+				"language": "cadence"
+			}
+		],
+		"debuggers": [
+			{
+				"type": "cadence",
+				"languages": [
+					"cadence"
+				],
+				"label": "Cadence Debug",
+				"configurationAttributes": {
+					"launch": {
+						"required": [
+							"program"
+						],
+						"properties": {
+							"program": {
+								"type": "string",
+								"description": "Absolute path to a file.",
+								"default": "${file}"
+							},
+							"stopOnEntry": {
+								"type": "boolean",
+								"description": "Automatically stop after launch.",
+								"default": true
+							}
+						}
+					},
+					"attach": {
+						"required": [],
+						"properties": {
+							"stopOnEntry": {
+								"type": "boolean",
+								"description": "Automatically stop after attach.",
+								"default": true
+							}
+						}
+					},
+					"initialConfigurations": [
+						{
+							"type": "cadence",
+							"request": "launch",
+							"name": "Curent file",
+							"program": "${file}",
+							"stopOnEntry": true
+						}
+					]
+				}
+			}
+		],
 		"commands": [
 			{
 				"command": "cadence.restartServer",
 				"category": "Cadence",
 				"title": "Restart language server"
-			},
-			{
-				"command": "cadence.runEmulator",
-				"category": "Cadence",
-				"title": "Run emulator"
-			},
-			{
-				"command": "cadence.stopEmulator",
-				"category": "Cadence",
-				"title": "Stop emulator"
 			},
 			{
 				"command": "cadence.createAccount",
@@ -68,6 +105,16 @@
 				"command": "cadence.switchActiveAccount",
 				"category": "Cadence",
 				"title": "Switch account"
+			},
+			{
+				"command": "cadence.copyActiveAccount",
+				"category": "Cadence",
+				"title": "Copy active account to clipboard"
+			},
+			{
+				"command": "cadence.checkDepencencies",
+				"category": "Cadence",
+				"title": "Check Dependencies"
 			}
 		],
 		"configuration": {
@@ -76,13 +123,13 @@
 				"cadence.flowCommand": {
 					"type": "string",
 					"default": "flow",
-					"description": "The command to invoke the Flow CLI",
+					"description": "The command to invoke the Flow CLI.",
 					"scope": "resource"
 				},
 				"cadence.numAccounts": {
 					"type": "number",
 					"default": 3,
-					"description": "The number of default accounts to create",
+					"description": "The number of default accounts to create.",
 					"scope": "resource"
 				},
 				"cadence.accessCheckMode": {
@@ -100,7 +147,7 @@
 						"Access modifiers are optional. Access is assumed public if not specified",
 						"Access modifiers are optional and ignored"
 					],
-					"description": "Configures if access modifiers are required and how they are are enforced",
+					"description": "Configures if access modifiers are required and how they are are enforced.",
 					"scope": "resource"
 				},
 				"cadence.trace.server": {
@@ -113,6 +160,12 @@
 					],
 					"default": "off",
 					"description": "Traces the communication between VS Code and the Cadence language server."
+				},
+				"cadence.customConfigPath": {
+					"type": "string",
+					"default": "",
+					"description": "Enter a custom flow.json path, or leave empty for the default config search.",
+					"scope": "resource"
 				}
 			}
 		},
@@ -122,7 +175,7 @@
 				"extensions": [
 					".cdc"
 				],
-				"configuration": "./language/language-configuration.json"
+				"configuration": "./extension/language/language-configuration.json"
 			}
 		],
 		"grammars": [
@@ -144,26 +197,46 @@
 		]
 	},
 	"devDependencies": {
-		"@types/glob": "^7.1.4",
-		"@types/mocha": "^2.2.42",
-		"@types/node": "^10.12.21",
+		"@types/chai": "^4.3.4",
+		"@types/expect": "^24.3.0",
+		"@types/glob": "^8.0.1",
+		"@types/mixpanel": "^2.14.4",
+		"@types/mocha": "^10.0.1",
+		"@types/node": "^18.15.3",
+		"@types/semver": "^7.3.13",
+		"@types/uuid": "^9.0.0",
 		"@types/vscode": "^1.65.0",
-		"@vscode/test-electron": "^1.6.2",
-		"cypress": "^8.3.0",
-		"esbuild": "^0.14.42",
-		"eslint-auto-fix": "^1.0.4",
-		"glob": "^7.1.7",
-		"mocha": "^9.2.2",
+		"@vscode/test-electron": "^2.3.2",
+		"chai": "^4.3.7",
+		"esbuild": "^0.17.9",
+		"glob": "^8.1.0",
+		"mocha": "^10.2.0",
 		"nyc": "^15.1.0",
-		"ts-mocha": "^9.0.0",
-		"ts-standard": "^11.0.0",
-		"typescript": "~4.3.0"
+		"ovsx": "^0.8.0",
+		"ts-mocha": "^10.0.0",
+		"ts-node": "^10.9.1",
+		"ts-standard": "^12.0.2",
+		"typescript": "~4.9.5"
 	},
 	"dependencies": {
-		"-": "^0.0.1",
 		"@onflow/decode": "0.0.11",
+		"@sentry/node": "^7.38.0",
 		"ansi-regex": "^6.0.1",
-		"vsce": "^2.9.1",
-		"vscode-languageclient": "^8.0.1"
+		"async-lock": "^1.4.0",
+		"async-mutex": "^0.4.0",
+		"elliptic": "^6.5.4",
+		"mixpanel": "^0.17.0",
+		"node-fetch": "^2.6.1",
+		"os-name": "^5.0.1",
+		"sleep-synchronously": "^2.0.0",
+		"uuid": "^9.0.0",
+		"vsce": "^2.15.0",
+		"vscode-languageclient": "^8.1.0"
+	},
+	"__metadata": {
+		"id": "94920651-05f7-4ba0-bf76-379f4fef81ac",
+		"publisherDisplayName": "Flow Blockchain",
+		"publisherId": "1b4a291e-1133-468e-b471-80338e4c9595",
+		"isPreReleaseVersion": false
 	}
 }

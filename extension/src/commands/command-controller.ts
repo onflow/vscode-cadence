@@ -1,59 +1,63 @@
 /* CommandController is responsible for registering possible commands */
-
 import { commands } from 'vscode'
 import { ext } from '../main'
 import * as commandID from './command-constants'
 import { Disposable } from 'vscode-languageclient'
+import * as Telemetry from '../telemetry/telemetry'
 
 export class CommandController {
-  cmds: Disposable[] // Hold onto commands
+  #cmds: Disposable[] // Hold onto commands
+  #mappings = new Map<string, () => void>()
 
   constructor () {
-    this.cmds = []
-    this.#registerCommands()
+    this.#cmds = []
+    Telemetry.withTelemetry(this.#registerCommands.bind(this))
+  }
+
+  executeCommand (command: string): boolean {
+    const cmd = this.#mappings.get(command)
+    if (cmd !== undefined) {
+      cmd()
+      return true
+    }
+    return false
   }
 
   // Registers a command with VS Code so it can be invoked by the user.
   #registerCommand (command: string, callback: (...args: any[]) => any): void {
-    // DEBUG_LOG('Start Registering command ' + command)
-
-    const cmd: Disposable = commands.registerCommand(command, callback)
-
-    // ext.ctx.subscriptions.push(commands.registerCommand(command, callback))
-
-    this.cmds.push(cmd)
-
-    // ext.ctx.subscriptions.push(cmd)
-    // DEBUG_LOG('Registered command ' + command)
+    const commandCallback = (): void => { Telemetry.withTelemetry(callback.bind(this)) }
+    const cmd: Disposable = commands.registerCommand(command, commandCallback)
+    this.#cmds.push(cmd)
+    this.#mappings.set(command, commandCallback)
   }
 
   // Registers all commands that are handled by the extension (as opposed to
   // those handled by the Language Server).
   #registerCommands (): void {
-    this.#registerCommand(commandID.START_EMULATOR, this.#startEmulator)
-    this.#registerCommand(commandID.STOP_EMULATOR, this.#stopEmulator)
     this.#registerCommand(commandID.RESTART_SERVER, this.#restartServer)
     this.#registerCommand(commandID.CREATE_ACCOUNT, this.#createAccount)
     this.#registerCommand(commandID.SWITCH_ACCOUNT, this.#switchActiveAccount)
+    this.#registerCommand(commandID.CHECK_DEPENDENCIES, this.#checkDependencies)
+    this.#registerCommand(commandID.COPY_ACTIVE_ACCOUNT, this.#copyActiveAccount)
   }
 
   #restartServer (): void {
-    ext.emulatorCtrl.restartServer()
-  }
-
-  #startEmulator (): void {
-    void ext.emulatorCtrl.startEmulator()
-  }
-
-  #stopEmulator (): void {
-    void ext.emulatorCtrl.stopEmulator()
+    ext?.emulatorCtrl.restartServer()
   }
 
   #createAccount (): void {
-    void ext.emulatorCtrl.createNewAccount()
+    void ext?.emulatorCtrl.createNewAccount()
   }
 
   #switchActiveAccount (): void {
-    void ext.emulatorCtrl.switchActiveAccount()
+    void ext?.emulatorCtrl.switchActiveAccount()
+  }
+
+  #copyActiveAccount (): void {
+    void ext?.emulatorCtrl.copyActiveAccount()
+  }
+
+  #checkDependencies (): void {
+    void ext?.checkDependencies()
   }
 }

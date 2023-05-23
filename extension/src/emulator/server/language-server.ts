@@ -1,52 +1,94 @@
 import { LanguageClient, State, StateChangeEvent } from 'vscode-languageclient/node'
 import { window } from 'vscode'
-import { EmulatorState } from '../emulator-controller'
 import { Account } from '../account'
-import { ext } from '../../main'
-import * as Config from '../local/config'
+import { emulatorStateChanged } from '../../main'
+import * as Config from '../local/flowConfig'
 import { Settings } from '../../settings/settings'
+import * as response from './responses'
+import { Mutex } from 'async-mutex'
+import { exec } from 'child_process'
+import { verifyEmulator } from '../local/emulatorScanner'
+import { delay } from '../../utils/utils'
+import { ExecuteCommandRequest } from 'vscode-languageclient'
 
-// The args to pass to the Flow CLI to start the language server.
-const START_LANGUAGE_SERVER_ARGS = ['cadence', 'language-server']
+// Identities for commands handled by the Language server
+const CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
+const SWITCH_ACCOUNT_SERVER = 'cadence.server.flow.switchActiveAccount'
+const GET_ACCOUNTS_SERVER = 'cadence.server.flow.getAccounts'
+const RELOAD_CONFIGURATION = 'cadence.server.flow.reloadConfiguration'
 
 export class LanguageServerAPI {
-  // Identities for commands handled by the Language server
-  static CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
-  static CREATE_DEFAULT_ACCOUNTS_SERVER = 'cadence.server.flow.createDefaultAccounts'
-  static SWITCH_ACCOUNT_SERVER = 'cadence.server.flow.switchActiveAccount'
-  static CHANGE_EMULATOR_STATE = 'cadence.server.flow.changeEmulatorState'
-  static INIT_ACCOUNT_MANAGER = 'cadence.server.flow.initAccountManager'
+  client: LanguageClient | null = null
+  #clientLock = new Mutex()
+  running: boolean = false
 
-  client!: LanguageClient
-  running: boolean
-  accessCheckMode: string
-  flowCommand: string
+  #initializedClient = false
+  #emulatorConnected = false
+  #restarting = false
 
-  constructor () {
-    const settings = Settings.getWorkspaceSettings()
-    this.accessCheckMode = settings.accessCheckMode
-    this.flowCommand = settings.flowCommand
+  settings: Settings
 
-    // Init running state with false and update, when client is connected to server
-    this.running = false
-
+  constructor (settings: Settings) {
+    this.settings = settings
     void this.startClient()
+    void this.watchEmulator()
   }
 
-  async startClient (): Promise<void> {
-    const configPath = await Config.getConfigPath()
-    const emulatorState = ext.getEmulatorState()
+  async deactivate (): Promise<void> {
+    await this.client?.stop()
+      .catch((err) => { console.log(err) })
+  }
 
-    const activeAccount = ext.getActiveAccount()
-    const activeAccountName = (activeAccount != null) ? activeAccount.name : ''
-    const activeAccountAddress = (activeAccount != null) ? activeAccount.address : ''
+  watchEmulator (): void {
+    const seconds = 3
+    setInterval(() => {
+      void (async () => {
+        await this.#clientLock.acquire() // Lock to prevent multiple restarts
+        const emulatorFound = await verifyEmulator()
+
+        if (this.#emulatorConnected === emulatorFound) {
+          this.#clientLock.release()
+          return // No changes in local emulator state
+        }
+
+        this.#emulatorConnected = emulatorFound
+
+        this.#clientLock.release()
+
+        void this.restart(emulatorFound)
+      })()
+    }, 1000 * seconds)
+  }
+
+  async startClient (enableFlow?: boolean): Promise<void> {
+    await this.#clientLock.acquire()
+
+    this.#initializedClient = false
+    const numberOfAccounts: number = this.settings.numAccounts
+    const accessCheckMode: string = this.settings.accessCheckMode
+    let configPath = this.settings.customConfigPath
+
+    if (configPath === '' || configPath === undefined) {
+      configPath = await Config.getConfigPath()
+    }
+
+    if (enableFlow === undefined) {
+      enableFlow = await verifyEmulator()
+      this.#emulatorConnected = enableFlow
+    }
+
+    if (this.settings.flowCommand !== 'flow') {
+      try {
+        exec('killall dlv') // Required when running language server locally on mac
+      } catch (err) { void err }
+    }
 
     this.client = new LanguageClient(
       'cadence',
       'Cadence',
       {
-        command: this.flowCommand,
-        args: START_LANGUAGE_SERVER_ARGS
+        command: this.settings.flowCommand,
+        args: ['cadence', 'language-server', `--enable-flow-client=${String(enableFlow)}`]
       },
       {
         documentSelector: [{ scheme: 'file', language: 'cadence' }],
@@ -54,94 +96,105 @@ export class LanguageServerAPI {
           configurationSection: 'cadence'
         },
         initializationOptions: {
-          accessCheckMode: Settings.getWorkspaceSettings().accessCheckMode,
           configPath,
-          emulatorState,
-          activeAccountName,
-          activeAccountAddress
+          numberOfAccounts: `${numberOfAccounts}`,
+          accessCheckMode
         }
       }
     )
 
-    this.client.onDidChangeState((e: StateChangeEvent) => {
+    this.client.onDidChangeState(async (e: StateChangeEvent) => {
       this.running = e.newState === State.Running
+      if (this.#initializedClient && !this.running && !this.#restarting) {
+        // Need to wait in case Windows flow-cli installer is trying to update
+        // There must be a small timeframe for this update to occur before
+        // restarting the LS, or else the update will fail.
+        await delay(5)
+      }
+
+      void emulatorStateChanged()
     })
 
-    this.client.start()
-      .then(() =>
-        window.showInformationMessage('Cadence language server started')
-      )
-      .catch((err: Error) =>
-        window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
-      )
-  }
+    await this.client.start()
+      .then(() => {
+        void emulatorStateChanged()
+        this.watchFlowConfiguration()
+      })
+      .catch((err: Error) => {
+        void window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
+      })
+    this.#initializedClient = true
 
-  reset (): void {
-    void this.client.stop()
-    this.running = false
-    void this.startClient()
-  }
-
-  // Restarts the language server
-  async restartServer (): Promise<void> {
-    // Stop server
-    const activeAccount = ext.getActiveAccount()
-    await this.client.stop()
-
-    // Reboot server
-    void this.client.start()
-    if (activeAccount !== null) {
-      void this.switchActiveAccount(activeAccount)
+    if (!enableFlow) {
+      void window.showWarningMessage(`Couldn't connect to emulator. Run 'flow emulator' in a terminal 
+      to enable all extension features. If you want to deploy contracts, send transactions or execute 
+      scripts you need a running emulator.`)
+    } else {
+      void window.showInformationMessage('Flow Emulator Connected')
     }
-    ext.emulatorStateChanged()
+
+    this.#clientLock.release()
   }
 
-  async initAccountManager (): Promise<void> {
-    return await this.client.sendRequest('workspace/executeCommand', {
-      command: LanguageServerAPI.INIT_ACCOUNT_MANAGER,
-      arguments: []
+  async stopClient (): Promise<void> {
+    await this.#clientLock.acquire()
+    await this.client?.stop().catch(() => {})
+    this.client = null
+    void emulatorStateChanged()
+    this.#clientLock.release()
+  }
+
+  async restart (enableFlow: boolean): Promise<void> {
+    this.#restarting = true
+    await this.stopClient()
+    await this.startClient(enableFlow)
+    this.#restarting = false
+  }
+
+  emulatorConnected (): boolean {
+    return this.#emulatorConnected
+  }
+
+  async #sendRequest (cmd: string, args: any[] = []): Promise<any> {
+    return await this.client?.sendRequest(ExecuteCommandRequest.type, {
+      command: cmd,
+      arguments: args
     })
   }
 
-  async changeEmulatorState (emulatorState: EmulatorState): Promise<void> {
-    return await this.client.sendRequest('workspace/executeCommand', {
-      command: LanguageServerAPI.CHANGE_EMULATOR_STATE,
-      arguments: [emulatorState]
-    })
+  async reset (): Promise<void> {
+    const enableFlow = await verifyEmulator()
+    await this.restart(enableFlow)
   }
 
   // Sends a request to switch the currently active account.
   async switchActiveAccount (account: Account): Promise<void> {
-    const { name, address } = account
-    return await this.client.sendRequest('workspace/executeCommand', {
-      command: LanguageServerAPI.SWITCH_ACCOUNT_SERVER,
-      arguments: [name, address]
-    })
+    return await this.#sendRequest(SWITCH_ACCOUNT_SERVER, [account.name])
+  }
+
+  // Watch and reload flow configuration when changed.
+  watchFlowConfiguration (): void {
+    void Config.watchFlowConfigChanges(async () => await this.#sendRequest(RELOAD_CONFIGURATION))
   }
 
   // Sends a request to create a new account. Returns the address of the new
   // account, if it was created successfully.
   async createAccount (): Promise<Account> {
-    const res: any = await this.client.sendRequest('workspace/executeCommand', {
-      command: LanguageServerAPI.CREATE_ACCOUNT_SERVER,
-      arguments: []
-    })
-    const { name, address } = res
-    return new Account(name, address)
+    try {
+      const res: any = await this.#sendRequest(CREATE_ACCOUNT_SERVER)
+      return new response.ClientAccount(res).asAccount()
+    } catch (err) {
+      if (err instanceof Error) {
+        window.showErrorMessage(`Failed to create account: ${err.message}`)
+          .then(() => {}, () => {})
+      }
+      throw err
+    }
   }
 
-  // Sends a request to create a set of default accounts. Returns the addresses of the new
-  // accounts, if they were created successfully.
-  async createDefaultAccounts (count: number): Promise<Account[]> {
-    const res: [] = await this.client.sendRequest('workspace/executeCommand', {
-      command: LanguageServerAPI.CREATE_DEFAULT_ACCOUNTS_SERVER,
-      arguments: [count]
-    })
-    const accounts: Account [] = []
-    for (const account of res) {
-      const { name, address } = account
-      accounts.push(new Account(name, address))
-    }
-    return accounts
+  // Sends a request to obtain all account mappings, addresses, names, and active status
+  async getAccounts (): Promise<response.GetAccountsReponse> {
+    const res = await this.#sendRequest(GET_ACCOUNTS_SERVER)
+    return new response.GetAccountsReponse(res)
   }
 }
