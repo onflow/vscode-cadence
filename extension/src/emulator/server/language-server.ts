@@ -10,6 +10,7 @@ import { exec } from 'child_process'
 import { verifyEmulator } from '../local/emulatorScanner'
 import { delay } from '../../utils/utils'
 import { ExecuteCommandRequest } from 'vscode-languageclient'
+import * as telemetry from '../../telemetry/telemetry'
 
 // Identities for commands handled by the Language server
 const CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
@@ -75,6 +76,10 @@ export class LanguageServerAPI {
     if (enableFlow === undefined) {
       enableFlow = await verifyEmulator()
       this.#emulatorConnected = enableFlow
+    }
+
+    if (enableFlow) {
+      void telemetry.emulatorConnected()
     }
 
     if (this.settings.flowCommand !== 'flow') {

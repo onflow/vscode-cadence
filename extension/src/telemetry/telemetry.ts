@@ -7,7 +7,7 @@ import * as uuid from 'uuid'
 import { DEBUG_ACTIVE } from '../utils/debug'
 import * as playground from './playground'
 
-var extensionContext: ExtensionContext
+let extensionContext: ExtensionContext
 
 export async function getUID (): Promise<string> {
   let uid: string | undefined = extensionContext.globalState.get<string>('uid')
@@ -39,9 +39,9 @@ export async function initialize (ctx: ExtensionContext): Promise<void> {
   sendActivationStatistics()
 
   // Check if project was exported from Flow Playground
-  var projectHash = await playground.getPlaygroundProjectHash()
+  const projectHash = await playground.getPlaygroundProjectHash()
   if (projectHash !== null) {
-    sendPlaygroundProjectOpened(projectHash)
+    void sendPlaygroundProjectOpened(projectHash)
   }
 }
 
@@ -65,12 +65,15 @@ export function withTelemetry (callback: (...args: any[]) => any): void {
   }
 }
 
-async function emulatorConnected(): Promise<void> {
-  
+export async function emulatorConnected (): Promise<void> {
+  const projectHash = await playground.getPlaygroundProjectHash()
+  if (projectHash !== null) {
+    void sendPlaygroundProjectDeployed(projectHash)
+  }
 }
 
 async function sendPlaygroundProjectOpened (projectHash: string): Promise<void> {
-  let projectState: string | undefined = extensionContext.globalState.get<string>(projectHash)
+  const projectState: string | undefined = extensionContext.globalState.get<string>(projectHash)
   if (projectState !== undefined) {
     // Project was already reported
     return
@@ -80,7 +83,7 @@ async function sendPlaygroundProjectOpened (projectHash: string): Promise<void> 
 }
 
 async function sendPlaygroundProjectDeployed (projectHash: string): Promise<void> {
-  let projectState: string | undefined = extensionContext.globalState.get<string>(projectHash)
+  const projectState: string | undefined = extensionContext.globalState.get<string>(projectHash)
   if (projectState === playground.ProjectState.DEPLOYED) {
     // Project deployment was already reported
     return

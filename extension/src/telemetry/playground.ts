@@ -1,9 +1,13 @@
+/* Detect exported Flow Playground projects in order to track the developer funnel:
+1. Conversion of Playground projects to VSCode
+2. Deployment of Playground projects to emulator
+*/
 import { workspace } from 'vscode'
 import * as fs from 'fs'
 import * as objHash from 'object-hash'
 
 // State of projects converted from Flow Playground
-export enum ProjectState{
+export enum ProjectState {
   OPENED = 'OPENED',
   DEPLOYED = 'DEPLOYED'
 }
@@ -13,7 +17,7 @@ interface PlaygroundProject {
   updatedAt: string
 }
 
-var projectHash: string | null = null
+let projectHash: string | null = null
 
 export async function getPlaygroundProjectHash (): Promise<string | null> {
   if (projectHash === null) {
