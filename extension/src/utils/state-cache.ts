@@ -1,5 +1,11 @@
 import { BehaviorSubject, Observer, firstValueFrom, skip } from 'rxjs'
 
+enum ValidationState {
+  Valid = 0,
+  Fetching = 1,
+  FetchingAndQueued = 2
+}
+
 /**
  * @template T
  * @class StateCache
@@ -7,11 +13,7 @@ import { BehaviorSubject, Observer, firstValueFrom, skip } from 'rxjs'
  * A class that caches a value and fetches it asynchronously.  Comparable to SWR in React.
  */
 export class StateCache<T> {
-  // Validation state:
-  // 0: value is valid
-  // 1: value is invalid, and is being fetched
-  // 2: value is invalid, and is being fetched, and another fetch is queued
-  #validaitonState: 0 | 1 | 2 = 0
+  #validaitonState: ValidationState = ValidationState.Valid
   #value: BehaviorSubject<T | undefined> = new BehaviorSubject<T | undefined>(undefined)
   #fetcher: () => Promise<T>
 
@@ -21,8 +23,8 @@ export class StateCache<T> {
   }
 
   async getValue (): Promise<T> {
-    if (this.#validaitonState === 0) {
-      return this.#value?.getValue() as T
+    if (this.#validaitonState === ValidationState.Valid) {
+      return (this.#value as BehaviorSubject<T>).getValue()
     } else {
       const queueNumber = this.#validaitonState - 1
       return await (firstValueFrom((this.#value as BehaviorSubject<T>).pipe(skip(queueNumber + 1))))
@@ -46,8 +48,9 @@ export class StateCache<T> {
   }
 
   invalidate (): void {
-    this.#validaitonState = Math.min(this.#validaitonState + 1, 2) as 0 | 1 | 2
-    if (this.#validaitonState === 1) {
+    this.#validaitonState = Math.min(this.#validaitonState + 1, 2)
+    // If we're not already fetching, start fetching
+    if (this.#validaitonState === ValidationState.Fetching) {
       void this.#fetch()
     }
   }
