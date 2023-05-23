@@ -13,7 +13,7 @@ enum ValidationState {
  * A class that caches a value and fetches it asynchronously.  Comparable to SWR in React.
  */
 export class StateCache<T> {
-  #validaitonState: ValidationState = ValidationState.Valid
+  #validationState: ValidationState = ValidationState.Valid
   #value: BehaviorSubject<T | undefined> = new BehaviorSubject<T | undefined>(undefined)
   #fetcher: () => Promise<T>
 
@@ -23,10 +23,10 @@ export class StateCache<T> {
   }
 
   async getValue (): Promise<T> {
-    if (this.#validaitonState === ValidationState.Valid) {
+    if (this.#validationState === ValidationState.Valid) {
       return (this.#value as BehaviorSubject<T>).getValue()
     } else {
-      const queueNumber = this.#validaitonState - 1
+      const queueNumber = this.#validationState - 1
       return await (firstValueFrom((this.#value as BehaviorSubject<T>).pipe(skip(queueNumber + 1))))
     }
   }
@@ -41,16 +41,16 @@ export class StateCache<T> {
       return await this.#fetch()
     }
     this.#value.next(value)
-    this.#validaitonState -= 1
-    if (this.#validaitonState > 0) {
+    this.#validationState -= 1
+    if (this.#validationState > 0) {
       void this.#fetch()
     }
   }
 
   invalidate (): void {
-    this.#validaitonState = Math.min(this.#validaitonState + 1, 2)
+    this.#validationState = Math.min(this.#validationState + 1, 2)
     // If we're not already fetching, start fetching
-    if (this.#validaitonState === ValidationState.Fetching) {
+    if (this.#validationState === ValidationState.Fetching) {
       void this.#fetch()
     }
   }
