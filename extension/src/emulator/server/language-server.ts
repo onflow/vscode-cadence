@@ -98,7 +98,7 @@ export class LanguageServerAPI {
     }
     this.flowEnabled$.next(enableFlow)
 
-    if(enableFlow) {
+    if (enableFlow) {
       void telemetry.emulatorConnected()
     }
 
