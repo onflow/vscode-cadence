@@ -202,7 +202,7 @@
 		"@types/glob": "^8.0.1",
 		"@types/mixpanel": "^2.14.4",
 		"@types/mocha": "^10.0.1",
-		"@types/node": "^18.15.3",
+		"@types/node": "^20.2.3",
 		"@types/object-hash": "^3.0.2",
 		"@types/semver": "^7.3.13",
 		"@types/uuid": "^9.0.0",
