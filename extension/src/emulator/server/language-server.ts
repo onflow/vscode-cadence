@@ -8,7 +8,7 @@ import * as response from './responses'
 import { exec } from 'child_process'
 import { verifyEmulator } from '../local/emulatorScanner'
 import { ExecuteCommandRequest } from 'vscode-languageclient'
-import { BehaviorSubject, combineLatest, map } from 'rxjs'
+import { BehaviorSubject, combineLatest, filter, firstValueFrom, map } from 'rxjs'
 import * as telemetry from '../../telemetry/telemetry'
 
 // Identities for commands handled by the Language server
@@ -29,6 +29,8 @@ export class LanguageServerAPI {
   clientState$ = new BehaviorSubject<State>(State.Stopped)
   flowEnabled$ = new BehaviorSubject<boolean>(false)
   emulatorState$ = new BehaviorSubject<EmulatorState>(EmulatorState.Disconnected)
+
+  watcherTimeout: NodeJS.Timeout | null = null
 
   constructor (settings: Settings) {
     this.settings = settings
@@ -52,13 +54,18 @@ export class LanguageServerAPI {
     // Subscribe to emulator state changes
     this.emulatorState$.subscribe(emulatorStateChanged)
 
-    void this.startClient()
+    // Activate the language server
+    void this.activate()
+  }
+
+  async activate (): Promise<void> {
+    await this.startClient()
     void this.watchEmulator()
   }
 
   async deactivate (): Promise<void> {
-    await this.client?.stop()
-      .catch((err) => { console.log(err) })
+    await this.stopClient()
+    if (this.watcherTimeout != null) clearTimeout(this.watcherTimeout)
   }
 
   watchEmulator (): void {
@@ -81,16 +88,23 @@ export class LanguageServerAPI {
       } catch (err) {
         console.log(err)
       } finally {
-        setTimeout(() => { void loop.bind(this)() }, pollingIntervalMs)
+        this.watcherTimeout = setTimeout(() => { void loop.bind(this)() }, pollingIntervalMs)
       }
     }.bind(this))()
   }
 
   async startClient (enableFlow?: boolean): Promise<void> {
     // Prevent starting multiple times
-    if (this.clientState$.getValue() !== State.Stopped) {
-      throw new Error("Can't start client while already starting or started")
+    if (this.clientState$.getValue() === State.Starting) {
+      await firstValueFrom(this.clientState$.pipe(filter(state => state !== State.Starting)))
+      if (this.clientState$.getValue() === State.Running)
+        return
+    } else if(this.clientState$.getValue() === State.Running) {
+      return
     }
+
+    // Set client state to starting
+    this.clientState$.next(State.Starting)
 
     // Resolve whether to use flow and assign state
     if (enableFlow === undefined) {

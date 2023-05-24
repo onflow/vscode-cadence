@@ -71,7 +71,7 @@ suite('State Cache Unit Tests', () => {
   test('Retries failed fetch', async () => {
     const fetcher = async (): Promise<string> => {
       count++
-      if (count === 1) throw new Error('Fetch failed')
+      if (count === 1) throw new Error('THIS IS A DUMMY ERROR, IT IS EXPECTED')
       else return 'foobar'
     }
     let count = 0

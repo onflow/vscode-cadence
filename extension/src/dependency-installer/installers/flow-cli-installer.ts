@@ -6,6 +6,7 @@ import { Installer } from '../installer'
 import { execSync } from 'child_process'
 import * as semver from 'semver'
 import fetch from 'node-fetch'
+import { ext } from '../../main'
 
 // Command to check flow-cli
 let CHECK_FLOW_CLI_CMD = 'flow version'
@@ -29,19 +30,24 @@ export class InstallFlowCLI extends Installer {
   }
 
   install (): void {
-    const OS_TYPE = process.platform
-    switch (OS_TYPE) {
-      case 'darwin':
-      case 'linux':
-        this.#install_macos()
-        break
-      case 'win32':
-        CHECK_FLOW_CLI_CMD = 'C:\\Users\\runneradmin\\AppData\\Roaming\\Flow\\flow.exe version'
-        this.#install_windows()
-        break
-      default:
-        this.#install_bash_cmd()
-        break
+    ext?.emulatorCtrl.api.deactivate()
+    try {
+      const OS_TYPE = process.platform
+      switch (OS_TYPE) {
+        case 'darwin':
+        case 'linux':
+          this.#install_macos()
+          break
+        case 'win32':
+          CHECK_FLOW_CLI_CMD = 'C:\\Users\\runneradmin\\AppData\\Roaming\\Flow\\flow.exe version'
+          this.#install_windows()
+          break
+        default:
+          this.#install_bash_cmd()
+          break
+      }
+    } finally {
+      ext?.emulatorCtrl.api.activate()
     }
   }
 
