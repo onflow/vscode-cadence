@@ -6,6 +6,7 @@ import { Installer } from '../installer'
 import { execSync } from 'child_process'
 import * as semver from 'semver'
 import fetch from 'node-fetch'
+import { ext } from '../../main'
 
 // Command to check flow-cli
 let CHECK_FLOW_CLI_CMD = 'flow version'
@@ -28,20 +29,25 @@ export class InstallFlowCLI extends Installer {
     super('Flow CLI')
   }
 
-  install (): void {
-    const OS_TYPE = process.platform
-    switch (OS_TYPE) {
-      case 'darwin':
-      case 'linux':
-        this.#install_macos()
-        break
-      case 'win32':
-        CHECK_FLOW_CLI_CMD = 'C:\\Users\\runneradmin\\AppData\\Roaming\\Flow\\flow.exe version'
-        this.#install_windows()
-        break
-      default:
-        this.#install_bash_cmd()
-        break
+  async install (): Promise<void> {
+    await ext?.emulatorCtrl.api.deactivate()
+    try {
+      const OS_TYPE = process.platform
+      switch (OS_TYPE) {
+        case 'darwin':
+        case 'linux':
+          this.#install_macos()
+          break
+        case 'win32':
+          CHECK_FLOW_CLI_CMD = 'C:\\Users\\runneradmin\\AppData\\Roaming\\Flow\\flow.exe version'
+          this.#install_windows()
+          break
+        default:
+          this.#install_bash_cmd()
+          break
+      }
+    } finally {
+      await ext?.emulatorCtrl.api.activate()
     }
   }
 
@@ -113,9 +119,9 @@ export class InstallFlowCLI extends Installer {
       promptUserInfoMessage(
         'There is a new Flow CLI version available: ' + latestStr,
         'Install latest Flow CLI',
-        () => {
+        async () => {
           void window.showInformationMessage('Running Flow CLI installer, please wait...')
-          this.install()
+          await this.install()
           if (!this.verifyInstall()) {
             void window.showErrorMessage('Failed to install Flow CLI')
             return
@@ -145,9 +151,9 @@ export class InstallFlowCLI extends Installer {
       promptUserErrorMessage(
         'Incompatible Flow CLI version: ' + versionStr,
         'Install latest Flow CLI',
-        () => {
+        async () => {
           void window.showInformationMessage('Running Flow CLI installer, please wait...')
-          this.install()
+          await this.install()
           if (!this.verifyInstall()) {
             void window.showErrorMessage('Failed to install Flow CLI')
             return

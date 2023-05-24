@@ -29,8 +29,8 @@ export class DependencyInstaller {
     }
   }
 
-  installMissing (): void {
-    this.#installMissingDependencies()
+  async installMissing (): Promise<void> {
+    await this.#installMissingDependencies()
   }
 
   prettyPrintDepencencies (): void {
@@ -66,10 +66,10 @@ export class DependencyInstaller {
     return this.registeredInstallers.find(installer => !installer.isInstalled()) == null
   }
 
-  #installMissingDependencies (): void {
-    this.registeredInstallers.forEach((installer) => {
+  async #installMissingDependencies (): Promise<void> {
+    await Promise.all(this.registeredInstallers.map(async (installer) => {
       try {
-        installer.runInstall()
+        await installer.runInstall()
       } catch (err) {
         if (err instanceof InstallError) {
           void window.showErrorMessage(err.message)
@@ -77,6 +77,6 @@ export class DependencyInstaller {
           throw err
         }
       }
-    })
+    }))
   }
 }

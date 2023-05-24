@@ -1,15 +1,15 @@
-import { LanguageClient, State, StateChangeEvent } from 'vscode-languageclient/node'
+import { LanguageClient, State } from 'vscode-languageclient/node'
 import { window } from 'vscode'
 import { Account } from '../account'
 import { emulatorStateChanged } from '../../main'
 import * as Config from '../local/flowConfig'
 import { Settings } from '../../settings/settings'
 import * as response from './responses'
-import { Mutex } from 'async-mutex'
 import { exec } from 'child_process'
 import { verifyEmulator } from '../local/emulatorScanner'
-import { delay } from '../../utils/utils'
 import { ExecuteCommandRequest } from 'vscode-languageclient'
+import { BehaviorSubject, combineLatest, filter, firstValueFrom, map } from 'rxjs'
+import * as telemetry from '../../telemetry/telemetry'
 
 // Identities for commands handled by the Language server
 const CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
@@ -17,64 +17,110 @@ const SWITCH_ACCOUNT_SERVER = 'cadence.server.flow.switchActiveAccount'
 const GET_ACCOUNTS_SERVER = 'cadence.server.flow.getAccounts'
 const RELOAD_CONFIGURATION = 'cadence.server.flow.reloadConfiguration'
 
+export enum EmulatorState {
+  Connected,
+  Connecting,
+  Disconnected,
+}
 export class LanguageServerAPI {
   client: LanguageClient | null = null
-  #clientLock = new Mutex()
-  running: boolean = false
-
-  #initializedClient = false
-  #emulatorConnected = false
-  #restarting = false
-
   settings: Settings
+
+  clientState$ = new BehaviorSubject<State>(State.Stopped)
+  flowEnabled$ = new BehaviorSubject<boolean>(false)
+  emulatorState$ = new BehaviorSubject<EmulatorState>(EmulatorState.Disconnected)
+
+  watcherTimeout: NodeJS.Timeout | null = null
 
   constructor (settings: Settings) {
     this.settings = settings
-    void this.startClient()
+
+    // Map client state to emulator state
+    combineLatest({ clientState: this.clientState$, flowEnabled: this.flowEnabled$ }).pipe(
+      map(({ clientState, flowEnabled }) => {
+        // Emulator will always be disconnected if not using flow
+        if (!flowEnabled) return EmulatorState.Disconnected
+
+        if (clientState === State.Running) {
+          return EmulatorState.Connected
+        } else if (clientState === State.Starting) {
+          return EmulatorState.Connecting
+        } else {
+          return EmulatorState.Disconnected
+        }
+      })
+    ).subscribe((state) => this.emulatorState$.next(state))
+
+    // Subscribe to emulator state changes
+    this.emulatorState$.subscribe(emulatorStateChanged)
+
+    // Activate the language server
+    void this.activate()
+  }
+
+  async activate (): Promise<void> {
+    await this.startClient()
     void this.watchEmulator()
   }
 
   async deactivate (): Promise<void> {
-    await this.client?.stop()
-      .catch((err) => { console.log(err) })
+    await this.stopClient()
+    if (this.watcherTimeout != null) clearTimeout(this.watcherTimeout)
   }
 
   watchEmulator (): void {
-    const seconds = 3
-    setInterval(() => {
-      void (async () => {
-        await this.#clientLock.acquire() // Lock to prevent multiple restarts
-        const emulatorFound = await verifyEmulator()
+    const pollingIntervalMs = 1000
 
-        if (this.#emulatorConnected === emulatorFound) {
-          this.#clientLock.release()
+    // Loop with setTimeout to avoid overlapping calls
+    void (async function loop (this: LanguageServerAPI) {
+      try {
+        // Wait for client to connect or disconnect
+        if (this.clientState$.getValue() === State.Starting) return
+
+        // Check if emulator state has changed
+        const emulatorFound = await verifyEmulator()
+        if ((this.emulatorState$.getValue() === EmulatorState.Connected) === emulatorFound) {
           return // No changes in local emulator state
         }
 
-        this.#emulatorConnected = emulatorFound
-
-        this.#clientLock.release()
-
-        void this.restart(emulatorFound)
-      })()
-    }, 1000 * seconds)
+        // Restart language server
+        await this.restart(emulatorFound)
+      } catch (err) {
+        console.log(err)
+      } finally {
+        this.watcherTimeout = setTimeout(() => { void loop.bind(this)() }, pollingIntervalMs)
+      }
+    }.bind(this))()
   }
 
   async startClient (enableFlow?: boolean): Promise<void> {
-    await this.#clientLock.acquire()
+    // Prevent starting multiple times
+    if (this.clientState$.getValue() === State.Starting) {
+      await firstValueFrom(this.clientState$.pipe(filter(state => state !== State.Starting)))
+      if (this.clientState$.getValue() === State.Running) { return }
+    } else if (this.clientState$.getValue() === State.Running) {
+      return
+    }
 
-    this.#initializedClient = false
+    // Set client state to starting
+    this.clientState$.next(State.Starting)
+
+    // Resolve whether to use flow and assign state
+    if (enableFlow === undefined) {
+      enableFlow = await verifyEmulator()
+    }
+    this.flowEnabled$.next(enableFlow)
+
+    if (enableFlow) {
+      void telemetry.emulatorConnected()
+    }
+
     const numberOfAccounts: number = this.settings.numAccounts
     const accessCheckMode: string = this.settings.accessCheckMode
     let configPath = this.settings.customConfigPath
 
     if (configPath === '' || configPath === undefined) {
       configPath = await Config.getConfigPath()
-    }
-
-    if (enableFlow === undefined) {
-      enableFlow = await verifyEmulator()
-      this.#emulatorConnected = enableFlow
     }
 
     if (this.settings.flowCommand !== 'flow') {
@@ -103,27 +149,15 @@ export class LanguageServerAPI {
       }
     )
 
-    this.client.onDidChangeState(async (e: StateChangeEvent) => {
-      this.running = e.newState === State.Running
-      if (this.#initializedClient && !this.running && !this.#restarting) {
-        // Need to wait in case Windows flow-cli installer is trying to update
-        // There must be a small timeframe for this update to occur before
-        // restarting the LS, or else the update will fail.
-        await delay(5)
-      }
-
-      void emulatorStateChanged()
-    })
-
     await this.client.start()
       .then(() => {
-        void emulatorStateChanged()
+        this.clientState$.next(State.Running)
         this.watchFlowConfiguration()
       })
       .catch((err: Error) => {
+        this.clientState$.next(State.Stopped)
         void window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
       })
-    this.#initializedClient = true
 
     if (!enableFlow) {
       void window.showWarningMessage(`Couldn't connect to emulator. Run 'flow emulator' in a terminal 
@@ -132,27 +166,24 @@ export class LanguageServerAPI {
     } else {
       void window.showInformationMessage('Flow Emulator Connected')
     }
-
-    this.#clientLock.release()
   }
 
   async stopClient (): Promise<void> {
-    await this.#clientLock.acquire()
-    await this.client?.stop().catch(() => {})
+    // Set emulator state to disconnected
+    this.clientState$.next(State.Stopped)
+
+    await this.client?.stop()
     this.client = null
-    void emulatorStateChanged()
-    this.#clientLock.release()
   }
 
   async restart (enableFlow: boolean): Promise<void> {
-    this.#restarting = true
+    // Prevent restarting multiple times
     await this.stopClient()
     await this.startClient(enableFlow)
-    this.#restarting = false
   }
 
   emulatorConnected (): boolean {
-    return this.#emulatorConnected
+    return this.emulatorState$.getValue() === EmulatorState.Connected
   }
 
   async #sendRequest (cmd: string, args: any[] = []): Promise<any> {
