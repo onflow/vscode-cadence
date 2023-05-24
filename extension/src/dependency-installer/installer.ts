@@ -21,13 +21,13 @@ export abstract class Installer {
     return this.#installed
   }
 
-  runInstall (): void {
+  async runInstall (): Promise<void> {
     if (this.#installed) {
       return
     }
 
     void window.showInformationMessage('Running ' + this.#installerName + ' installer, please wait...')
-    this.install()
+    await this.install()
 
     if (!this.verifyInstall()) {
       throw new InstallError('Failed to install: ' + this.#installerName)
@@ -39,7 +39,7 @@ export abstract class Installer {
   }
 
   // Installation logic
-  protected abstract install (): void
+  protected abstract install (): Promise<void>
 
   // Logic to check if dependency is installed
   protected abstract verifyInstall (): boolean

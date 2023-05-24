@@ -5,24 +5,29 @@ import { env, ExtensionContext } from 'vscode'
 import * as pkg from '../../../package.json'
 import * as uuid from 'uuid'
 import { DEBUG_ACTIVE } from '../utils/debug'
+import * as playground from './playground'
 
-export async function getUID (ctx: ExtensionContext): Promise<string> {
-  let uid: string | undefined = ctx.globalState.get<string>('uid')
+let extensionContext: ExtensionContext
+
+export async function getUID (): Promise<string> {
+  let uid: string | undefined = extensionContext.globalState.get<string>('uid')
   if (uid === undefined) {
     // Generate new uid and add it to global state
     uid = uuid.v4()
-    await ctx.globalState.update('uid', uid)
+    await extensionContext.globalState.update('uid', uid)
   }
   return uid
 }
 
 // Called in main to setup telemetry
 export async function initialize (ctx: ExtensionContext): Promise<void> {
+  extensionContext = ctx
+
   // Check if user is allowing telemetry for vscode globally
   const activate: boolean = env.isTelemetryEnabled && !DEBUG_ACTIVE
 
   // Get unique UID
-  const uid = await getUID(ctx)
+  const uid = await getUID()
 
   // Initialize Sentry
   await sentry.sentryInit(activate, uid, pkg.version)
@@ -32,6 +37,12 @@ export async function initialize (ctx: ExtensionContext): Promise<void> {
 
   // Send initial statistics
   sendActivationStatistics()
+
+  // Check if project was exported from Flow Playground
+  const projectHash = await playground.getPlaygroundProjectHash()
+  if (projectHash !== null) {
+    void sendPlaygroundProjectOpened(projectHash)
+  }
 }
 
 // Called in main to deactivate telemetry
@@ -40,7 +51,7 @@ export async function deactivate (): Promise<void> {
 }
 
 function sendActivationStatistics (): void {
-  mixpanel.captureEvent(mixpanel.Events.ExtensionActivated)
+  mixpanel.captureEvent(mixpanel.MixpanelSelector.VSCODE, mixpanel.Events.ExtensionActivated)
 }
 
 // Wrap a function call with telemetry
@@ -52,4 +63,35 @@ export function withTelemetry (callback: (...args: any[]) => any): void {
     mixpanel.captureException(err)
     throw err
   }
+}
+
+export async function emulatorConnected (): Promise<void> {
+  const projectHash = await playground.getPlaygroundProjectHash()
+  if (projectHash !== null) {
+    void sendPlaygroundProjectDeployed(projectHash)
+  }
+}
+
+async function sendPlaygroundProjectOpened (projectHash: string): Promise<void> {
+  const projectState: string | undefined = extensionContext.globalState.get<string>(projectHash)
+  if (projectState !== undefined) {
+    // Project was already reported
+    return
+  }
+  await extensionContext.globalState.update(projectHash, playground.ProjectState.OPENED)
+  mixpanel.captureEvent(
+    mixpanel.MixpanelSelector.DEV_FUNNEL,
+    mixpanel.Events.PlaygroundProjectOpened)
+}
+
+async function sendPlaygroundProjectDeployed (projectHash: string): Promise<void> {
+  const projectState: string | undefined = extensionContext.globalState.get<string>(projectHash)
+  if (projectState === playground.ProjectState.DEPLOYED) {
+    // Project deployment was already reported
+    return
+  }
+  await extensionContext.globalState.update(projectHash, playground.ProjectState.DEPLOYED)
+  mixpanel.captureEvent(
+    mixpanel.MixpanelSelector.DEV_FUNNEL,
+    mixpanel.Events.PlaygroundProjectDeployed)
 }

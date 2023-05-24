@@ -1,5 +1,5 @@
 /* The extension */
-import { EmulatorState, EmulatorController } from './emulator/emulator-controller'
+import { EmulatorController } from './emulator/emulator-controller'
 import { CommandController } from './commands/command-controller'
 import { Account } from './emulator/account'
 import { UIController } from './ui/ui-controller'
@@ -7,6 +7,7 @@ import { ExtensionContext } from 'vscode'
 import { DEBUG_LOG } from './utils/debug'
 import { DependencyInstaller } from './dependency-installer/dependency-installer'
 import { Settings } from './settings/settings'
+import { EmulatorState } from './emulator/server/language-server'
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -37,6 +38,9 @@ export class Extension {
 
     // Initialize Emulator
     this.emulatorCtrl = new EmulatorController(settings)
+    this.emulatorCtrl.api.emulatorState$.subscribe(() => {
+      void this.emulatorStateChanged()
+    })
 
     // Initialize ExtensionCommands
     this.#commands = new CommandController()
@@ -58,24 +62,21 @@ export class Extension {
     return this.emulatorCtrl.getState()
   }
 
-  getActiveAccount (): Account | null {
-    return this.emulatorCtrl.getActiveAccount()
+  async getActiveAccount (): Promise<Account | null> {
+    return await this.emulatorCtrl.getActiveAccount()
   }
 
   async emulatorStateChanged (): Promise<void> {
-    // Sync emulator with LS
-    await this.emulatorCtrl.syncEmulatorState()
-
     // Update UI
-    this.#uiCtrl.emulatorStateChanged()
+    await this.#uiCtrl.emulatorStateChanged()
   }
 
   checkDependencies (): void {
     this.#dependencyInstaller.checkDependencies()
   }
 
-  installMissingDependencies (): void {
-    this.#dependencyInstaller.installMissing()
+  async installMissingDependencies (): Promise<void> {
+    await this.#dependencyInstaller.installMissing()
   }
 
   executeCommand (command: string): boolean {
