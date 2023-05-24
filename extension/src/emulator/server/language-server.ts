@@ -61,6 +61,7 @@ export class LanguageServerAPI {
   async activate (): Promise<void> {
     await this.startClient()
     void this.watchEmulator()
+    void this.watchFlowConfiguration()
   }
 
   async deactivate (): Promise<void> {
@@ -152,7 +153,6 @@ export class LanguageServerAPI {
     await this.client.start()
       .then(() => {
         this.clientState$.next(State.Running)
-        this.watchFlowConfiguration()
       })
       .catch((err: Error) => {
         this.clientState$.next(State.Stopped)
@@ -205,7 +205,18 @@ export class LanguageServerAPI {
 
   // Watch and reload flow configuration when changed.
   watchFlowConfiguration (): void {
-    void Config.watchFlowConfigChanges(async () => await this.#sendRequest(RELOAD_CONFIGURATION))
+    void Config.watchFlowConfigChanges(async () => {
+      Config.flowConfig.invalidate()
+
+      if (this.clientState$.getValue() === State.Running) {
+        await this.#sendRequest(RELOAD_CONFIGURATION)
+      } else if (this.clientState$.getValue() === State.Starting) {
+        // Wait for client to connect
+        void firstValueFrom(this.clientState$.pipe(filter((state) => state === State.Running))).then(() => {
+          void this.#sendRequest(RELOAD_CONFIGURATION)
+        })
+      }
+    })
   }
 
   // Sends a request to create a new account. Returns the address of the new
