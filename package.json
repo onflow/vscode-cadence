@@ -222,6 +222,7 @@
 	"dependencies": {
 		"@onflow/decode": "0.0.11",
 		"@sentry/node": "^7.38.0",
+		"@vscode/vsce": "^2.19.0",
 		"ansi-regex": "^6.0.1",
 		"async-lock": "^1.4.0",
 		"elliptic": "^6.5.4",
@@ -232,7 +233,6 @@
 		"rxjs": "^7.8.1",
 		"sleep-synchronously": "^2.0.0",
 		"uuid": "^9.0.0",
-		"vsce": "^2.15.0",
 		"vscode-languageclient": "8.0.2"
 	},
 	"__metadata": {
