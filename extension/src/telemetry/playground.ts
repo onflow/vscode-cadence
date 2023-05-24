@@ -28,7 +28,7 @@ export async function getPlaygroundProjectHash (): Promise<string | null> {
     }
 
     const proj: PlaygroundProject = JSON.parse(fs.readFileSync(file[0].fsPath).toString())
-    projectHash = 'Playground:' + objHash.sha1(proj)
+    projectHash = 'Playground:' + String(objHash.sha1(proj))
   }
 
   return projectHash

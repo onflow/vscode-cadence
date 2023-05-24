@@ -6,7 +6,7 @@ import {
 } from 'vscode'
 import { Account } from '../../emulator/account'
 import * as commandID from '../../commands/command-constants'
-import { EmulatorState } from '../../emulator/emulator-controller'
+import { EmulatorState } from '../../emulator/server/language-server'
 
 export class StatusBarUI {
   #emulatorStatusItem: StatusBarItem
