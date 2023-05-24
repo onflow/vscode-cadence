@@ -97,9 +97,8 @@ export class LanguageServerAPI {
     // Prevent starting multiple times
     if (this.clientState$.getValue() === State.Starting) {
       await firstValueFrom(this.clientState$.pipe(filter(state => state !== State.Starting)))
-      if (this.clientState$.getValue() === State.Running)
-        return
-    } else if(this.clientState$.getValue() === State.Running) {
+      if (this.clientState$.getValue() === State.Running) { return }
+    } else if (this.clientState$.getValue() === State.Running) {
       return
     }
 

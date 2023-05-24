@@ -29,8 +29,8 @@ export class InstallFlowCLI extends Installer {
     super('Flow CLI')
   }
 
-  install (): void {
-    ext?.emulatorCtrl.api.deactivate()
+  async install (): Promise<void> {
+    await ext?.emulatorCtrl.api.deactivate()
     try {
       const OS_TYPE = process.platform
       switch (OS_TYPE) {
@@ -47,7 +47,7 @@ export class InstallFlowCLI extends Installer {
           break
       }
     } finally {
-      ext?.emulatorCtrl.api.activate()
+      await ext?.emulatorCtrl.api.activate()
     }
   }
 
@@ -119,9 +119,9 @@ export class InstallFlowCLI extends Installer {
       promptUserInfoMessage(
         'There is a new Flow CLI version available: ' + latestStr,
         'Install latest Flow CLI',
-        () => {
+        async () => {
           void window.showInformationMessage('Running Flow CLI installer, please wait...')
-          this.install()
+          await this.install()
           if (!this.verifyInstall()) {
             void window.showErrorMessage('Failed to install Flow CLI')
             return
@@ -151,9 +151,9 @@ export class InstallFlowCLI extends Installer {
       promptUserErrorMessage(
         'Incompatible Flow CLI version: ' + versionStr,
         'Install latest Flow CLI',
-        () => {
+        async () => {
           void window.showInformationMessage('Running Flow CLI installer, please wait...')
-          this.install()
+          await this.install()
           if (!this.verifyInstall()) {
             void window.showErrorMessage('Failed to install Flow CLI')
             return
