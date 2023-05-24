@@ -6,6 +6,6 @@ import { MaxTimeout } from '../globals'
 suite('Dependency Installer', () => {
   test('Install Missing Dependencies', async () => {
     const dependencyManager = new depInstaller.DependencyInstaller()
-    assert.doesNotThrow(() => { dependencyManager.installMissing() })
+    await assert.doesNotReject(async () => { await dependencyManager.installMissing() })
   }).timeout(MaxTimeout)
 })

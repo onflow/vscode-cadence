@@ -75,8 +75,8 @@ export class Extension {
     this.#dependencyInstaller.checkDependencies()
   }
 
-  installMissingDependencies (): void {
-    this.#dependencyInstaller.installMissing()
+  async installMissingDependencies (): Promise<void> {
+    await this.#dependencyInstaller.installMissing()
   }
 
   executeCommand (command: string): boolean {
