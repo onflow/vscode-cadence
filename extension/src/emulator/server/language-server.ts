@@ -7,7 +7,7 @@ import { Settings } from '../../settings/settings'
 import * as response from './responses'
 import { exec } from 'child_process'
 import { verifyEmulator } from '../local/emulatorScanner'
-import { ExecuteCommandRequest } from 'vscode-languageclient'
+import { Disposable, ExecuteCommandRequest } from 'vscode-languageclient'
 import { BehaviorSubject, combineLatest, filter, firstValueFrom, map } from 'rxjs'
 import * as telemetry from '../../telemetry/telemetry'
 
@@ -30,7 +30,8 @@ export class LanguageServerAPI {
   flowEnabled$ = new BehaviorSubject<boolean>(false)
   emulatorState$ = new BehaviorSubject<EmulatorState>(EmulatorState.Disconnected)
 
-  watcherTimeout: NodeJS.Timeout | null = null
+  #watcherTimeout: NodeJS.Timeout | null = null
+  #flowConfigWatcher: Promise<Disposable> | null = null
 
   constructor (settings: Settings) {
     this.settings = settings
@@ -66,7 +67,8 @@ export class LanguageServerAPI {
 
   async deactivate (): Promise<void> {
     await this.stopClient()
-    if (this.watcherTimeout != null) clearTimeout(this.watcherTimeout)
+    if (this.#watcherTimeout != null) clearTimeout(this.#watcherTimeout)
+    if (this.#flowConfigWatcher != null) (await this.#flowConfigWatcher).dispose()
   }
 
   watchEmulator (): void {
@@ -89,7 +91,7 @@ export class LanguageServerAPI {
       } catch (err) {
         console.log(err)
       } finally {
-        this.watcherTimeout = setTimeout(() => { void loop.bind(this)() }, pollingIntervalMs)
+        this.#watcherTimeout = setTimeout(() => { void loop.bind(this)() }, pollingIntervalMs)
       }
     }.bind(this))()
   }
@@ -204,9 +206,16 @@ export class LanguageServerAPI {
   }
 
   // Watch and reload flow configuration when changed.
-  watchFlowConfiguration (): void {
-    void Config.watchFlowConfigChanges(async () => {
+  async watchFlowConfiguration (): Promise<void> {
+    // Dispose of existing watcher
+    (await this.#flowConfigWatcher)?.dispose()
+
+    // Watch for changes to flow configuration
+    this.#flowConfigWatcher = Config.watchFlowConfigChanges(async () => {
       Config.flowConfig.invalidate()
+
+      // Reload configuration command is only available when flow integration is enabled
+      if (this.flowEnabled$.getValue() === false) return
 
       if (this.clientState$.getValue() === State.Running) {
         await this.#sendRequest(RELOAD_CONFIGURATION)

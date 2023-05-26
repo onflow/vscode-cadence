@@ -6,6 +6,7 @@ import { FILE_PATH_EMPTY } from '../../utils/utils'
 import { Settings } from '../../settings/settings'
 import * as fs from 'fs'
 import { StateCache } from '../../utils/state-cache'
+import { Disposable } from 'vscode-languageclient'
 
 const exec = util.promisify(cp.exec)
 
@@ -130,12 +131,12 @@ async function readLocalConfig (): Promise<string> {
   return configFilePath
 }
 
-export async function watchFlowConfigChanges (changedEvent: () => {}): Promise<void> {
+export async function watchFlowConfigChanges (changedEvent: () => {}): Promise<Disposable> {
   const path = await getConfigPath()
   const configWatcher = workspace.createFileSystemWatcher(path)
 
   let updateDelay: any = null
-  configWatcher.onDidChange(e => {
+  return configWatcher.onDidChange(e => {
     // request deduplication - we do this to avoid spamming requests in a short time period but rather aggragete into one
     if (updateDelay == null) {
       updateDelay = setTimeout(() => {
