@@ -215,7 +215,7 @@ export class LanguageServerAPI {
       Config.flowConfig.invalidate()
 
       // Reload configuration command is only available when flow integration is enabled
-      if (this.flowEnabled$.getValue() === false) return
+      if (!this.flowEnabled$.getValue()) return
 
       if (this.clientState$.getValue() === State.Running) {
         await this.#sendRequest(RELOAD_CONFIGURATION)
