@@ -55,9 +55,20 @@ function sendActivationStatistics (): void {
 }
 
 // Wrap a function call with telemetry
-export function withTelemetry (callback: (...args: any[]) => any): void {
+export function withTelemetry<R> (callback: () => R): R {
   try {
-    callback()
+    const returnValue = callback()
+    if (returnValue instanceof Promise) {
+      return returnValue.then((value) => {
+        return value
+      }).catch((err) => {
+        sentry.captureException(err)
+        mixpanel.captureException(err)
+        throw err
+      }) as R
+    } else {
+      return returnValue
+    }
   } catch (err) {
     sentry.captureException(err)
     mixpanel.captureException(err)

@@ -79,7 +79,7 @@ export class Extension {
     await this.#dependencyInstaller.installMissing()
   }
 
-  executeCommand (command: string): boolean {
-    return this.#commands.executeCommand(command)
+  async executeCommand (command: string): Promise<boolean> {
+    return await this.#commands.executeCommand(command)
   }
 }
