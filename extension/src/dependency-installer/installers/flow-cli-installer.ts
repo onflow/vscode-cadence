@@ -6,6 +6,7 @@ import { Installer } from '../installer'
 import { execSync } from 'child_process'
 import * as semver from 'semver'
 import fetch from 'node-fetch'
+import { ext } from '../../main'
 
 // Command to check flow-cli
 let CHECK_FLOW_CLI_CMD = 'flow version'
@@ -18,30 +19,43 @@ const BASH_INSTALL_HOMEBREW = '/bin/bash -c "$(curl -fsSL https://raw.githubuser
 // Shell install commands
 const BREW_UPDATE = 'brew update'
 const BREW_INSTALL_FLOW_CLI = 'brew install flow-cli'
-const POWERSHELL_INSTALL_CMD = 'iex "& { $(irm \'https://raw.githubusercontent.com/onflow/flow-cli/master/install.ps1\') }"'
-const BASH_INSTALL_FLOW_CLI = 'sh -ci "$(curl -fsSL https://raw.githubusercontent.com/onflow/flow-cli/master/install.sh)"'
-
+const POWERSHELL_INSTALL_CMD = (githubToken?: string): string =>
+  `iex "& { $(irm 'https://raw.githubusercontent.com/onflow/flow-cli/master/install.ps1') ${
+    githubToken != null ? `-GitHubToken ${githubToken}` : ''
+  }}"`
+const BASH_INSTALL_FLOW_CLI = (githubToken?: string): string =>
+  `(${
+    githubToken != null ? `export GITHUB_TOKEN=${githubToken} && ` : ''
+  }sh -ci "$(curl -fsSL https://raw.githubusercontent.com/onflow/flow-cli/master/install.sh))`
 const VERSION_INFO_URL = 'https://raw.githubusercontent.com/onflow/flow-cli/master/version.txt'
 
 export class InstallFlowCLI extends Installer {
+  #githubToken: string | undefined
+
   constructor () {
     super('Flow CLI')
+    this.#githubToken = process.env.GITHUB_TOKEN
   }
 
-  install (): void {
-    const OS_TYPE = process.platform
-    switch (OS_TYPE) {
-      case 'darwin':
-      case 'linux':
-        this.#install_macos()
-        break
-      case 'win32':
-        CHECK_FLOW_CLI_CMD = 'C:\\Users\\runneradmin\\AppData\\Roaming\\Flow\\flow.exe version'
-        this.#install_windows()
-        break
-      default:
-        this.#install_bash_cmd()
-        break
+  async install (): Promise<void> {
+    await ext?.emulatorCtrl.api.deactivate()
+    try {
+      const OS_TYPE = process.platform
+      switch (OS_TYPE) {
+        case 'darwin':
+        case 'linux':
+          this.#install_macos()
+          break
+        case 'win32':
+          CHECK_FLOW_CLI_CMD = 'C:\\Users\\runneradmin\\AppData\\Roaming\\Flow\\flow.exe version'
+          this.#install_windows()
+          break
+        default:
+          this.#install_bash_cmd()
+          break
+      }
+    } finally {
+      await ext?.emulatorCtrl.api.activate()
     }
   }
 
@@ -89,11 +103,15 @@ export class InstallFlowCLI extends Installer {
   }
 
   #install_windows (): void {
-    execPowerShell(POWERSHELL_INSTALL_CMD)
+    // Retry if bad GH token
+    if (this.#githubToken != null && execPowerShell(POWERSHELL_INSTALL_CMD(this.#githubToken))) { return }
+    execPowerShell(POWERSHELL_INSTALL_CMD())
   }
 
   #install_bash_cmd (): void {
-    execDefault(BASH_INSTALL_FLOW_CLI)
+    // Retry if bad GH token
+    if (this.#githubToken != null && execDefault(BASH_INSTALL_FLOW_CLI(this.#githubToken))) { return }
+    execDefault(BASH_INSTALL_FLOW_CLI())
   }
 
   #checkHomebrew (): boolean {
@@ -113,9 +131,9 @@ export class InstallFlowCLI extends Installer {
       promptUserInfoMessage(
         'There is a new Flow CLI version available: ' + latestStr,
         'Install latest Flow CLI',
-        () => {
+        async () => {
           void window.showInformationMessage('Running Flow CLI installer, please wait...')
-          this.install()
+          await this.install()
           if (!this.verifyInstall()) {
             void window.showErrorMessage('Failed to install Flow CLI')
             return
@@ -145,9 +163,9 @@ export class InstallFlowCLI extends Installer {
       promptUserErrorMessage(
         'Incompatible Flow CLI version: ' + versionStr,
         'Install latest Flow CLI',
-        () => {
+        async () => {
           void window.showInformationMessage('Running Flow CLI installer, please wait...')
-          this.install()
+          await this.install()
           if (!this.verifyInstall()) {
             void window.showErrorMessage('Failed to install Flow CLI')
             return

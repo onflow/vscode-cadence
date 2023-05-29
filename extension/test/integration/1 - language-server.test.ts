@@ -2,13 +2,14 @@ import * as assert from 'assert'
 import { before, after } from 'mocha'
 import { delay } from '../index'
 import { getMockSettings } from '../mock/mockSettings'
-import { LanguageServerAPI } from '../../src/emulator/server/language-server'
+import { EmulatorState, LanguageServerAPI } from '../../src/emulator/server/language-server'
 import * as flowConfig from '../../src/emulator/local/flowConfig'
 import { GetAccountsReponse } from '../../src/emulator/server/responses'
 import { Account } from '../../src/emulator/account'
 import { Settings } from '../../src/settings/settings'
-import { CONNECTED, DISCONNECTED, MaxTimeout } from '../globals'
-import { closeTerminalEmulator, startTerminalEmulator, waitForEmulator } from './terminal-emulator'
+import { MaxTimeout } from '../globals'
+import { closeTerminalEmulator, startTerminalEmulator } from './terminal-emulator'
+import { filter, firstValueFrom } from 'rxjs'
 
 suite('Language Server & Emulator Integration', () => {
   let LS: LanguageServerAPI
@@ -24,16 +25,16 @@ suite('Language Server & Emulator Integration', () => {
 
   after(async function () {
     this.timeout(MaxTimeout)
-    await closeTerminalEmulator(emulatorClosed)
+    await closeTerminalEmulator(waitForEmulatorClosed)
     await LS.deactivate()
   })
 
-  async function emulatorActive (): Promise<boolean> {
-    return LS.emulatorConnected() === CONNECTED
+  async function waitForEmulatorActive (): Promise<void> {
+    await firstValueFrom(LS.emulatorState$.pipe(filter(state => state === EmulatorState.Connected)))
   }
 
-  async function emulatorClosed (): Promise<boolean> {
-    return LS.emulatorConnected() === DISCONNECTED
+  async function waitForEmulatorClosed (): Promise<void> {
+    await firstValueFrom(LS.emulatorState$.pipe(filter(state => state === EmulatorState.Disconnected)))
   }
 
   test('Language Server Client', async () => {
@@ -44,13 +45,13 @@ suite('Language Server & Emulator Integration', () => {
   })
 
   test('Emulator Connection', async () => {
-    assert.strictEqual(await startTerminalEmulator(emulatorActive, emulatorClosed), true)
-    await closeTerminalEmulator(emulatorClosed)
-    assert.strictEqual(await waitForEmulator(emulatorClosed), true)
+    await startTerminalEmulator(waitForEmulatorActive, waitForEmulatorClosed)
+    await closeTerminalEmulator(waitForEmulatorClosed)
+    await waitForEmulatorClosed()
   }).timeout(MaxTimeout)
 
   test('Account Switching', async () => {
-    assert.strictEqual(await startTerminalEmulator(emulatorActive, emulatorClosed), true)
+    await startTerminalEmulator(waitForEmulatorActive, waitForEmulatorClosed)
 
     // Get active account
     const accounts: GetAccountsReponse = await LS.getAccounts()
@@ -70,7 +71,7 @@ suite('Language Server & Emulator Integration', () => {
   }).timeout(MaxTimeout)
 
   test('Account Creation', async () => {
-    assert.strictEqual(await startTerminalEmulator(emulatorActive, emulatorClosed), true)
+    await startTerminalEmulator(waitForEmulatorActive, waitForEmulatorClosed)
 
     const createAccounts = 5
     for (let i = 0; i < createAccounts; i++) {
