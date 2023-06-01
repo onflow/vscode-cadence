@@ -42,6 +42,7 @@ export class InstallFlowCLI extends Installer {
 
   async install (): Promise<void> {
     await ext?.emulatorCtrl.api.deactivate()
+    console.log(process.env.PATH)
     try {
       const OS_TYPE = process.platform
       switch (OS_TYPE) {
