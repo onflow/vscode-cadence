@@ -173,12 +173,12 @@ export class LanguageServerAPI {
       }
     )
 
+    this.client.onDidChangeState((event) => {
+      this.clientState$.next(event.newState)
+    })
+
     await this.client.start()
-      .then(() => {
-        this.clientState$.next(State.Running)
-      })
       .catch((err: Error) => {
-        this.clientState$.next(State.Stopped)
         void window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
       })
 
@@ -192,6 +192,9 @@ export class LanguageServerAPI {
   }
 
   async stopClient (): Promise<void> {
+    // Prevent stopping multiple times (important since LanguageClient state may be startFailed)
+    if(this.clientState$.getValue() === State.Stopped) return
+
     // Set emulator state to disconnected
     this.clientState$.next(State.Stopped)
 
