@@ -69,7 +69,7 @@ export class LanguageServerAPI {
   }
 
   async deactivate (): Promise<void> {
-    let deactivationPromises = [this.#watcherPromise]
+    const deactivationPromises = [this.#watcherPromise]
     if (this.#watcherTimeout != null) {
       clearTimeout(this.#watcherTimeout)
       this.#watcherTimeout = null
@@ -83,19 +83,19 @@ export class LanguageServerAPI {
     const pollingIntervalMs = 1000
 
     // Loop with setTimeout to avoid overlapping calls
-    async function loop (this: LanguageServerAPI) {
+    async function loop (this: LanguageServerAPI): Promise<void> {
       this.#watcherPromise = (async () => {
         try {
           // Wait for client to connect or disconnect
           if (this.clientState$.getValue() === State.Starting) return
-  
+
           // Check if emulator state has changed
           const emulatorFound = await verifyEmulator()
           if ((this.emulatorState$.getValue() === EmulatorState.Connected) === emulatorFound) {
             return // No changes in local emulator state
           }
-  
-          if(this.#watcherTimeout === null) return
+
+          if (this.#watcherTimeout === null) return
 
           // Restart language server
           await this.restart(emulatorFound)
@@ -103,7 +103,6 @@ export class LanguageServerAPI {
           console.log(err)
         }
       })()
-
 
       // Wait for watcher to finish
       await this.#watcherPromise
