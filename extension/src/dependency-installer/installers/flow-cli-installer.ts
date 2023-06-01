@@ -7,6 +7,7 @@ import { execSync } from 'child_process'
 import * as semver from 'semver'
 import fetch from 'node-fetch'
 import { ext } from '../../main'
+import * as vscode from "vscode"
 
 // Command to check flow-cli
 let CHECK_FLOW_CLI_CMD = 'flow version'
@@ -29,6 +30,8 @@ const BASH_INSTALL_FLOW_CLI = (githubToken?: string): string =>
   }sh -ci "$(curl -fsSL https://raw.githubusercontent.com/onflow/flow-cli/master/install.sh))`
 const VERSION_INFO_URL = 'https://raw.githubusercontent.com/onflow/flow-cli/master/version.txt'
 
+const RELOAD_WINDOW_COMMAND = "workbench.action.reloadWindow"
+
 export class InstallFlowCLI extends Installer {
   #githubToken: string | undefined
 
@@ -47,7 +50,6 @@ export class InstallFlowCLI extends Installer {
           this.#install_macos()
           break
         case 'win32':
-          CHECK_FLOW_CLI_CMD = 'C:\\Users\\runneradmin\\AppData\\Roaming\\Flow\\flow.exe version'
           this.#install_windows()
           break
         default:
@@ -55,7 +57,7 @@ export class InstallFlowCLI extends Installer {
           break
       }
     } finally {
-      await ext?.emulatorCtrl.api.activate()
+      vscode.commands.executeCommand(RELOAD_WINDOW_COMMAND)
     }
   }
 
@@ -166,12 +168,6 @@ export class InstallFlowCLI extends Installer {
         async () => {
           void window.showInformationMessage('Running Flow CLI installer, please wait...')
           await this.install()
-          if (!this.verifyInstall()) {
-            void window.showErrorMessage('Failed to install Flow CLI')
-            return
-          }
-          void window.showInformationMessage('Flow CLI installed sucessfully. ' +
-          'You may need to reload the extension.')
         }
       )
       return false
