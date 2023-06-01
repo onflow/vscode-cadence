@@ -55,7 +55,7 @@ export class EmulatorController {
   }
 
   async restartServer (): Promise<void> {
-    await this.api.reset()
+    await this.api.restart()
     void window.showInformationMessage('Restarted language server')
   }
 
