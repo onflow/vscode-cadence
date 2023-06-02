@@ -2,6 +2,7 @@ import { window } from 'vscode'
 import { InstallFlowCLI } from './installers/flow-cli-installer'
 import { Installer, InstallError } from './installer'
 import { promptUserErrorMessage } from '../ui/prompts'
+import { restartVscode } from '../utils/utils'
 
 const INSTALLERS = [
   InstallFlowCLI
@@ -69,7 +70,7 @@ export class DependencyInstaller {
   async #installMissingDependencies (): Promise<void> {
     await Promise.all(this.registeredInstallers.map(async (installer) => {
       try {
-        await installer.runInstall()
+        await installer.runInstall(false)
       } catch (err) {
         if (err instanceof InstallError) {
           void window.showErrorMessage(err.message)
@@ -78,5 +79,11 @@ export class DependencyInstaller {
         }
       }
     }))
+
+    promptUserErrorMessage(
+      'All dependencies installed successfully.  You may need to restart VSCode.',
+      'Restart VSCode',
+      restartVscode
+    )
   }
 }

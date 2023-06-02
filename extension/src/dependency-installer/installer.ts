@@ -21,7 +21,7 @@ export abstract class Installer {
     return this.#installed
   }
 
-  async runInstall (): Promise<void> {
+  async runInstall (shouldReload = false): Promise<void> {
     if (this.#installed) {
       return
     }
@@ -39,7 +39,7 @@ export abstract class Installer {
   }
 
   // Installation logic
-  protected abstract install (): Promise<void>
+  protected abstract install (): Promise<void> | void
 
   // Logic to check if dependency is installed
   protected abstract verifyInstall (): boolean

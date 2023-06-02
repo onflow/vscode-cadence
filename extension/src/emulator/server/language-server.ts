@@ -79,6 +79,10 @@ export class LanguageServerAPI {
     await Promise.all(deactivationPromises)
   }
 
+  get isActive (): boolean {
+    return this.#watcherTimeout != null
+  }
+
   watchEmulator (): void {
     const pollingIntervalMs = 1000
 
