@@ -27,3 +27,32 @@ export async function delay (seconds: number): Promise<void> {
     setTimeout(() => resolve(''), seconds * 1000)
   })
 }
+
+
+export function restartVscode () {
+  const vscodePid = process.ppid
+
+  const POWERSHELL_SCRIPT = `
+  Stop-Process -Id ${vscodePid}
+  Wait-Process -Id ${vscodePid}
+  Start-Process code
+  `
+
+  const BASH_SCRIPT = `
+  kill -9 ${vscodePid}
+  while kill -0 $PID; do 
+      sleep 1
+  done
+  nohup code
+  `
+
+  const OS_TYPE = process.platform
+  switch (OS_TYPE) {
+    case 'win32':
+      execPowerShell(POWERSHELL_SCRIPT)
+      break
+    default:
+      execDefault(BASH_SCRIPT)
+      break
+  }
+}
