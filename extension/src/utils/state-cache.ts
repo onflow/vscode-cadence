@@ -60,7 +60,7 @@ export class StateCache<T> {
     this.invalidate()
   }
 
-  subscribe (observerOrNext?: Partial<Observer<T | undefined>> | ((value: T | undefined) => void) | undefined): void {
-    this.#value.subscribe(observerOrNext)
+  subscribe (observerOrNext?: Partial<Observer<T>> | ((value: T) => void) | undefined): void {
+    (this.#value as BehaviorSubject<T>).subscribe(observerOrNext)
   }
 }

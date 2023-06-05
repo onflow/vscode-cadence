@@ -32,6 +32,11 @@ export class EmulatorController {
     })
   }
 
+  async activate (): Promise<void> {
+    // Connect to language server
+    await this.api.activate()
+  }
+
   async deactivate (): Promise<void> {
     // Disconnect from language server
     await this.api.deactivate()

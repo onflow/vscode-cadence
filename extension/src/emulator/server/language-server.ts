@@ -57,12 +57,10 @@ export class LanguageServerAPI {
 
     // Subscribe to emulator state changes
     this.emulatorState$.subscribe(emulatorStateChanged)
-
-    // Activate the language server
-    void this.activate()
   }
 
   async activate (): Promise<void> {
+    await this.deactivate()
     await this.startClient()
     void this.watchEmulator()
     void this.watchFlowConfiguration()
@@ -84,6 +82,7 @@ export class LanguageServerAPI {
   }
 
   watchEmulator (): void {
+    // Polling interval in milliseconds
     const pollingIntervalMs = 1000
 
     // Loop with setTimeout to avoid overlapping calls

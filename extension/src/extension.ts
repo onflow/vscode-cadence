@@ -33,13 +33,17 @@ export class Extension {
     // Initialize UI
     this.#uiCtrl = new UIController()
 
-    // Check for any missing dependencies
-    this.#dependencyInstaller = new DependencyInstaller()
-
     // Initialize Emulator
     this.emulatorCtrl = new EmulatorController(settings)
     this.emulatorCtrl.api.emulatorState$.subscribe(() => {
       void this.emulatorStateChanged()
+    })
+
+    // Check for any missing dependencies
+    this.#dependencyInstaller = new DependencyInstaller()
+    this.#dependencyInstaller.missingDependencies.subscribe((deps) => {
+      if(deps.length === 0) this.emulatorCtrl.activate()
+      else this.emulatorCtrl.deactivate()
     })
 
     // Initialize ExtensionCommands
@@ -71,7 +75,7 @@ export class Extension {
     await this.#uiCtrl.emulatorStateChanged()
   }
 
-  checkDependencies (): void {
+  async checkDependencies (): Promise<void> {
     this.#dependencyInstaller.checkDependencies()
   }
 

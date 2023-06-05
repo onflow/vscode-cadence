@@ -3,74 +3,67 @@ import { InstallFlowCLI } from './installers/flow-cli-installer'
 import { Installer, InstallError } from './installer'
 import { promptUserErrorMessage } from '../ui/prompts'
 import { restartVscode } from '../utils/utils'
+import { StateCache } from '../utils/state-cache'
 
-const INSTALLERS = [
-  InstallFlowCLI
-  // Add other dependency installers here
+const INSTALLERS: (new () => Installer)[] = [
+  InstallFlowCLI,
 ]
 
 export class DependencyInstaller {
   registeredInstallers: Installer[] = []
+  missingDependencies: StateCache<Installer[]>
 
   constructor () {
     this.#registerInstallers()
-    this.checkDependencies()
+
+    this.missingDependencies = new StateCache(async () => {
+      const missing: Installer[] = []
+      for (const installer of this.registeredInstallers) {
+        if (!(await installer.isInstalled())) {
+          missing.push(installer)
+        }
+      }
+      return missing
+    })
+    this.missingDependencies.subscribe((missing: Installer[]) => {
+      if (missing.length === 0) {
+        window.showInformationMessage('All dependencies installed successfully.')
+      } else {
+        // Prompt user to install missing dependencies
+        promptUserErrorMessage(
+          'Not all dependencies are installed: ' + missing.map(x => x.getName()).join(', '),
+          'Install Missing Dependencies',
+          () => { void this.#installMissingDependencies() }
+        )
+      }
+    })
   }
 
-  checkDependencies (): void {
-    if (!this.#allInstalled()) {
-      const missing: string[] = this.#getMissingDependenciesList()
-
-      // Prompt user to install missing dependencies
-      promptUserErrorMessage(
-        'Not all dependencies are installed: ' + missing.join(', '),
-        'Install Missing Dependencies',
-        () => { void this.#installMissingDependencies() }
-      )
-    }
+  async checkDependencies (): Promise<void> {
+    this.missingDependencies.invalidate()
+    await this.missingDependencies.getValue()
   }
 
   async installMissing (): Promise<void> {
     await this.#installMissingDependencies()
   }
 
-  prettyPrintDepencencies (): void {
-    console.log('Dependencies:')
-    this.registeredInstallers.forEach((installer) => {
-      const installerName = installer.getName()
-      if (installer.isInstalled()) {
-        console.log('  ' + installerName + ' ✓')
-      } else {
-        console.log('  ' + installerName + ' x')
-      }
-    })
-  }
-
   #registerInstallers (): void {
-    INSTALLERS.forEach((_installer) => {
-      const installer = new _installer()
-      this.registeredInstallers.push(installer)
-    })
-  }
-
-  #getMissingDependenciesList (): string[] {
-    const missingDependencies: string[] = []
-    this.registeredInstallers.forEach((installer) => {
-      if (!installer.isInstalled()) {
-        missingDependencies.push(installer.getName())
-      }
-    })
-    return missingDependencies
-  }
-
-  #allInstalled (): boolean {
-    return this.registeredInstallers.find(installer => !installer.isInstalled()) == null
+    // Recursively register installers and their dependencies in the correct order
+    (function registerInstallers(this: DependencyInstaller, installers: (new () => Installer)[]) {
+      installers.forEach((_installer) => {
+        const installer = new _installer()
+        registerInstallers.bind(this)(installer.dependencies)
+        if(!this.registeredInstallers.find(x => x instanceof _installer))
+          this.registeredInstallers.push(installer)
+      })
+    }).bind(this)(INSTALLERS)
   }
 
   async #installMissingDependencies (): Promise<void> {
-    await Promise.all(this.registeredInstallers.map(async (installer) => {
+    await Promise.all((await this.missingDependencies.getValue()).map(async (installer) => {
       try {
-        await installer.runInstall(false)
+        await installer.runInstall()
       } catch (err) {
         if (err instanceof InstallError) {
           void window.showErrorMessage(err.message)
@@ -80,10 +73,15 @@ export class DependencyInstaller {
       }
     }))
 
-    promptUserErrorMessage(
-      'All dependencies installed successfully.  You may need to restart VSCode.',
-      'Restart VSCode',
-      restartVscode
-    )
+    const OS_TYPE = process.platform
+    if (OS_TYPE === 'win32') {
+      promptUserErrorMessage(
+        'All dependencies installed successfully.  You may need to restart VSCode.',
+        'Restart VSCode Now',
+        restartVscode
+      )
+    } else {
+      window.showInformationMessage('All dependencies installed successfully.  You may need to restart active terminals.')
+    }
   }
 }

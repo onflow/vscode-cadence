@@ -11,6 +11,20 @@ export async function run (): Promise<void> {
 
   const testsRoot = path.resolve(__dirname, '..')
 
+  // Install dependencies only
+  if(process.env.INSTALL_DEPENDENCIES_ONLY) {
+    mocha.addFile(path.resolve(testsRoot, 'integration/0 - dependencies.test.js'))
+    return await new Promise((resolve, reject) => {
+        mocha.run(failures => {
+        if (failures > 0) {
+          reject(new Error(`${failures} tests failed.`))
+        } else {
+          resolve()
+        }
+      })
+    })
+  }
+
   return await new Promise((resolve, reject) => {
     glob('**/**.test.js', { cwd: testsRoot }, (err, files) => {
       if (err !== null) {

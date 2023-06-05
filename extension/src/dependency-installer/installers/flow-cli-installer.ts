@@ -1,20 +1,21 @@
 /* Installer for Flow CLI */
 import { window } from 'vscode'
-import { execDefault, execPowerShell, restartVscode } from '../../utils/utils'
+import { didResolve, execDefault, execPowerShell, execVscodeTerminal, restartVscode } from '../../utils/utils'
 import { promptUserInfoMessage, promptUserErrorMessage } from '../../ui/prompts'
 import { Installer } from '../installer'
 import { execSync } from 'child_process'
 import * as semver from 'semver'
+import * as vscode from 'vscode'
 import fetch from 'node-fetch'
 import { ext } from '../../main'
+import { HomebrewInstaller } from './homebrew-installer'
 
 // Command to check flow-cli
 let CHECK_FLOW_CLI_CMD = 'flow version'
 const COMPATIBLE_FLOW_CLI_VERSIONS = '>=0.45.4'
 
 // Flow CLI with homebrew
-const CHECK_HOMEBREW_CMD = 'brew help help' // Run this to check if brew is executable
-const BASH_INSTALL_HOMEBREW = '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+const BASH_INSTALL_HOMEBREW = '$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh); exit"'
 
 // Shell install commands
 const BREW_UPDATE = 'brew update'
@@ -32,7 +33,13 @@ export class InstallFlowCLI extends Installer {
   #githubToken: string | undefined
 
   constructor () {
-    super('Flow CLI')
+    // Homebrew is a dependency for macos and linux
+    const dependencies: (new () => Installer)[] = []
+    if (process.platform === 'darwin' || process.platform === 'linux') {
+      dependencies.push(HomebrewInstaller)
+    }
+
+    super('Flow CLI', dependencies)
     this.#githubToken = process.env.GITHUB_TOKEN
   }
 
@@ -40,21 +47,25 @@ export class InstallFlowCLI extends Installer {
     const isActive = ext?.emulatorCtrl.api.isActive
     if (isActive) await ext?.emulatorCtrl.api.deactivate()
     const OS_TYPE = process.platform
-    let installationResult: boolean
-    switch (OS_TYPE) {
-      case 'darwin':
-      case 'linux':
-        installationResult = await this.#install_macos()
-        break
-      case 'win32':
-        installationResult = this.#install_windows()
-        break
-      default:
-        installationResult = this.#install_bash_cmd()
-        break
+
+    try {
+      switch (OS_TYPE) {
+        case 'darwin':
+        case 'linux':
+          await this.#install_macos()
+          break
+        case 'win32':
+          await this.#install_windows()
+          break
+        default:
+          await this.#install_bash_cmd()
+          break
+      }
+    } catch {
+      window.showErrorMessage('Failed to install Flow CLI')
     }
     if (isActive) await ext?.emulatorCtrl.api.activate()
-    
+
     promptUserErrorMessage(
       'All dependencies installed successfully.  You may need to restart VSCode.',
       'Restart VSCode',
@@ -62,67 +73,23 @@ export class InstallFlowCLI extends Installer {
     )
   }
 
-  async #install_macos (): Promise<boolean> {
-    if (!this.#checkHomebrew()) {
-      // Prompt install Homebrew
-      promptUserInfoMessage(
-        'Please install Homebrew to allow for the installation of Flow CLI',
-        'Install Hombrew in terminal',
-        () => { this.#installHomebrew() }
-      )
-    } else {
-      this.#brewInstallFlowCLI()
-    }
-
-    return true
+  async #install_macos (): Promise<void> {
+    // Install Flow CLI using homebrew
+    void window.showInformationMessage('Installing Flow CLI')
+    await execDefault(BREW_UPDATE)
+    await execDefault(BREW_INSTALL_FLOW_CLI)
   }
 
-  #installHomebrew (): boolean {
-    // Help user install homebrew in a terminal
-    const term = window.createTerminal({
-      name: 'Install Homebrew',
-      hideFromUser: true
-    })
-    term.sendText(BASH_INSTALL_HOMEBREW)
-    term.show()
-    this.#brewInstallFlowCLI(true)
-    return true
-    //TODO: PLACEHOLDER
-  }
-
-  #brewInstallFlowCLI (prompt: boolean = false): void {
-    if (prompt) {
-      // Prompt install Flow CLI using homebrew
-      promptUserInfoMessage(
-        'Install Flow CLI using Homebrew',
-        'Install Flow CLI',
-        () => {
-          void execDefault(BREW_UPDATE)
-          void execDefault(BREW_INSTALL_FLOW_CLI)
-        }
-      )
-    } else {
-      // Install Flow CLI using homebrew
-      void window.showInformationMessage('Installing Flow CLI')
-      void execDefault(BREW_UPDATE)
-      void execDefault(BREW_INSTALL_FLOW_CLI)
-    }
-  }
-
-  #install_windows (): boolean {
+  async #install_windows (): Promise<void> {
     // Retry if bad GH token
-    if (this.#githubToken != null && execPowerShell(POWERSHELL_INSTALL_CMD(this.#githubToken))) { return true }
-    return execPowerShell(POWERSHELL_INSTALL_CMD())
+    if (this.#githubToken != null && (await execPowerShell(POWERSHELL_INSTALL_CMD(this.#githubToken)))) { return }
+    await execVscodeTerminal('Install Flow CLI', POWERSHELL_INSTALL_CMD(this.#githubToken))
   }
 
-  #install_bash_cmd (): boolean {
+  async #install_bash_cmd (): Promise<void> {
     // Retry if bad GH token
-    if (this.#githubToken != null && execDefault(BASH_INSTALL_FLOW_CLI(this.#githubToken))) { return true }
-    return execDefault(BASH_INSTALL_FLOW_CLI())
-  }
-
-  #checkHomebrew (): boolean {
-    return execDefault(CHECK_HOMEBREW_CMD)
+    if (this.#githubToken != null && (await execDefault(BASH_INSTALL_FLOW_CLI(this.#githubToken)))) { return }
+    await execVscodeTerminal("Install Flow CLI", BASH_INSTALL_FLOW_CLI())
   }
 
   async findLatestVersion (currentVersion: semver.SemVer): Promise<void> {
@@ -152,7 +119,7 @@ export class InstallFlowCLI extends Installer {
     }
   }
 
-  checkVersion (): boolean {
+  async checkVersion (): Promise<boolean> {
     // Get user's version informaton
     const buffer: Buffer = execSync(CHECK_FLOW_CLI_CMD)
 
@@ -180,14 +147,14 @@ export class InstallFlowCLI extends Installer {
     }
 
     // Check for newer version
-    void this.findLatestVersion(version)
+    await this.findLatestVersion(version)
 
     return true
   }
 
-  verifyInstall (): boolean {
+  async verifyInstall (): Promise<boolean> {
     // Check if flow-cli is executable
-    if (!execDefault(CHECK_FLOW_CLI_CMD)) return false
+    if (!await didResolve(execDefault(CHECK_FLOW_CLI_CMD))) return false
 
     // Check flow-cli version number
     return this.checkVersion()

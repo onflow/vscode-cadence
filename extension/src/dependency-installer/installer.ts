@@ -5,10 +5,12 @@ import { window } from 'vscode'
 export class InstallError extends Error {}
 
 export abstract class Installer {
+  dependencies: (new () => Installer)[]
   #installerName: string
-  #installed: boolean
+  #installed: Promise<boolean> | boolean
 
-  constructor (name: string) {
+  constructor (name: string, dependencies: (new () => Installer)[]) {
+    this.dependencies = dependencies
     this.#installerName = name
     this.#installed = this.verifyInstall()
   }
@@ -17,12 +19,13 @@ export abstract class Installer {
     return this.#installerName
   }
 
-  isInstalled (): boolean {
-    return this.#installed
+  async isInstalled (): Promise<boolean> {
+    return await this.#installed
   }
 
-  async runInstall (shouldReload = false): Promise<void> {
-    if (this.#installed) {
+  // Run installer for this dependency and return true if needs a restart to take effect
+  async runInstall (): Promise<void> {
+    if (await this.isInstalled()) {
       return
     }
 
@@ -34,6 +37,7 @@ export abstract class Installer {
     }
 
     this.#installed = true
+
     void window.showInformationMessage(this.#installerName + ' installed sucessfully. ' +
     'You may need to reload the extension.')
   }
@@ -42,5 +46,5 @@ export abstract class Installer {
   protected abstract install (): Promise<void> | void
 
   // Logic to check if dependency is installed
-  protected abstract verifyInstall (): boolean
+  protected abstract verifyInstall (): Promise<boolean>
 }
