@@ -12,7 +12,7 @@ export async function run (): Promise<void> {
   const testsRoot = path.resolve(__dirname, '..')
 
   // Install dependencies only
-  if(process.env.INSTALL_DEPENDENCIES_ONLY) {
+  if(process.env.INSTALL_DEPENDENCIES_ONLY === 'true') {
     mocha.addFile(path.resolve(__dirname, 'integration/0 - dependencies.test.js'))
     return await new Promise((resolve, reject) => {
         mocha.run(failures => {

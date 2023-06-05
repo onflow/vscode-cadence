@@ -7,7 +7,7 @@ import * as os from 'os'
 
 // Note: Dependency installation must run before other integration tests
 suite('Dependency Installer', () => {
-  if(!process.env.SKIP_INSTALL_DEPENDENCIES) {
+  if(process.env.SKIP_INSTALL_DEPENDENCIES === 'true') {
     test('Dependencies Installed', async () => {
       const dependencyManager = new depInstaller.DependencyInstaller()
       await dependencyManager.checkDependencies()
