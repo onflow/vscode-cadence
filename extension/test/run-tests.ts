@@ -23,14 +23,14 @@ async function main (): Promise<void> {
         extensionDevelopmentPath,
         extensionTestsPath,
         launchArgs: [testWorkspace, '--disable-telemetry'],
-        extensionTestsEnv: { 'SKIP_INSTALL_DEPENDENCIES': 'true' },
       })
     } else {
       // Download VS Code, unzip it and run the integration test
       await runTests({
         extensionDevelopmentPath,
         extensionTestsPath,
-        launchArgs: [testWorkspace, '--disable-telemetry']
+        launchArgs: [testWorkspace, '--disable-telemetry'],
+        extensionTestsEnv: { 'INSTALL_DEPENDENCIES': 'true' },
       })
     }
 

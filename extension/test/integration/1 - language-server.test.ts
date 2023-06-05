@@ -21,6 +21,7 @@ suite('Language Server & Emulator Integration', () => {
     settings = getMockSettings()
     flowConfig.setConfigPath(settings.customConfigPath)
     LS = new LanguageServerAPI(settings)
+    await LS.activate()
   })
 
   after(async function () {

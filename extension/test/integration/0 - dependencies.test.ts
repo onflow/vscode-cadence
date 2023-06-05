@@ -4,16 +4,11 @@ import { MaxTimeout } from '../globals'
 import { restartVscode } from '../../src/utils/utils'
 import { window } from 'vscode'
 import * as os from 'os'
+import { getMockSettings } from '../mock/mockSettings'
 
 // Note: Dependency installation must run before other integration tests
 suite('Dependency Installer', () => {
-  if(process.env.SKIP_INSTALL_DEPENDENCIES === 'true') {
-    test('Dependencies Installed', async () => {
-      const dependencyManager = new depInstaller.DependencyInstaller()
-      await dependencyManager.checkDependencies()
-      assert.deepStrictEqual(await dependencyManager.missingDependencies.getValue(), [])
-    })
-  } else {
+  if(process.env.INSTALL_DEPENDENCIES === 'true') {
     test('Install Missing Dependencies', async () => {
       const dependencyManager = new depInstaller.DependencyInstaller()
       await assert.doesNotReject(async () => { await dependencyManager.installMissing() })
@@ -27,5 +22,11 @@ suite('Dependency Installer', () => {
         restartVscode()
       }
     }).timeout(MaxTimeout)
+  } else {
+    test('Dependencies Installed', async () => {
+      const dependencyManager = new depInstaller.DependencyInstaller()
+      await dependencyManager.checkDependencies()
+      assert.deepStrictEqual(await dependencyManager.missingDependencies.getValue(), [])
+    })
   }
 })

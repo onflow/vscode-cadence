@@ -103,7 +103,7 @@ export class LanguageServerAPI {
           // Restart language server
           await this.restart(emulatorFound)
         } catch (err) {
-          console.log(err)
+          console.error(err)
         }
       })()
 

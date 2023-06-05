@@ -65,12 +65,6 @@ export class InstallFlowCLI extends Installer {
       window.showErrorMessage('Failed to install Flow CLI')
     }
     if (isActive) await ext?.emulatorCtrl.api.activate()
-
-    promptUserErrorMessage(
-      'All dependencies installed successfully.  You may need to restart VSCode.',
-      'Restart VSCode',
-      restartVscode
-    )
   }
 
   async #install_macos (): Promise<void> {
