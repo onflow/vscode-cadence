@@ -13,13 +13,13 @@ suite('Dependency Installer', () => {
       const dependencyManager = new depInstaller.DependencyInstaller()
       await assert.doesNotReject(async () => { await dependencyManager.installMissing() })
 
-      // Check that all dependencies are installed
-      await dependencyManager.checkDependencies()
-      assert.deepStrictEqual(await dependencyManager.missingDependencies.getValue(), [])
-
       if(os.platform() === 'win32') {
         // Restart extension and check that all dependencies are still installed
         restartVscode()
+      } else {
+        // Check that all dependencies are installed
+        await dependencyManager.checkDependencies()
+        assert.deepStrictEqual(await dependencyManager.missingDependencies.getValue(), [])
       }
     }).timeout(MaxTimeout)
   } else {
