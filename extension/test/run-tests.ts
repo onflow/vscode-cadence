@@ -18,18 +18,19 @@ async function main (): Promise<void> {
         extensionDevelopmentPath,
         extensionTestsPath,
         launchArgs: [testWorkspace, '--disable-telemetry'],
-        extensionTestsEnv: { INSTALL_DEPENDENCIES: 'true' }
       })
 
       // Get new environment variables
       const PATH = (await execPowerShell(GET_PATH_POWER_SHELL)).stdout
+
+      console.log(PATH)
 
       // Run the rest of the tests
       await runTests({
         extensionDevelopmentPath,
         extensionTestsPath,
         launchArgs: [testWorkspace, '--disable-telemetry'],
-        extensionTestsEnv: { PATH }
+        extensionTestsEnv: { PATH, DEPENDENCIES_INSTALLED: 'true' }
       })
     } else {
       // Download VS Code, unzip it and run the integration test
@@ -37,7 +38,6 @@ async function main (): Promise<void> {
         extensionDevelopmentPath,
         extensionTestsPath,
         launchArgs: [testWorkspace, '--disable-telemetry'],
-        extensionTestsEnv: { INSTALL_DEPENDENCIES: 'true' }
       })
     }
   } catch (err) {
