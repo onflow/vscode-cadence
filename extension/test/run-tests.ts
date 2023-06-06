@@ -4,7 +4,7 @@ import * as os from 'os'
 import { runTests } from '@vscode/test-electron'
 import { execPowerShell } from '../src/utils/exec-system'
 
-const GET_PATH_POWER_SHELL = 'echo [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User");'
+const GET_PATH_POWER_SHELL = 'echo ([System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User"));'
 
 async function main (): Promise<void> {
   try {
@@ -23,8 +23,6 @@ async function main (): Promise<void> {
 
       // Get new environment variables
       const PATH = (await execPowerShell(GET_PATH_POWER_SHELL)).stdout
-
-      console.log(PATH)
 
       // Run the rest of the tests
       await runTests({
