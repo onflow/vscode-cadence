@@ -1,4 +1,4 @@
-import { BehaviorSubject, Observable, Observer, firstValueFrom, skip } from 'rxjs'
+import { BehaviorSubject, Observable, Observer, Subscription, firstValueFrom, skip } from 'rxjs'
 
 enum ValidationState {
   Valid = 0,
@@ -16,6 +16,7 @@ export class StateCache<T> {
   #validationState: ValidationState = ValidationState.Valid
   #value: BehaviorSubject<T | undefined> = new BehaviorSubject<T | undefined>(undefined)
   #fetcher: () => Promise<T>
+  // Observable to subscribe to in order to skip initial undefined value
   #observable: Observable<T> = (this.#value as BehaviorSubject<T>).pipe(skip(1))
 
   constructor (fetcher: () => Promise<T>) {
@@ -61,7 +62,7 @@ export class StateCache<T> {
     this.invalidate()
   }
 
-  subscribe (observerOrNext?: Partial<Observer<T>> | ((value: T) => void) | undefined): void {
-    this.#observable.subscribe(observerOrNext)
+  subscribe (observerOrNext?: Partial<Observer<T>> | ((value: T) => void) | undefined): Subscription {
+    return this.#observable.subscribe(observerOrNext)
   }
 }

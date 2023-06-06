@@ -1,10 +1,10 @@
-import { REFRESH_PATH_POWERSHELL } from "./constants"
-import { window } from "vscode"
+import { REFRESH_PATH_POWERSHELL } from './constants'
+import { window } from 'vscode'
 
 // Execute a command in vscode terminal
 export async function execVscodeTerminal (name: string, command: string, shellPath?: string): Promise<void> {
   const OS_TYPE = process.platform
-  if (shellPath == null) { shellPath = OS_TYPE ? 'powershell.exe' : '/bin/bash' }
+  if (shellPath == null) { shellPath = OS_TYPE === 'win32' ? 'powershell.exe' : '/bin/bash' }
 
   const term = window.createTerminal({
     name,
@@ -30,7 +30,7 @@ export async function execVscodeTerminal (name: string, command: string, shellPa
           if (term.exitStatus?.code === 0) {
             resolve()
           } else {
-            reject('Terminal execution failed')
+            reject(new Error('Terminal execution failed'))
           }
         }
       }

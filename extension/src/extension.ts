@@ -42,8 +42,8 @@ export class Extension {
     // Check for any missing dependencies
     this.#dependencyInstaller = new DependencyInstaller()
     this.#dependencyInstaller.missingDependencies.subscribe((deps) => {
-      if (deps.length === 0) this.emulatorCtrl.activate()
-      else this.emulatorCtrl.deactivate()
+      if (deps.length === 0) void this.emulatorCtrl.activate()
+      else void this.emulatorCtrl.deactivate()
     })
 
     // Initialize ExtensionCommands
@@ -76,7 +76,7 @@ export class Extension {
   }
 
   async checkDependencies (): Promise<void> {
-    this.#dependencyInstaller.checkDependencies()
+    await this.#dependencyInstaller.checkDependencies()
   }
 
   async installMissingDependencies (): Promise<void> {

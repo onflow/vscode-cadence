@@ -131,8 +131,7 @@ export class InstallFlowCLI extends Installer {
         'Install latest Flow CLI',
         async () => {
           void window.showInformationMessage('Running Flow CLI installer, please wait...')
-
-          this.install()
+          await this.install()
         }
       )
       return false
