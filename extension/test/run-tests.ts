@@ -18,7 +18,7 @@ async function main (): Promise<void> {
         extensionDevelopmentPath,
         extensionTestsPath,
         launchArgs: [testWorkspace, '--disable-telemetry'],
-        extensionTestsEnv: { INSTALL_DEPENDENCIES_ONLY: 'true' }
+        extensionTestsEnv: { INSTALL_DEPENDENCIES: 'true' }
       })
 
       // Get new environment variables
