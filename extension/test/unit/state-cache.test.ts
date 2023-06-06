@@ -86,9 +86,9 @@ suite('State Cache Unit Tests', () => {
     }
     const stateCache = new StateCache(fetcher)
 
-    ASSERT_EQUAL(await new Promise<void>((resolve, reject) => {
-      const subscription = stateCache.subscribe(() => {
-        resolve()
+    ASSERT_EQUAL(await new Promise<string>((resolve) => {
+      const subscription = stateCache.subscribe(val => {
+        resolve(val)
         subscription.unsubscribe()
       })
     }), 'FOOBAR')
