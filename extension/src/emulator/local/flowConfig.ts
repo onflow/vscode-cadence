@@ -2,7 +2,7 @@
 import { window, workspace, commands } from 'vscode'
 import * as util from 'util'
 import * as cp from 'child_process'
-import { FILE_PATH_EMPTY } from '../../utils/utils'
+import { FILE_PATH_EMPTY } from '../../utils/constants'
 import { Settings } from '../../settings/settings'
 import * as fs from 'fs'
 import { StateCache } from '../../utils/state-cache'

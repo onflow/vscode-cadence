@@ -1,6 +1,8 @@
 /* Installer for Flow CLI */
 import { window } from 'vscode'
-import { didResolve, execDefault, execPowerShell, execVscodeTerminal } from '../../utils/utils'
+import { didResolve } from '../../utils/utils'
+import { execDefault, execPowerShell } from '../../utils/exec-system'
+import { execVscodeTerminal } from '../../utils/exec-vscode'
 import { promptUserInfoMessage, promptUserErrorMessage } from '../../ui/prompts'
 import { Installer } from '../installer'
 import { execSync } from 'child_process'

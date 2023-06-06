@@ -2,7 +2,7 @@
 import * as path from 'path'
 import * as os from 'os'
 import { runTests } from '@vscode/test-electron'
-import { execPowerShell } from '../src/utils/utils'
+import { execPowerShell } from '../src/utils/exec-system'
 
 const GET_PATH_POWER_SHELL = 'echo [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User");'
 

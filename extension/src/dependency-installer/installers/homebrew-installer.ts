@@ -1,5 +1,7 @@
 /* Installer for Flow CLI */
-import { didResolve, execDefault, execVscodeTerminal } from '../../utils/utils'
+import { didResolve } from '../../utils/utils'
+import { execDefault } from '../../utils/exec-system'
+import { execVscodeTerminal } from '../../utils/exec-vscode'
 import { Installer } from '../installer'
 
 // Flow CLI with homebrew
