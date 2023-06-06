@@ -22,7 +22,7 @@ async function main (): Promise<void> {
       })
 
       // Get new environment variables
-      const PATH = (await execPowerShell(GET_PATH_POWER_SHELL)).stdout
+      const PATH = (await execPowerShell(GET_PATH_POWER_SHELL)).stdout.replace(/\r?\n|\r/g, '')
 
       // Run the rest of the tests
       await runTests({
