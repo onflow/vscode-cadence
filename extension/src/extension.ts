@@ -33,17 +33,17 @@ export class Extension {
     // Initialize UI
     this.#uiCtrl = new UIController()
 
-    // Initialize Emulator
-    this.emulatorCtrl = new EmulatorController(settings)
-    this.emulatorCtrl.api.emulatorState$.subscribe(() => {
-      void this.emulatorStateChanged()
-    })
-
     // Check for any missing dependencies
     this.#dependencyInstaller = new DependencyInstaller()
     this.#dependencyInstaller.missingDependencies.subscribe((deps) => {
       if (deps.length === 0) void this.emulatorCtrl.activate()
       else void this.emulatorCtrl.deactivate()
+    })
+
+    // Initialize Emulator
+    this.emulatorCtrl = new EmulatorController(settings)
+    this.emulatorCtrl.api.emulatorState$.subscribe(() => {
+      void this.emulatorStateChanged()
     })
 
     // Initialize ExtensionCommands
