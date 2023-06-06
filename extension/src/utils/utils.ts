@@ -1,6 +1,5 @@
-import { exec } from 'child_process'
-import { promisify } from 'util'
 import { window } from 'vscode'
+import { execDefault, execPowerShell } from './exec-shell'
 
 export const FILE_PATH_EMPTY = ''
 
@@ -51,16 +50,6 @@ export async function execVscodeTerminal (name: string, command: string, shellPa
       }
     )
   })
-}
-
-// Execute a command in powershell; returns false on error
-export async function execPowerShell (cmd: string): Promise<{ stdout: string, stderr: string }> {
-  return await promisify(exec)(cmd, { shell: 'powershell.exe' })
-}
-
-// Execute command in default shell; returns false on error
-export async function execDefault (cmd: string): Promise<{ stdout: string, stderr: string }> {
-  return await promisify(exec)(cmd)
 }
 
 export async function delay (seconds: number): Promise<void> {
