@@ -23,7 +23,7 @@ export async function restartVscode (): Promise<void> {
   const POWERSHELL_SCRIPT = `
   Stop-Process -Id ${vscodePid}
   Wait-Process -Id ${vscodePid}
-  ${REFRESH_PATH_POWERSHELL.slice(0, -2)}
+  ${REFRESH_PATH_POWERSHELL}
   Start-Process code
   `
 
