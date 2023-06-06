@@ -25,10 +25,6 @@ export abstract class Installer {
   }
 
   async runInstall (): Promise<void> {
-    if (await this.isInstalled()) {
-      return
-    }
-
     void window.showInformationMessage('Running ' + this.#installerName + ' installer, please wait...')
     await this.install()
 

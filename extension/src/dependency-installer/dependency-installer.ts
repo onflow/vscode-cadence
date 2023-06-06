@@ -4,6 +4,7 @@ import { Installer, InstallError } from './installer'
 import { promptUserErrorMessage } from '../ui/prompts'
 import { restartVscode } from '../utils/utils'
 import { StateCache } from '../utils/state-cache'
+import { promptUserInfoMessage } from '../ui/prompts'
 
 const INSTALLERS: Array<new () => Installer> = [
   InstallFlowCLI
@@ -26,9 +27,7 @@ export class DependencyInstaller {
       return missing
     })
     this.missingDependencies.subscribe((missing: Installer[]) => {
-      if (missing.length === 0) {
-        void window.showInformationMessage('All dependencies installed successfully.')
-      } else {
+      if (missing.length !== 0) {
         // Prompt user to install missing dependencies
         promptUserErrorMessage(
           'Not all dependencies are installed: ' + missing.map(x => x.getName()).join(', '),
@@ -74,7 +73,7 @@ export class DependencyInstaller {
 
     const OS_TYPE = process.platform
     if (OS_TYPE === 'win32') {
-      promptUserErrorMessage(
+      promptUserInfoMessage(
         'All dependencies installed successfully.  You may need to restart VSCode.',
         'Restart VSCode Now',
         restartVscode
