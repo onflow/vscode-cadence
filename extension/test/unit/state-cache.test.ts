@@ -79,4 +79,18 @@ suite('State Cache Unit Tests', () => {
 
     ASSERT_EQUAL(await stateCache.getValue(), 'foobar')
   }).timeout(2000)
+
+  test('Does not return undefined for subscription to first value', async () => {
+    const fetcher = async (): Promise<string> => {
+      return 'FOOBAR'
+    }
+    const stateCache = new StateCache(fetcher)
+
+    ASSERT_EQUAL(await new Promise<void>((resolve, reject) => {
+      const subscription = stateCache.subscribe(() => {
+        resolve()
+        subscription.unsubscribe()
+      })
+    }), 'FOOBAR')
+  })
 })
