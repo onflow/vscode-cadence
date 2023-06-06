@@ -196,7 +196,7 @@ export class LanguageServerAPI {
 
   async stopClient (): Promise<void> {
     // Prevent stopping multiple times (important since LanguageClient state may be startFailed)
-    if(this.clientState$.getValue() === State.Stopped) return
+    if (this.clientState$.getValue() === State.Stopped) return
 
     // Set emulator state to disconnected
     this.clientState$.next(State.Stopped)

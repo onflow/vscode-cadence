@@ -11,11 +11,11 @@ export class HomebrewInstaller extends Installer {
     super('Homebrew', [])
   }
 
-  async install(): Promise<void> {
-    await execVscodeTerminal("Install Homebrew", BASH_INSTALL_HOMEBREW)
+  async install (): Promise<void> {
+    await execVscodeTerminal('Install Homebrew', BASH_INSTALL_HOMEBREW)
   }
 
   async verifyInstall (): Promise<boolean> {
-    return didResolve(execDefault(CHECK_HOMEBREW_CMD))
+    return await didResolve(execDefault(CHECK_HOMEBREW_CMD))
   }
 }

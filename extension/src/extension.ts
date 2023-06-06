@@ -42,7 +42,7 @@ export class Extension {
     // Check for any missing dependencies
     this.#dependencyInstaller = new DependencyInstaller()
     this.#dependencyInstaller.missingDependencies.subscribe((deps) => {
-      if(deps.length === 0) this.emulatorCtrl.activate()
+      if (deps.length === 0) this.emulatorCtrl.activate()
       else this.emulatorCtrl.deactivate()
     })
 

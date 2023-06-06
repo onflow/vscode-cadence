@@ -16,7 +16,7 @@ export class StateCache<T> {
   #validationState: ValidationState = ValidationState.Valid
   #value: BehaviorSubject<T | undefined> = new BehaviorSubject<T | undefined>(undefined)
   #fetcher: () => Promise<T>
-  #observable: Observable<T> = (this.#value as BehaviorSubject<T>).pipe(skip(1)) as Observable<T>
+  #observable: Observable<T> = (this.#value as BehaviorSubject<T>).pipe(skip(1))
 
   constructor (fetcher: () => Promise<T>) {
     this.#fetcher = fetcher

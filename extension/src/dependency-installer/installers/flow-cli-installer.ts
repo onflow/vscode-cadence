@@ -1,21 +1,17 @@
 /* Installer for Flow CLI */
 import { window } from 'vscode'
-import { didResolve, execDefault, execPowerShell, execVscodeTerminal, restartVscode } from '../../utils/utils'
+import { didResolve, execDefault, execPowerShell, execVscodeTerminal } from '../../utils/utils'
 import { promptUserInfoMessage, promptUserErrorMessage } from '../../ui/prompts'
 import { Installer } from '../installer'
 import { execSync } from 'child_process'
 import * as semver from 'semver'
-import * as vscode from 'vscode'
 import fetch from 'node-fetch'
 import { ext } from '../../main'
 import { HomebrewInstaller } from './homebrew-installer'
 
 // Command to check flow-cli
-let CHECK_FLOW_CLI_CMD = 'flow version'
+const CHECK_FLOW_CLI_CMD = 'flow version'
 const COMPATIBLE_FLOW_CLI_VERSIONS = '>=0.45.4'
-
-// Flow CLI with homebrew
-const BASH_INSTALL_HOMEBREW = '$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh); exit"'
 
 // Shell install commands
 const BREW_UPDATE = 'brew update'
@@ -34,7 +30,7 @@ export class InstallFlowCLI extends Installer {
 
   constructor () {
     // Homebrew is a dependency for macos and linux
-    const dependencies: (new () => Installer)[] = []
+    const dependencies: Array<new () => Installer> = []
     if (process.platform === 'darwin' || process.platform === 'linux') {
       dependencies.push(HomebrewInstaller)
     }
@@ -43,8 +39,8 @@ export class InstallFlowCLI extends Installer {
     this.#githubToken = process.env.GITHUB_TOKEN
   }
 
-  async install(): Promise<void> {
-    const isActive = ext?.emulatorCtrl.api.isActive
+  async install (): Promise<void> {
+    const isActive = ext?.emulatorCtrl.api.isActive === true
     if (isActive) await ext?.emulatorCtrl.api.deactivate()
     const OS_TYPE = process.platform
 
@@ -62,7 +58,7 @@ export class InstallFlowCLI extends Installer {
           break
       }
     } catch {
-      window.showErrorMessage('Failed to install Flow CLI')
+      void window.showErrorMessage('Failed to install Flow CLI')
     }
     if (isActive) await ext?.emulatorCtrl.api.activate()
   }
@@ -76,14 +72,14 @@ export class InstallFlowCLI extends Installer {
 
   async #install_windows (): Promise<void> {
     // Retry if bad GH token
-    if (this.#githubToken != null && (await execPowerShell(POWERSHELL_INSTALL_CMD(this.#githubToken)))) { return }
+    if (this.#githubToken != null && (await didResolve(execPowerShell(POWERSHELL_INSTALL_CMD(this.#githubToken))))) { return }
     await execVscodeTerminal('Install Flow CLI', POWERSHELL_INSTALL_CMD(this.#githubToken))
   }
 
   async #install_bash_cmd (): Promise<void> {
     // Retry if bad GH token
-    if (this.#githubToken != null && (await execDefault(BASH_INSTALL_FLOW_CLI(this.#githubToken)))) { return }
-    await execVscodeTerminal("Install Flow CLI", BASH_INSTALL_FLOW_CLI())
+    if (this.#githubToken != null && (await didResolve(execDefault(BASH_INSTALL_FLOW_CLI(this.#githubToken))))) { return }
+    await execVscodeTerminal('Install Flow CLI', BASH_INSTALL_FLOW_CLI())
   }
 
   async findLatestVersion (currentVersion: semver.SemVer): Promise<void> {
@@ -151,7 +147,7 @@ export class InstallFlowCLI extends Installer {
     if (!await didResolve(execDefault(CHECK_FLOW_CLI_CMD))) return false
 
     // Check flow-cli version number
-    return this.checkVersion()
+    return await this.checkVersion()
   }
 }
 

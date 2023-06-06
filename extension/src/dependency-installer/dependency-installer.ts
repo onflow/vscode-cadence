@@ -5,8 +5,8 @@ import { promptUserErrorMessage } from '../ui/prompts'
 import { restartVscode } from '../utils/utils'
 import { StateCache } from '../utils/state-cache'
 
-const INSTALLERS: (new () => Installer)[] = [
-  InstallFlowCLI,
+const INSTALLERS: Array<new () => Installer> = [
+  InstallFlowCLI
 ]
 
 export class DependencyInstaller {
@@ -27,7 +27,7 @@ export class DependencyInstaller {
     })
     this.missingDependencies.subscribe((missing: Installer[]) => {
       if (missing.length === 0) {
-        window.showInformationMessage('All dependencies installed successfully.')
+        void window.showInformationMessage('All dependencies installed successfully.')
       } else {
         // Prompt user to install missing dependencies
         promptUserErrorMessage(
@@ -50,12 +50,11 @@ export class DependencyInstaller {
 
   #registerInstallers (): void {
     // Recursively register installers and their dependencies in the correct order
-    (function registerInstallers(this: DependencyInstaller, installers: (new () => Installer)[]) {
+    (function registerInstallers (this: DependencyInstaller, installers: Array<new () => Installer>) {
       installers.forEach((_installer) => {
         const installer = new _installer()
         registerInstallers.bind(this)(installer.dependencies)
-        if(!this.registeredInstallers.find(x => x instanceof _installer))
-          this.registeredInstallers.push(installer)
+        if (this.registeredInstallers.find(x => x instanceof _installer) == null) { this.registeredInstallers.push(installer) }
       })
     }).bind(this)(INSTALLERS)
   }
@@ -81,7 +80,7 @@ export class DependencyInstaller {
         restartVscode
       )
     } else {
-      window.showInformationMessage('All dependencies installed successfully.  You may need to restart active terminals.')
+      void window.showInformationMessage('All dependencies installed successfully.  You may need to restart active terminals.')
     }
   }
 }
