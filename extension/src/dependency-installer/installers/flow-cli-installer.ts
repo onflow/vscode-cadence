@@ -10,7 +10,7 @@ import { ext } from '../../main'
 
 // Command to check flow-cli
 let CHECK_FLOW_CLI_CMD = 'flow version'
-const COMPATIBLE_FLOW_CLI_VERSIONS = '>=0.45.4'
+const COMPATIBLE_FLOW_CLI_VERSIONS = '>=1.2.0'
 
 // Flow CLI with homebrew
 const CHECK_HOMEBREW_CMD = 'brew help help' // Run this to check if brew is executable
