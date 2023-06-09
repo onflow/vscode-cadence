@@ -20,9 +20,9 @@ const BASH_INSTALL_HOMEBREW = '/bin/bash -c "$(curl -fsSL https://raw.githubuser
 const BREW_UPDATE = 'brew update'
 const BREW_INSTALL_FLOW_CLI = 'brew install flow-cli'
 const POWERSHELL_INSTALL_CMD = (githubToken?: string): string =>
-  `iex "& { $(irm 'https://raw.githubusercontent.com/onflow/flow-cli/master/install.ps1') ${
-    githubToken != null ? `-GitHubToken ${githubToken}` : ''
-  }}"`
+  `iex "& { $(irm 'https://raw.githubusercontent.com/onflow/flow-cli/master/install.ps1') } ${
+    githubToken != null ? `-GitHubToken ${githubToken} ` : ''
+  }"`
 const BASH_INSTALL_FLOW_CLI = (githubToken?: string): string =>
   `(${
     githubToken != null ? `export GITHUB_TOKEN=${githubToken} && ` : ''

@@ -5,12 +5,14 @@ import * as cp from 'child_process'
 import { FILE_PATH_EMPTY } from '../../utils/utils'
 import { Settings } from '../../settings/settings'
 import * as fs from 'fs'
+import { StateCache } from '../../utils/state-cache'
+import { Disposable } from 'vscode-languageclient'
 
 const exec = util.promisify(cp.exec)
 
 // Path to flow.json file
 let configPath: string | undefined
-let flowConfig: FlowConfig | undefined
+export const flowConfig: StateCache<FlowConfig> = new StateCache(fetchConfig)
 
 export const EMULATOR_ACCOUNT = 'emulator-account'
 
@@ -53,22 +55,13 @@ export async function getConfigPath (): Promise<string> {
   return configPath
 }
 
-export async function loadConfig (filePath?: string): Promise<FlowConfig> {
-  if (flowConfig === undefined) {
-    let flowJsonPath = ''
-    if (filePath !== undefined) {
-      flowJsonPath = filePath
-    } else {
-      flowJsonPath = await getConfigPath()
-    }
-    const fc: FlowConfig = JSON.parse(fs.readFileSync(flowJsonPath, 'utf-8'))
-    flowConfig = fc
-  }
-  return flowConfig
+export async function fetchConfig (filepath?: string): Promise<FlowConfig> {
+  const flowJsonPath = filepath ?? await getConfigPath()
+  return JSON.parse(fs.readFileSync(flowJsonPath, 'utf-8'))
 }
 
-export async function getAccountKey (accountName: string, filePath?: string): Promise<string | undefined> {
-  const fc = await loadConfig(filePath)
+export async function getAccountKey (accountName: string, filepath?: string): Promise<string | undefined> {
+  const fc = (filepath == null) ? await flowConfig.getValue() : await fetchConfig(filepath)
 
   let emulatorKey: string | undefined
   try {
@@ -138,12 +131,12 @@ async function readLocalConfig (): Promise<string> {
   return configFilePath
 }
 
-export async function watchFlowConfigChanges (changedEvent: () => {}): Promise<void> {
+export async function watchFlowConfigChanges (changedEvent: () => {}): Promise<Disposable> {
   const path = await getConfigPath()
   const configWatcher = workspace.createFileSystemWatcher(path)
 
   let updateDelay: any = null
-  configWatcher.onDidChange(e => {
+  return configWatcher.onDidChange(e => {
     // request deduplication - we do this to avoid spamming requests in a short time period but rather aggragete into one
     if (updateDelay == null) {
       updateDelay = setTimeout(() => {

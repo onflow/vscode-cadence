@@ -1,4 +1,4 @@
-import { loadConfig, getAccountKey } from '../../src/emulator/local/flowConfig'
+import { fetchConfig, getAccountKey } from '../../src/emulator/local/flowConfig'
 import * as assert from 'assert'
 import * as path from 'path'
 
@@ -6,7 +6,7 @@ const flowJsonPath = path.join(__dirname, '../integration/fixtures/workspace/flo
 
 suite('Flow Config Tests', () => {
   test('Loading', async () => {
-    const config = await loadConfig(flowJsonPath)
+    const config = await fetchConfig(flowJsonPath)
     assert.strictEqual(JSON.stringify(config.accounts), '{"emulator-account":{"address":"f8d6e0586b0a20c7","key":"d2f9b3e122aa5289fb38edab611c8d1c2aa88d6fd8e3943a306a493361639812"}}')
     assert.strictEqual(JSON.stringify(config.contracts), '{}')
     assert.strictEqual(JSON.stringify(config.deployments), '{}')

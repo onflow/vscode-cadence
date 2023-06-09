@@ -37,21 +37,9 @@ export class EmulatorController {
     await this.api.deactivate()
   }
 
-  invalidateEmulatorState (): void {
-    this.#accountData.invalidate()
-  }
-
   async syncEmulatorState (): Promise<void> {
-    this.invalidateEmulatorState()
-
-    if (this.api.emulatorConnected()) {
-      await this.#syncAccountData()
-    }
-  }
-
-  // Called whenever the emulator is updated
-  async #syncAccountData (): Promise<void> {
     this.#accountData.invalidate()
+    await this.#accountData.getValue()
   }
 
   getState (): EmulatorState {
@@ -66,8 +54,8 @@ export class EmulatorController {
     }
   }
 
-  restartServer (): void {
-    void this.api.reset()
+  async restartServer (): Promise<void> {
+    await this.api.restart()
     void window.showInformationMessage('Restarted language server')
   }
 
@@ -83,7 +71,7 @@ export class EmulatorController {
     promptCopyAccountAddress(account)
 
     // Update UI
-    void this.syncEmulatorState()
+    await this.syncEmulatorState()
   }
 
   // Switches the active account to the option selected by the user. The selection

@@ -7,11 +7,8 @@ import * as assert from 'assert'
 import { ext, testActivate } from '../../src/main'
 import { closeTerminalEmulator, startTerminalEmulator } from './terminal-emulator'
 import * as commands from '../../src/commands/command-constants'
-import { delay } from '..'
 import { filter, firstValueFrom } from 'rxjs'
 import { EmulatorState } from '../../src/emulator/server/language-server'
-
-const executionDelay = 5
 
 suite('Extension Commands', () => {
   let settings: Settings
@@ -41,22 +38,19 @@ suite('Extension Commands', () => {
 
   test('Command: Create Account', async () => {
     await startTerminalEmulator(waitForEmulatorActive, waitForEmulatorClosed)
-    assert.strictEqual(ext?.executeCommand(commands.CREATE_ACCOUNT), true)
-    await delay(executionDelay) // wait for command execution
+    assert.strictEqual(await ext?.executeCommand(commands.CREATE_ACCOUNT), true)
     const activeAccount = await ext?.getActiveAccount()
     assert.strictEqual(activeAccount?.name, 'Eve')
   }).timeout(MaxTimeout)
 
   test('Command: Restart Language Server', async () => {
     await startTerminalEmulator(waitForEmulatorActive, waitForEmulatorClosed)
-    assert.strictEqual(ext?.executeCommand(commands.RESTART_SERVER), true)
-    await delay(executionDelay)
+    assert.strictEqual(await ext?.executeCommand(commands.RESTART_SERVER), true)
   }).timeout(MaxTimeout)
 
   test('Command: Check Dependencies', async () => {
     await startTerminalEmulator(waitForEmulatorActive, waitForEmulatorClosed)
-    assert.strictEqual(ext?.executeCommand(commands.CHECK_DEPENDENCIES), true)
-    await delay(executionDelay)
+    assert.strictEqual(await ext?.executeCommand(commands.CHECK_DEPENDENCIES), true)
     await closeTerminalEmulator(waitForEmulatorClosed)
   }).timeout(MaxTimeout)
 })
