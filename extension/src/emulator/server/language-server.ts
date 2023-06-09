@@ -7,7 +7,7 @@ import { Settings } from '../../settings/settings'
 import * as response from './responses'
 import { exec } from 'child_process'
 import { verifyEmulator } from '../local/emulatorScanner'
-import { DocumentSymbolRequest, Disposable, ExecuteCommandRequest } from 'vscode-languageclient'
+import { Disposable, ExecuteCommandRequest } from 'vscode-languageclient'
 import { BehaviorSubject, combineLatest, filter, firstValueFrom, map } from 'rxjs'
 import * as telemetry from '../../telemetry/telemetry'
 
@@ -172,22 +172,6 @@ export class LanguageServerAPI {
         }
       }
     )
-
-    // This is a bit of a ridiculous monkey patch to filter out symbols that don't have a name
-    // It is necessary because the language server returns a invalid symbols for imports
-    // This causes a lot of visual errors with versions of vscode-languageclient >=8.1.0-next.3
-    // But in reality this was an issue before, it just wasn't visible
-    // See https://github.com/onflow/vscode-cadence/issues/312
-    const _sendRequest = this.client.sendRequest
-    this.client.sendRequest = async function (type: { method: string } | string, ...args: any[]) {
-      // @ts-expect-error
-      const resp = await _sendRequest.call(this, type, ...args)
-      if ((type === DocumentSymbolRequest.method) || (typeof type !== 'string' && type.method === DocumentSymbolRequest.method)) {
-        if (resp == null) return resp
-        return (resp as any[]).filter(x => x.name)
-      }
-      return resp
-    }
 
     await this.client.start()
       .then(() => {
