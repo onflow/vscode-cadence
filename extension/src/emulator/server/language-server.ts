@@ -180,7 +180,7 @@ export class LanguageServerAPI {
     // See https://github.com/onflow/vscode-cadence/issues/312
     const _sendRequest = this.client.sendRequest
     this.client.sendRequest = async function (type: { method: string } | string, ...args: any[]) {
-      // @ts-ignore
+      // @ts-expect-error
       const resp = await _sendRequest.call(this, type, ...args)
       if ((type === DocumentSymbolRequest.method) || (typeof type !== 'string' && type.method === DocumentSymbolRequest.method)) {
         if (resp == null) return resp
