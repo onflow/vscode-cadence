@@ -20,7 +20,12 @@ export abstract class Installer {
 
   async runInstall (): Promise<void> {
     void window.showInformationMessage('Running ' + this.#installerName + ' installer, please wait...')
-    await this.install()
+
+    try {
+      await this.install()
+    } catch {
+      throw new InstallError('Failed to install: ' + this.#installerName)
+    }
 
     // Refresh env vars
     envVars.invalidate()

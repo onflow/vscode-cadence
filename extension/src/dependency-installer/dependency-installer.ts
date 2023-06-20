@@ -49,30 +49,50 @@ export class DependencyInstaller {
     // Recursively register installers and their dependencies in the correct order
     (function registerInstallers (this: DependencyInstaller, installers: Array<new () => Installer>) {
       installers.forEach((_installer) => {
+        // Check if installer is already registered
+        if (this.registeredInstallers.find(x => x instanceof _installer) != null) { return }
+
+        // Register installer and dependencies
         const installer = new _installer()
         registerInstallers.bind(this)(installer.dependencies)
-        if (this.registeredInstallers.find(x => x instanceof _installer) == null) { this.registeredInstallers.push(installer) }
+        this.registeredInstallers.push(installer)
       })
     }).bind(this)(INSTALLERS)
   }
 
   async #installMissingDependencies (): Promise<void> {
     const missing = await this.missingDependencies.getValue()
+    const installed: Installer[] = []
 
     for (const installer of missing) {
       try {
+        // Check if dependencies are installed
+        const missingDeps = installer.dependencies
+          .filter(x => installed.find(y => y instanceof x) == null)
+          .map(x => this.registeredInstallers.find(y => y instanceof x))
+
+        // Show error if dependencies are missing
+        if (missingDeps.length !== 0) {
+          throw new InstallError('Cannot install ' + installer.getName() + '. Missing depdenencies: ' + missingDeps.map(x => x?.getName()).join(', '))
+        }
         await installer.runInstall()
+        installed.push(installer)
       } catch (err) {
         if (err instanceof InstallError) {
           void window.showErrorMessage(err.message)
         }
-        throw err
       }
+    }
+
+    if (installed.length < missing.length) {
+      // Find all failed installations
+      const failed = missing.filter(x => !installed.includes(x))
+      void window.showErrorMessage('Failed to install all dependencies.  The following may need to be installed manually: ' + failed.map(x => x.getName()).join(', '))
+    } else {
+      void window.showInformationMessage('All dependencies installed successfully.  You may need to restart active terminals.')
     }
 
     // Refresh missing dependencies
     this.missingDependencies.invalidate()
-
-    void window.showInformationMessage('All dependencies installed successfully.  You may need to restart active terminals.')
   }
 }
