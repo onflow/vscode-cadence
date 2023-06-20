@@ -11,7 +11,7 @@ import { HomebrewInstaller } from './homebrew-installer'
 
 // Command to check flow-cli
 const CHECK_FLOW_CLI_CMD = 'flow version'
-const COMPATIBLE_FLOW_CLI_VERSIONS = '>=0.45.4'
+const COMPATIBLE_FLOW_CLI_VERSIONS = '>=1.2.0'
 
 // Shell install commands
 const BREW_INSTALL_FLOW_CLI = 'brew update && brew install flow-cli'
