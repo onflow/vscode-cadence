@@ -3,7 +3,6 @@ import { InstallFlowCLI } from './installers/flow-cli-installer'
 import { Installer, InstallError } from './installer'
 import { promptUserErrorMessage } from '../ui/prompts'
 import { StateCache } from '../utils/state-cache'
-import { promptUserInfoMessage } from '../ui/prompts'
 
 const INSTALLERS: Array<new () => Installer> = [
   InstallFlowCLI
@@ -70,6 +69,9 @@ export class DependencyInstaller {
         throw err
       }
     }
+
+    // Refresh missing dependencies
+    this.missingDependencies.invalidate()
 
     void window.showInformationMessage('All dependencies installed successfully.  You may need to restart active terminals.')
   }

@@ -7,7 +7,7 @@ export const envVars = new StateCache(async () => {
   return getEnvVars(shell)
 })
 
-async function getEnvVars (shell: string): Promise<{[key: string]: string}> {
+async function getEnvVars (shell: string): Promise<{[key: string]: string | undefined}> {
   const OS_TYPE = process.platform
   if (OS_TYPE === 'win32') {
     return await getEnvVarsWindows(shell)
@@ -16,7 +16,7 @@ async function getEnvVars (shell: string): Promise<{[key: string]: string}> {
   }
 }
 
-async function getEnvVarsUnix(shell: string): Promise<{[key: string]: string}> {
+async function getEnvVarsUnix(shell: string): Promise<{[key: string]: string | undefined}> {
   const child_process = spawn(shell, ['-l', '-i', '-c', "env"])
 
   let stdout = ''
@@ -33,7 +33,7 @@ async function getEnvVarsUnix(shell: string): Promise<{[key: string]: string}> {
   return new Promise((resolve, reject) => {
     child_process.on('close', (code) => {
       if (code === 0) {
-        const env: {[key: string]: string} = {}
+        const env: {[key: string]: string | undefined} = process.env
         stdout.split('\n').forEach((line) => {
           const [key, value] = line.split('=')
           if (key !== undefined && value !== undefined) {

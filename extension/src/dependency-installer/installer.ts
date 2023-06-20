@@ -1,6 +1,6 @@
 /* Abstract Installer class */
 import { window } from 'vscode'
-import * as os from 'os'
+import { envVars } from '../utils/shell/get-env-vars'
 
 // InstallError is thrown if install fails
 export class InstallError extends Error {}
@@ -22,7 +22,11 @@ export abstract class Installer {
     void window.showInformationMessage('Running ' + this.#installerName + ' installer, please wait...')
     await this.install()
 
-    if (os.platform() !== 'win32' && !await this.verifyInstall()) {
+    // Refresh env vars
+    envVars.invalidate()
+
+    // Check if install was successful
+    if (!(await this.verifyInstall())) {
       throw new InstallError('Failed to install: ' + this.#installerName)
     }
 

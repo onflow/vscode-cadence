@@ -10,7 +10,7 @@ import { verifyEmulator } from '../local/emulatorScanner'
 import { Disposable, ExecuteCommandRequest } from 'vscode-languageclient'
 import { BehaviorSubject, combineLatest, filter, firstValueFrom, map } from 'rxjs'
 import * as telemetry from '../../telemetry/telemetry'
-import { envVars } from '../../utils/shell/refresh-env'
+import { envVars } from '../../utils/shell/get-env-vars'
 
 // Identities for commands handled by the Language server
 const CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
