@@ -49,7 +49,7 @@ async function getEnvVarsUnix (): Promise<{ [key: string]: string | undefined }>
 }
 
 async function getEnvVarsWindows (): Promise<{ [key: string]: string }> {
-  const childProcess = spawn('powershell', ['-Command', 'StartProcess powershell --NoNewWindow -Command "Get-ChildItem -Path Env:"'], { env: {} })
+  const childProcess = spawn('powershell', ['-Command', 'Start-Process powershell --NoNewWindow -Command "Get-ChildItem -Path Env:"'], { env: {} })
 
   let stdout = ''
   let stderr = ''
