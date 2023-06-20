@@ -8,20 +8,14 @@ export class InstallError extends Error {}
 export abstract class Installer {
   dependencies: Array<new () => Installer>
   #installerName: string
-  #installed: Promise<boolean> | boolean
 
   constructor (name: string, dependencies: Array<new () => Installer>) {
     this.dependencies = dependencies
     this.#installerName = name
-    this.#installed = this.verifyInstall()
   }
 
   getName (): string {
     return this.#installerName
-  }
-
-  async isInstalled (): Promise<boolean> {
-    return await this.#installed
   }
 
   async runInstall (): Promise<void> {
@@ -32,8 +26,6 @@ export abstract class Installer {
       throw new InstallError('Failed to install: ' + this.#installerName)
     }
 
-    this.#installed = true
-
     void window.showInformationMessage(this.#installerName + ' installed sucessfully. ' +
     'You may need to reload the extension.')
   }
@@ -42,5 +34,5 @@ export abstract class Installer {
   protected abstract install (): Promise<void> | void
 
   // Logic to check if dependency is installed
-  protected abstract verifyInstall (): Promise<boolean>
+  abstract verifyInstall (): Promise<boolean>
 }

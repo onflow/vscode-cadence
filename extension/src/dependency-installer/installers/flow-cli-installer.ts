@@ -1,8 +1,8 @@
 /* Installer for Flow CLI */
 import { window } from 'vscode'
 import { didResolve } from '../../utils/utils'
-import { execDefault, execPowerShell } from '../../utils/exec-system'
-import { execVscodeTerminal } from '../../utils/exec-vscode'
+import { execUnixDefault, execPowerShell } from '../../utils/shell/exec-system'
+import { execVscodeTerminal } from '../../utils/shell/exec-vscode'
 import { promptUserInfoMessage, promptUserErrorMessage } from '../../ui/prompts'
 import { Installer } from '../installer'
 import { execSync } from 'child_process'
@@ -68,8 +68,7 @@ export class InstallFlowCLI extends Installer {
   async #install_macos (): Promise<void> {
     // Install Flow CLI using homebrew
     void window.showInformationMessage('Installing Flow CLI')
-    await execDefault(BREW_UPDATE)
-    await execDefault(BREW_INSTALL_FLOW_CLI)
+    await execVscodeTerminal("Install Flow CLI", `${BREW_UPDATE} && ${BREW_INSTALL_FLOW_CLI}`)
   }
 
   async #install_windows (): Promise<void> {
@@ -80,7 +79,7 @@ export class InstallFlowCLI extends Installer {
 
   async #install_bash_cmd (): Promise<void> {
     // Retry if bad GH token
-    if (this.#githubToken != null && (await didResolve(execDefault(BASH_INSTALL_FLOW_CLI(this.#githubToken))))) { return }
+    if (this.#githubToken != null && (await didResolve(execUnixDefault(BASH_INSTALL_FLOW_CLI(this.#githubToken))))) { return }
     await execVscodeTerminal('Install Flow CLI', BASH_INSTALL_FLOW_CLI())
   }
 
@@ -137,7 +136,7 @@ export class InstallFlowCLI extends Installer {
 
   async verifyInstall (): Promise<boolean> {
     // Check if flow-cli is executable
-    if (!await didResolve(execDefault(CHECK_FLOW_CLI_CMD))) return false
+    if (!await didResolve(execUnixDefault(CHECK_FLOW_CLI_CMD))) return false
 
     // Check flow-cli version number
     return await this.checkVersion()

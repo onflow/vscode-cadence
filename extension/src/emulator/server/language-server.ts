@@ -10,6 +10,7 @@ import { verifyEmulator } from '../local/emulatorScanner'
 import { Disposable, ExecuteCommandRequest } from 'vscode-languageclient'
 import { BehaviorSubject, combineLatest, filter, firstValueFrom, map } from 'rxjs'
 import * as telemetry from '../../telemetry/telemetry'
+import { envVars } from '../../utils/shell/refresh-env'
 
 // Identities for commands handled by the Language server
 const CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
@@ -156,12 +157,16 @@ export class LanguageServerAPI {
       } catch (err) { void err }
     }
 
+    const env = await envVars.getValue()
     this.client = new LanguageClient(
       'cadence',
       'Cadence',
       {
         command: this.settings.flowCommand,
-        args: ['cadence', 'language-server', `--enable-flow-client=${String(enableFlow)}`]
+        args: ['cadence', 'language-server', `--enable-flow-client=${String(enableFlow)}`],
+        options: {
+          env
+        }
       },
       {
         documentSelector: [{ scheme: 'file', language: 'cadence' }],

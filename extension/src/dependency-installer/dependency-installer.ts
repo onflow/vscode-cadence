@@ -2,7 +2,6 @@ import { window } from 'vscode'
 import { InstallFlowCLI } from './installers/flow-cli-installer'
 import { Installer, InstallError } from './installer'
 import { promptUserErrorMessage } from '../ui/prompts'
-import { restartVscode } from '../utils/utils'
 import { StateCache } from '../utils/state-cache'
 import { promptUserInfoMessage } from '../ui/prompts'
 
@@ -20,7 +19,7 @@ export class DependencyInstaller {
     this.missingDependencies = new StateCache(async () => {
       const missing: Installer[] = []
       for (const installer of this.registeredInstallers) {
-        if (!(await installer.isInstalled())) {
+        if (!(await installer.verifyInstall())) {
           missing.push(installer)
         }
       }
@@ -59,27 +58,19 @@ export class DependencyInstaller {
   }
 
   async #installMissingDependencies (): Promise<void> {
-    await Promise.all((await this.missingDependencies.getValue()).map(async (installer) => {
+    const missing = await this.missingDependencies.getValue()
+
+    for (const installer of missing) {
       try {
         await installer.runInstall()
       } catch (err) {
         if (err instanceof InstallError) {
           void window.showErrorMessage(err.message)
-        } else {
-          throw err
         }
+        throw err
       }
-    }))
-
-    const OS_TYPE = process.platform
-    if (OS_TYPE === 'win32') {
-      promptUserInfoMessage(
-        'All dependencies installed successfully.  You may need to restart VSCode.',
-        'Restart VSCode Now',
-        restartVscode
-      )
-    } else {
-      void window.showInformationMessage('All dependencies installed successfully.  You may need to restart active terminals.')
     }
+
+    void window.showInformationMessage('All dependencies installed successfully.  You may need to restart active terminals.')
   }
 }

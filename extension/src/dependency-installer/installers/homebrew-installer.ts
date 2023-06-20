@@ -1,12 +1,12 @@
 /* Installer for Flow CLI */
 import { didResolve } from '../../utils/utils'
-import { execDefault } from '../../utils/exec-system'
-import { execVscodeTerminal } from '../../utils/exec-vscode'
+import { execUnixDefault } from '../../utils/shell/exec-system'
+import { execVscodeTerminal } from '../../utils/shell/exec-vscode'
 import { Installer } from '../installer'
 
 // Flow CLI with homebrew
 const CHECK_HOMEBREW_CMD = 'brew help help' // Run this to check if brew is executable
-const BASH_INSTALL_HOMEBREW = '$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)'
+const BASH_INSTALL_HOMEBREW = '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
 
 export class HomebrewInstaller extends Installer {
   constructor () {
@@ -18,6 +18,6 @@ export class HomebrewInstaller extends Installer {
   }
 
   async verifyInstall (): Promise<boolean> {
-    return await didResolve(execDefault(CHECK_HOMEBREW_CMD))
+    return await didResolve(execUnixDefault(CHECK_HOMEBREW_CMD))
   }
 }

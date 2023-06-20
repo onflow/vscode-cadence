@@ -1,10 +1,11 @@
-import { REFRESH_PATH_POWERSHELL } from './constants'
+import { REFRESH_PATH_POWERSHELL } from '../constants'
 import { window } from 'vscode'
+import * as vscode from 'vscode'
 
 // Execute a command in vscode terminal
 export async function execVscodeTerminal (name: string, command: string, shellPath?: string): Promise<void> {
   const OS_TYPE = process.platform
-  if (shellPath == null) { shellPath = OS_TYPE === 'win32' ? 'powershell.exe' : '/bin/bash' }
+  if (shellPath == null) { shellPath = OS_TYPE === 'win32' ? 'powershell.exe' : vscode.env.shell }
 
   const term = window.createTerminal({
     name,
