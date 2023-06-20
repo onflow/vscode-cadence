@@ -15,6 +15,7 @@ export class DependencyInstaller {
   constructor () {
     this.#registerInstallers()
 
+    // Create state cache for missing dependencies
     this.missingDependencies = new StateCache(async () => {
       const missing: Installer[] = []
       for (const installer of this.registeredInstallers) {
@@ -24,6 +25,8 @@ export class DependencyInstaller {
       }
       return missing
     })
+
+    // Display error message if dependencies are missing
     this.missingDependencies.subscribe((missing: Installer[]) => {
       if (missing.length !== 0) {
         // Prompt user to install missing dependencies
