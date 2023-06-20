@@ -72,6 +72,7 @@ async function getEnvVarsWindows (): Promise<{ [key: string]: string }> {
             env[key] = value
           }
         })
+        console.log(env)
         resolve(env)
       } else {
         reject(stderr)
