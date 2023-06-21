@@ -7,6 +7,7 @@ import { Settings } from '../../settings/settings'
 import * as fs from 'fs'
 import { StateCache } from '../../utils/state-cache'
 import { Disposable } from 'vscode-languageclient'
+import { execDefault } from '../../utils/shell/exec'
 
 const exec = util.promisify(cp.exec)
 
@@ -103,7 +104,7 @@ async function promptInitializeConfig (): Promise<boolean> {
     return false
   }
 
-  await exec('flow init', { cwd: rootPath })
+  await execDefault(`flow init`, { cwd: rootPath })
 
   return true
 }

@@ -1,28 +1,27 @@
-import { exec } from 'child_process'
+import { ExecOptions, exec } from 'child_process'
 import { promisify } from 'util'
 import { envVars } from './get-env-vars'
 import * as vscode from 'vscode'
-import { REFRESH_PATH_POWERSHELL } from '../constants'
 
-export async function execDefault (cmd: string): Promise<boolean> {
+export async function execDefault (cmd: string, options: ExecOptions = {}): Promise<boolean> {
   const OS_TYPE = process.platform
   if (OS_TYPE === 'win32') {
-    return await execPowerShell(cmd)
+    return await execPowerShell(cmd, options)
   } else {
-    return await execUnixDefault(cmd)
+    return await execUnixDefault(cmd, options)
   }
 }
 
 // Execute a command in powershell
-export async function execPowerShell (cmd: string): Promise<boolean> {
+export async function execPowerShell (cmd: string, options: ExecOptions): Promise<boolean> {
   const env = await envVars.getValue()
-  return await promisify(exec)(cmd, { env, shell: 'powershell.exe' }).then(() => true).catch(() => false)
+  return await promisify(exec)(cmd, { env, shell: 'powershell.exe', ...options }).then(() => true).catch(() => false)
 }
 
 // Execute command in default shell
-export async function execUnixDefault (cmd: string): Promise<boolean> {
+export async function execUnixDefault (cmd: string, options: ExecOptions): Promise<boolean> {
   const env = await envVars.getValue()
-  return await promisify(exec)(cmd, { env, shell: vscode.env.shell }).then(() => true).catch(() => false)
+  return await promisify(exec)(cmd, { env, shell: vscode.env.shell, ...options }).then(() => true).catch(() => false)
 }
 
 // Execute a command in vscode terminal
@@ -33,11 +32,9 @@ export async function execVscodeTerminal (name: string, command: string, shellPa
   const term = vscode.window.createTerminal({
     name,
     hideFromUser: false,
-    shellPath
+    shellPath,
+    env: await envVars.getValue()
   })
-
-  // Must refresh path in windows
-  if (OS_TYPE === 'win32') { command = REFRESH_PATH_POWERSHELL + command }
 
   // Add exit to command to close terminal
   command = OS_TYPE === 'win32' ? command + '; exit $LASTEXITCODE' : command + '; exit $?'
