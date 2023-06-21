@@ -7,7 +7,8 @@ import * as os from 'os'
 suite('Dependency Installer', () => {
   test('Install Missing Dependencies', async () => {
     const dependencyManager = new DependencyInstaller()
-    await assert.doesNotReject(dependencyManager.installMissing)
+    console.log(await dependencyManager.missingDependencies.getValue())
+    await assert.doesNotReject(async () => { await dependencyManager.installMissing() })
 
     // Check that all dependencies are installed
     await dependencyManager.checkDependencies()
