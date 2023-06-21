@@ -11,6 +11,6 @@ suite('Dependency Installer', () => {
 
     // Check that all dependencies are installed
     await dependencyManager.checkDependencies()
-    assert.deepStrictEqual(await dependencyManager.checkDependencies(), [])
+    assert.deepStrictEqual(await dependencyManager.missingDependencies.getValue(), [])
   }).timeout(MaxTimeout)
 })

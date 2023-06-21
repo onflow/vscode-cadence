@@ -39,9 +39,9 @@ export class DependencyInstaller {
     })
   }
 
-  async checkDependencies (): Promise<Installer[]> {
+  async checkDependencies (): Promise<void> {
     this.missingDependencies.invalidate()
-    return await this.missingDependencies.getValue()
+    await this.missingDependencies.getValue()
   }
 
   async installMissing (): Promise<void> {
@@ -87,15 +87,15 @@ export class DependencyInstaller {
       }
     }
 
-    if (installed.length < missing.length) {
+    // Refresh missing dependencies
+    this.missingDependencies.invalidate()
+    const failed = await this.missingDependencies.getValue()
+
+    if (failed.length !== 0) {
       // Find all failed installations
-      const failed = missing.filter(x => !installed.includes(x))
       void window.showErrorMessage('Failed to install all dependencies.  The following may need to be installed manually: ' + failed.map(x => x.getName()).join(', '))
     } else {
       void window.showInformationMessage('All dependencies installed successfully.  You may need to restart active terminals.')
     }
-
-    // Refresh missing dependencies
-    this.missingDependencies.invalidate()
   }
 }
