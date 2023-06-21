@@ -1,19 +1,16 @@
 import * as assert from 'assert'
-import * as depInstaller from '../../src/dependency-installer/dependency-installer'
+import {DependencyInstaller} from '../../src/dependency-installer/dependency-installer'
 import { MaxTimeout } from '../globals'
 import * as os from 'os'
 
 // Note: Dependency installation must run before other integration tests
 suite('Dependency Installer', () => {
   test('Install Missing Dependencies', async () => {
-    const dependencyManager = new depInstaller.DependencyInstaller()
-    await assert.doesNotReject(async () => { await dependencyManager.installMissing() })
+    const dependencyManager = new DependencyInstaller()
+    await assert.doesNotReject(dependencyManager.installMissing)
 
-    // If not on Windows, check that all dependencies are installed
-    if (os.platform() !== 'win32') {
-      // Check that all dependencies are installed
-      await dependencyManager.checkDependencies()
-      assert.deepStrictEqual(await dependencyManager.missingDependencies.getValue(), [])
-    }
+    // Check that all dependencies are installed
+    await dependencyManager.checkDependencies()
+    assert.deepStrictEqual(await dependencyManager.checkDependencies(), [])
   }).timeout(MaxTimeout)
 })

@@ -39,9 +39,9 @@ export class DependencyInstaller {
     })
   }
 
-  async checkDependencies (): Promise<void> {
+  async checkDependencies (): Promise<Installer[]> {
     this.missingDependencies.invalidate()
-    await this.missingDependencies.getValue()
+    return await this.missingDependencies.getValue()
   }
 
   async installMissing (): Promise<void> {
