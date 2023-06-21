@@ -8,7 +8,7 @@ import { DEBUG_LOG } from './utils/debug'
 import { DependencyInstaller } from './dependency-installer/dependency-installer'
 import { Settings } from './settings/settings'
 import { EmulatorState } from './emulator/server/language-server'
-import { envVars } from './utils/shell/get-env-vars'
+import { envVars } from './utils/shell/env-vars'
 
 // The container for all data relevant to the extension.
 export class Extension {

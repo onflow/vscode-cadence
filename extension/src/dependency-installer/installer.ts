@@ -1,6 +1,6 @@
 /* Abstract Installer class */
 import { window } from 'vscode'
-import { envVars } from '../utils/shell/get-env-vars'
+import { envVars } from '../utils/shell/env-vars'
 
 // InstallError is thrown if install fails
 export class InstallError extends Error {}

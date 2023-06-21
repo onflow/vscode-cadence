@@ -11,6 +11,23 @@ export async function run (): Promise<void> {
 
   const testsRoot = path.resolve(__dirname, '..')
 
+  // If INSTALL_ONLY is set, only install dependencies
+  // This needs to be an independent test if we want to run it on Windows
+  if (process.env.INSTALL_ONLY === 'true') {
+    // test single file mocha
+    mocha.addFile(path.resolve(testsRoot, './test/integration/0 - dependencies.test.js'))
+    return await new Promise((resolve, reject) => {
+      mocha.run(failures => {
+        if (failures > 0) {
+          reject(new Error(`Dependency installation failed`))
+        } else {
+          resolve()
+        }
+      }
+      )
+    })
+  }
+
   return await new Promise((resolve, reject) => {
     glob('**/**.test.js', { cwd: testsRoot }, (err, files) => {
       if (err !== null) {

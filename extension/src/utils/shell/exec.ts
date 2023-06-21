@@ -1,6 +1,6 @@
 import { ExecOptions, exec } from 'child_process'
 import { promisify } from 'util'
-import { envVars } from './get-env-vars'
+import { envVars } from './env-vars'
 import * as vscode from 'vscode'
 
 export async function execDefault (cmd: string, options: ExecOptions = {}): Promise<boolean> {
@@ -13,13 +13,13 @@ export async function execDefault (cmd: string, options: ExecOptions = {}): Prom
 }
 
 // Execute a command in powershell
-export async function execPowerShell (cmd: string, options: ExecOptions): Promise<boolean> {
+export async function execPowerShell (cmd: string, options: ExecOptions = {}): Promise<boolean> {
   const env = await envVars.getValue()
   return await promisify(exec)(cmd, { env, shell: 'powershell.exe', ...options }).then(() => true).catch(() => false)
 }
 
 // Execute command in default shell
-export async function execUnixDefault (cmd: string, options: ExecOptions): Promise<boolean> {
+export async function execUnixDefault (cmd: string, options: ExecOptions = {}): Promise<boolean> {
   const env = await envVars.getValue()
   return await promisify(exec)(cmd, { env, shell: vscode.env.shell, ...options }).then(() => true).catch(() => false)
 }

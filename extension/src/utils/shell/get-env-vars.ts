@@ -1,19 +1,36 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
-import * as vscode from 'vscode'
-import { StateCache } from '../state-cache'
-import getEnvPs1 from './get-env.ps1'
 
-export const envVars = new StateCache(async () => {
-  return await getEnvVars()
-})
+const getEnvPowershell = `
+$machineEnv = [Environment]::GetEnvironmentVariables('Machine')
+$userEnv = [Environment]::GetEnvironmentVariables('User')
 
-async function getEnvVars (): Promise<{ [key: string]: string | undefined }> {
+$env = @{}
+$machineEnv.Keys | ForEach-Object {
+    $env[$_] = $machineEnv[$_]
+}
+
+$userEnv.Keys | ForEach-Object {
+    $env[$_] = $userEnv[$_]
+}
+
+# handle PATH special ase
+$machinePath = $machineEnv['Path']
+$userPath = $userEnv['Path']
+
+$env['Path'] = $machinePath + ';' + $userPath
+
+# Iterate over the dictionary and print key-value pairs
+foreach ($key in $env.Keys) {
+    Write-Host "$key=$($env[$key])"
+}`
+
+export async function getEnvVars (shell: string): Promise<{ [key: string]: string | undefined }> {
   const OS_TYPE = process.platform
   let childProcess: ChildProcessWithoutNullStreams
   if (OS_TYPE === 'win32') {
-    childProcess = spawn('powershell', [getEnvPs1], { env: {} })
+    childProcess = spawn('powershell', [getEnvPowershell], { env: {} })
   } else {
-    childProcess = spawn(vscode.env.shell, ['-l', '-i', '-c', 'env'])
+    childProcess = spawn(shell, ['-l', '-i', '-c', 'env'])
   }
 
   let stdout = ''
