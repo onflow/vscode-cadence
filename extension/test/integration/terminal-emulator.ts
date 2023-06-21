@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
 import { getMockSettings } from '../mock/mockSettings'
+import { envVars } from '../../src/utils/shell/env-vars'
 
 const emulatorCommand = `${getMockSettings().flowCommand} emulator`
 
@@ -21,7 +22,7 @@ export async function startTerminalEmulator (
   await closeTerminalEmulator(waitForEmulatorClosed)
 
   // Start emulator
-  const terminal = vscode.window.createTerminal('Flow Emulator')
+  const terminal = vscode.window.createTerminal({name: 'Flow Emulator', env: await envVars.getValue()})
   terminal.show()
   terminal.sendText(emulatorCommand)
 

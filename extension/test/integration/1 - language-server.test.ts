@@ -1,6 +1,5 @@
 import * as assert from 'assert'
 import { before, after } from 'mocha'
-import { delay } from '../index'
 import { getMockSettings } from '../mock/mockSettings'
 import { EmulatorState, LanguageServerAPI } from '../../src/emulator/server/language-server'
 import * as flowConfig from '../../src/emulator/local/flowConfig'
@@ -10,6 +9,7 @@ import { Settings } from '../../src/settings/settings'
 import { MaxTimeout } from '../globals'
 import { closeTerminalEmulator, startTerminalEmulator } from './terminal-emulator'
 import { filter, firstValueFrom } from 'rxjs'
+import { delay } from '../../src/utils/utils'
 
 suite('Language Server & Emulator Integration', () => {
   let LS: LanguageServerAPI

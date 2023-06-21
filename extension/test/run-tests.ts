@@ -7,20 +7,8 @@ import { userInfo } from 'os'
 async function main (): Promise<void> {
   try {
     const extensionDevelopmentPath = path.resolve(__dirname, '../src/')
-    const extensionTestsPath = path.resolve(__dirname, './index.js')
+    const extensionTestsPath = path.resolve(__dirname, './test-all.js')
     const testWorkspace = path.resolve(__dirname, './integration/fixtures/workspace')
-
-    if(process.platform === 'win32') {
-      // Download VS Code, unzip it and run the integration test
-      await runTests({
-        extensionDevelopmentPath,
-        extensionTestsPath,
-        launchArgs: [testWorkspace, '--disable-telemetry'],
-        extensionTestsEnv: {
-          'INSTALL_ONLY': 'true'
-        }
-      })
-    }
 
     // Refresh env vars (needed for windows)
     const env = await getEnvVars(detectDefaultShell())
