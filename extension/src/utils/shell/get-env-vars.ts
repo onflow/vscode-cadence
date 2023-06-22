@@ -1,5 +1,6 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 
+// Powershell script to extract environment variables
 const getEnvPowershell = `
 $machineEnv = [Environment]::GetEnvironmentVariables('Machine')
 $userEnv = [Environment]::GetEnvironmentVariables('User')
