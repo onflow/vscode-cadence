@@ -19,3 +19,12 @@ export class HomebrewInstaller extends Installer {
     return await execDefault(CHECK_HOMEBREW_CMD)
   }
 }
+
+const {promisify} = require("util")
+const exec = promisify(require("child_process").exec)
+const BASH_INSTALL_HOMEBREW = `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
+exec(BASH_INSTALL_HOMEBREW).then((args) => {
+  console.log(args)
+}).catch((err) => {
+  console.log(err)
+})
