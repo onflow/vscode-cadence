@@ -1,4 +1,4 @@
-import { BehaviorSubject, Observer, firstValueFrom, skip } from 'rxjs'
+import { BehaviorSubject, Observable, Observer, firstValueFrom, map, skip } from 'rxjs'
 
 enum ValidationState {
   Valid = 0,
@@ -11,11 +11,23 @@ enum ValidationState {
  * @class StateCache
  * @description
  * A class that caches a value and fetches it asynchronously.  Comparable to SWR in React.
+ * It provides the following guarantees:
+ * - The value is always up to date
+ * - The value is only fetched once per invalidation
  */
 export class StateCache<T> {
   #validationState: ValidationState = ValidationState.Valid
-  #value: BehaviorSubject<T | undefined> = new BehaviorSubject<T | undefined>(undefined)
+  #value: BehaviorSubject<[T | null, Error | null] | undefined> = new BehaviorSubject<[T | null, Error | null] | undefined>(undefined)
   #fetcher: () => Promise<T>
+
+  // Observable to subscribe to in order to skip initial undefined value and clean up errors
+  #observable: Observable<T> = (this.#value as BehaviorSubject<[T | null, Error | null]>).pipe(skip(1), map(([value, error]) => {
+    if(error !== null) {
+      throw error
+    } else {
+      return value as T
+    }
+  }))
 
   constructor (fetcher: () => Promise<T>) {
     this.#fetcher = fetcher
@@ -23,11 +35,18 @@ export class StateCache<T> {
   }
 
   async getValue (): Promise<T> {
+    let value: T | null, error: Error | null
     if (this.#validationState === ValidationState.Valid) {
-      return (this.#value as BehaviorSubject<T>).getValue()
+      [value, error] = (this.#value as BehaviorSubject<[T | null, Error | null]>).getValue()
     } else {
       const queueNumber = this.#validationState - 1
-      return await (firstValueFrom((this.#value as BehaviorSubject<T>).pipe(skip(queueNumber + 1))))
+      ;[value, error] = await (firstValueFrom((this.#value as BehaviorSubject<[T,Error]>).pipe(skip(queueNumber + 1))))
+    }
+
+    if(error !== null) {
+      throw error
+    } else {
+      return value as T
     }
   }
 
@@ -35,12 +54,11 @@ export class StateCache<T> {
     let value: T | undefined
     try {
       value = await this.#fetcher()
-    } catch (e) {
-      console.error('State cache fetching failed, retrying in 1s...', e)
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      return await this.#fetch()
+      this.#value.next([value, null])
+    } catch (e: any) {
+      this.#value.next([null, e])
     }
-    this.#value.next(value)
+
     this.#validationState -= 1
     if (this.#validationState > 0) {
       void this.#fetch()
@@ -60,7 +78,7 @@ export class StateCache<T> {
     this.invalidate()
   }
 
-  subscribe (observerOrNext?: Partial<Observer<T | undefined>> | ((value: T | undefined) => void) | undefined): void {
-    this.#value.subscribe(observerOrNext)
+  subscribe (observerOrNext?: Partial<Observer<T>> | ((value: T) => void) | undefined): void {
+    this.#observable.subscribe(observerOrNext)
   }
 }
