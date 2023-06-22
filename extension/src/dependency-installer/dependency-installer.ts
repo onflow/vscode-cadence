@@ -3,7 +3,6 @@ import { InstallFlowCLI } from './installers/flow-cli-installer'
 import { Installer, InstallError } from './installer'
 import { promptUserErrorMessage, promptUserInfoMessage } from '../ui/prompts'
 import { StateCache } from '../utils/state-cache'
-import { restartVscodeWindows } from '../utils/utils'
 
 const INSTALLERS: Array<new () => Installer> = [
   InstallFlowCLI
@@ -108,7 +107,7 @@ export class DependencyInstaller {
       void window.showErrorMessage('Failed to install all dependencies.  The following may need to be installed manually: ' + failed.map(x => x.getName()).join(', '))
     } else {
       if(process.platform === 'win32') {
-        void window.showInformationMessage('All dependencies installed successfully.  Newly installed dependencies may not be available in terminals until VSCode is restarted.')
+        void window.showInformationMessage('All dependencies installed successfully.  Newly installed dependencies will not be available in terminals until VSCode is restarted.')
       } else {
         void window.showInformationMessage('All dependencies installed successfully.  You may need to restart active terminals.')
       }
