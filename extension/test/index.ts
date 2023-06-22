@@ -7,7 +7,7 @@ import { userInfo } from 'os'
 async function main (): Promise<void> {
   try {
     const extensionDevelopmentPath = path.resolve(__dirname, '../src/')
-    const extensionTestsPath = path.resolve(__dirname, './test-all.js')
+    const extensionTestsPath = path.resolve(__dirname, './index.js')
     const testWorkspace = path.resolve(__dirname, './integration/fixtures/workspace')
 
     // Download VS Code, unzip it and run the integration test
