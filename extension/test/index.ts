@@ -1,25 +1,44 @@
-/* Run integration tests */
 import * as path from 'path'
-import { runTests } from '@vscode/test-electron'
-import { getEnvVars } from '../src/utils/shell/get-env-vars'
-import { userInfo } from 'os'
+import * as Mocha from 'mocha'
+import * as glob from 'glob'
 
-async function main (): Promise<void> {
-  try {
-    const extensionDevelopmentPath = path.resolve(__dirname, '../src/')
-    const extensionTestsPath = path.resolve(__dirname, './index.js')
-    const testWorkspace = path.resolve(__dirname, './integration/fixtures/workspace')
+export async function run (): Promise<void> {
+  // Create the mocha test
+  const mocha = new Mocha({
+    ui: 'tdd',
+    color: true
+  })
 
-    // Download VS Code, unzip it and run the integration test
-    await runTests({
-      extensionDevelopmentPath,
-      extensionTestsPath,
-      launchArgs: [testWorkspace, '--disable-telemetry']
+  const testsRoot = path.resolve(__dirname, '..')
+
+  return await new Promise((resolve, reject) => {
+    glob('**/**.test.js', { cwd: testsRoot }, (err, files) => {
+      if (err !== null) {
+        return reject(err)
+      }
+
+      // Add files to the test suite
+      files.forEach(f => mocha.addFile(path.resolve(testsRoot, f)))
+
+      try {
+        // Run the mocha test
+        mocha.run(failures => {
+          if (failures > 0) {
+            reject(new Error(`${failures} tests failed.`))
+          } else {
+            resolve()
+          }
+        })
+      } catch (err) {
+        console.error(err)
+        reject(err)
+      }
     })
-  } catch (err) {
-    console.error('Failed to run tests')
-    process.exit(1)
-  }
+  })
 }
 
-main().then(() => {}, () => {})
+export async function delay (seconds: number): Promise<void> {
+  await new Promise((resolve, reject) => {
+    setTimeout(() => resolve(''), seconds * 1000)
+  })
+}
