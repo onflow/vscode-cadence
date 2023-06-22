@@ -65,7 +65,7 @@ export class DependencyInstaller {
 
   async #installMissingDependencies (): Promise<void> {
     const missing = await this.missingDependencies.getValue()
-    const installed: Installer[] = []
+    const installed: Installer[] = this.registeredInstallers.filter(x => !missing.includes(x))
 
     await new Promise<void>((resolve, reject) => {
       setTimeout(() => {resolve()}, 2000)
