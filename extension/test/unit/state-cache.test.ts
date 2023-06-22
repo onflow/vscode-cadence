@@ -70,7 +70,7 @@ suite('State Cache Unit Tests', () => {
   }).timeout(5000)
 
   test('Failed fetch generates error', async () => {
-    const fetcher = async () => {
+    const fetcher = async (): Promise<void> => {
       throw new Error('dummy error')
     }
     const stateCache = new StateCache(fetcher)

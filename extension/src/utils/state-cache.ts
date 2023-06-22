@@ -22,7 +22,7 @@ export class StateCache<T> {
 
   // Observable to subscribe to in order to skip initial undefined value and clean up errors
   #observable: Observable<T> = (this.#value as BehaviorSubject<[T | null, Error | null]>).pipe(skip(1), map(([value, error]) => {
-    if(error !== null) {
+    if (error !== null) {
       throw error
     } else {
       return value as T
@@ -40,10 +40,10 @@ export class StateCache<T> {
       [value, error] = (this.#value as BehaviorSubject<[T | null, Error | null]>).getValue()
     } else {
       const queueNumber = this.#validationState - 1
-      ;[value, error] = await (firstValueFrom((this.#value as BehaviorSubject<[T,Error]>).pipe(skip(queueNumber + 1))))
+      ;[value, error] = await (firstValueFrom((this.#value as BehaviorSubject<[T, Error]>).pipe(skip(queueNumber + 1))))
     }
 
-    if(error !== null) {
+    if (error !== null) {
       throw error
     } else {
       return value as T
