@@ -54,10 +54,7 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Set user password
-        run: sudo -S "passwd jordan" | echo 'password'
-
+        
       - name: Integration Tests
         run: npm run test
         env:

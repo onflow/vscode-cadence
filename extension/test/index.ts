@@ -10,16 +10,41 @@ async function main (): Promise<void> {
     const extensionTestsPath = path.resolve(__dirname, './test-all.js')
     const testWorkspace = path.resolve(__dirname, './integration/fixtures/workspace')
 
+    // Refresh env vars (needed for windows)
+    const env = await getEnvVars(detectDefaultShell())
+
     // Download VS Code, unzip it and run the integration test
     await runTests({
       extensionDevelopmentPath,
       extensionTestsPath,
-      launchArgs: [testWorkspace, '--disable-telemetry']
+      launchArgs: [testWorkspace, '--disable-telemetry'],
+      extensionTestsEnv: env
     })
   } catch (err) {
     console.error('Failed to run tests')
     process.exit(1)
   }
+}
+
+const detectDefaultShell = () => {
+	const {env} = process;
+
+	if (process.platform === 'win32') {
+		return env.COMSPEC || 'cmd.exe';
+	}
+
+	try {
+		const {shell} = userInfo();
+		if (shell) {
+			return shell;
+		}
+	} catch {}
+
+	if (process.platform === 'darwin') {
+		return env.SHELL || '/bin/zsh';
+	}
+
+	return env.SHELL || '/bin/sh';
 }
 
 main().then(() => {}, () => {})
