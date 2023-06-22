@@ -1,5 +1,5 @@
 import * as assert from 'assert'
-import {DependencyInstaller} from '../../src/dependency-installer/dependency-installer'
+import { DependencyInstaller } from '../../src/dependency-installer/dependency-installer'
 import { MaxTimeout } from '../globals'
 
 // Note: Dependency installation must run before other integration tests

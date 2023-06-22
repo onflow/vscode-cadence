@@ -7,4 +7,3 @@ export const envVars = new StateCache(async () => {
   const shell = vscode.env.shell
   return await getEnvVars(shell)
 })
-

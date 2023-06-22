@@ -22,7 +22,7 @@ export async function startTerminalEmulator (
   await closeTerminalEmulator(waitForEmulatorClosed)
 
   // Start emulator
-  const terminal = vscode.window.createTerminal({name: 'Flow Emulator', env: await envVars.getValue()})
+  const terminal = vscode.window.createTerminal({ name: 'Flow Emulator', env: await envVars.getValue() })
   terminal.show()
   terminal.sendText(emulatorCommand)
 

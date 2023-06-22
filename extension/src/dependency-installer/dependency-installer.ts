@@ -68,13 +68,13 @@ export class DependencyInstaller {
     const installed: Installer[] = this.registeredInstallers.filter(x => !missing.includes(x))
 
     await new Promise<void>((resolve, reject) => {
-      setTimeout(() => {resolve()}, 2000)
+      setTimeout(() => { resolve() }, 2000)
     })
 
-    console.log("missing dependencies: ", missing)
+    console.log('missing dependencies: ', missing)
 
     for (const installer of missing) {
-      console.log("entering for loop --- " + installer.getName())
+      console.log('entering for loop --- ' + installer.getName())
       try {
         // Check if dependencies are installed
         const missingDeps = installer.dependencies
