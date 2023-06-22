@@ -78,11 +78,15 @@ export class DependencyInstaller {
         if (missingDeps.length !== 0) {
           throw new InstallError('Cannot install ' + installer.getName() + '. Missing depdenencies: ' + missingDeps.map(x => x?.getName()).join(', '))
         }
+
+        console.log('Installing ' + installer.getName() + '...')
         await installer.runInstall()
+        console.log('Installed ' + installer.getName() + ' successfully.')
         installed.push(installer)
       } catch (err) {
         if (err instanceof InstallError) {
           void window.showErrorMessage(err.message)
+          console.log('Failed to install ' + installer.getName() + ': ' + err.message)
         }
       }
     }
