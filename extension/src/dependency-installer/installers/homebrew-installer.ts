@@ -4,7 +4,7 @@ import { Installer } from '../installer'
 
 // Flow CLI with homebrew
 const CHECK_HOMEBREW_CMD = 'brew help help' // Run this to check if brew is executable
-const BASH_INSTALL_HOMEBREW = `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
+const BASH_INSTALL_HOMEBREW = `CI=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
 
 export class HomebrewInstaller extends Installer {
   constructor () {
