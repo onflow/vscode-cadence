@@ -1,35 +1,11 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
-
-// Powershell script to extract environment variables
-const getEnvPowershell = `
-$machineEnv = [Environment]::GetEnvironmentVariables('Machine')
-$userEnv = [Environment]::GetEnvironmentVariables('User')
-
-$env = @{}
-$machineEnv.Keys | ForEach-Object {
-    $env[$_] = $machineEnv[$_]
-}
-
-$userEnv.Keys | ForEach-Object {
-    $env[$_] = $userEnv[$_]
-}
-
-# handle PATH special ase
-$machinePath = $machineEnv['Path']
-$userPath = $userEnv['Path']
-
-$env['Path'] = $machinePath + ';' + $userPath
-
-# Iterate over the dictionary and print key-value pairs
-foreach ($key in $env.Keys) {
-    Write-Host "$key=$($env[$key])"
-}`
+import { PRINT_ENV_POWERSHELL } from '../constants'
 
 export async function getEnvVars (shell: string): Promise<{ [key: string]: string | undefined }> {
   const OS_TYPE = process.platform
   let childProcess: ChildProcessWithoutNullStreams
   if (OS_TYPE === 'win32') {
-    childProcess = spawn('powershell', [getEnvPowershell], { env: {} })
+    childProcess = spawn('powershell', [PRINT_ENV_POWERSHELL], { env: {} })
   } else {
     childProcess = spawn(shell, ['-l', '-i', '-c', 'env'])
   }
