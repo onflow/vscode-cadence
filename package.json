@@ -175,6 +175,10 @@
 				"extensions": [
 					".cdc"
 				],
+				"icon": {
+					"light": "./images/file-logo.png",
+					"dark": "./images/file-logo.png"
+				},
 				"configuration": "./extension/language/language-configuration.json"
 			}
 		],
