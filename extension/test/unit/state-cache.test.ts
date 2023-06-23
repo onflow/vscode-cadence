@@ -1,4 +1,4 @@
-import assert = require('assert')
+import * as assert from 'assert'
 import { StateCache } from '../../src/utils/state-cache'
 import { ASSERT_EQUAL } from '../globals'
 
