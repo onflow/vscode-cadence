@@ -1,3 +1,4 @@
+import * as assert from 'assert'
 import { StateCache } from '../../src/utils/state-cache'
 import { ASSERT_EQUAL } from '../globals'
 
@@ -68,15 +69,12 @@ suite('State Cache Unit Tests', () => {
     ASSERT_EQUAL(fetcherCallCount, 2)
   }).timeout(5000)
 
-  test('Retries failed fetch', async () => {
-    const fetcher = async (): Promise<string> => {
-      count++
-      if (count === 1) throw new Error('THIS IS A DUMMY ERROR, IT IS EXPECTED')
-      else return 'foobar'
+  test('Failed fetch generates error', async () => {
+    const fetcher = async (): Promise<void> => {
+      throw new Error('dummy error')
     }
-    let count = 0
     const stateCache = new StateCache(fetcher)
 
-    ASSERT_EQUAL(await stateCache.getValue(), 'foobar')
+    await assert.rejects(async () => { await stateCache.getValue() }, { message: 'dummy error' })
   }).timeout(2000)
 })
