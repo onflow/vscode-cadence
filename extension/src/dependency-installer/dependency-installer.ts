@@ -1,7 +1,7 @@
 import { window } from 'vscode'
 import { InstallFlowCLI } from './installers/flow-cli-installer'
 import { Installer, InstallError } from './installer'
-import { promptUserErrorMessage, promptUserInfoMessage } from '../ui/prompts'
+import { promptUserErrorMessage } from '../ui/prompts'
 import { StateCache } from '../utils/state-cache'
 
 const INSTALLERS: Array<new () => Installer> = [
