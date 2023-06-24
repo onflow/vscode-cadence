@@ -19,7 +19,7 @@ export class StateCache<T> {
   #validationState: ValidationState = ValidationState.Valid
   #value: BehaviorSubject<[T | null, Error | null] | undefined> = new BehaviorSubject<[T | null, Error | null] | undefined>(undefined)
   #fetcher: () => Promise<T>
-  
+
   // Observable to subscribe to in order to skip initial undefined value and clean up errors
   #observable: Observable<T> = (this.#value as BehaviorSubject<[T | null, Error | null]>).pipe(skip(1), map(([value, error]) => {
     if (error !== null) {
