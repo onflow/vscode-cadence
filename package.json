@@ -175,6 +175,10 @@
 				"extensions": [
 					".cdc"
 				],
+				"icon": {
+					"light": "./images/file-logo.png",
+					"dark": "./images/file-logo.png"
+				},
 				"configuration": "./extension/language/language-configuration.json"
 			}
 		],
@@ -202,15 +206,15 @@
 		"@types/glob": "^8.0.1",
 		"@types/mixpanel": "^2.14.4",
 		"@types/mocha": "^10.0.1",
-		"@types/node": "^20.2.5",
+		"@types/node": "^20.3.1",
 		"@types/object-hash": "^3.0.2",
 		"@types/semver": "^7.5.0",
 		"@types/uuid": "^9.0.0",
 		"@types/vscode": "^1.65.0",
 		"@vscode/test-electron": "^2.3.2",
 		"chai": "^4.3.7",
-		"esbuild": "^0.17.19",
-		"glob": "^8.1.0",
+		"esbuild": "^0.18.4",
+		"glob": "^10.3.0",
 		"mocha": "^10.2.0",
 		"nyc": "^15.1.0",
 		"ovsx": "^0.8.1",
@@ -221,7 +225,7 @@
 	},
 	"dependencies": {
 		"@onflow/decode": "0.0.11",
-		"@sentry/node": "^7.53.1",
+		"@sentry/node": "^7.55.2",
 		"@vscode/vsce": "^2.19.0",
 		"ansi-regex": "^6.0.1",
 		"async-lock": "^1.4.0",

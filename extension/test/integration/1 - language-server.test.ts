@@ -2,7 +2,7 @@ import * as assert from 'assert'
 import { before, after } from 'mocha'
 import { getMockSettings } from '../mock/mockSettings'
 import { EmulatorState, LanguageServerAPI } from '../../src/emulator/server/language-server'
-import * as flowConfig from '../../src/emulator/local/flowConfig'
+import { setConfigPath } from '../../src/emulator/local/flowConfig'
 import { GetAccountsReponse } from '../../src/emulator/server/responses'
 import { Account } from '../../src/emulator/account'
 import { Settings } from '../../src/settings/settings'
@@ -19,7 +19,7 @@ suite('Language Server & Emulator Integration', () => {
     this.timeout(MaxTimeout)
     // Initialize language server
     settings = getMockSettings()
-    flowConfig.setConfigPath(settings.customConfigPath)
+    setConfigPath(settings.customConfigPath)
     LS = new LanguageServerAPI(settings)
     await LS.activate()
   })
