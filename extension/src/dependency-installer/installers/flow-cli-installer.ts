@@ -21,7 +21,7 @@ const POWERSHELL_INSTALL_CMD = (githubToken?: string): string =>
   }"`
 const BASH_INSTALL_FLOW_CLI = (githubToken?: string): string =>
   `${
-    githubToken != null ? `GITHUB_TOKEN=${githubToken} && ` : ''
+    githubToken != null ? `GITHUB_TOKEN=${githubToken} ` : ''
   }sh -ci "$(curl -fsSL https://raw.githubusercontent.com/onflow/flow-cli/master/install.sh)"`
 const VERSION_INFO_URL = 'https://raw.githubusercontent.com/onflow/flow-cli/master/version.txt'
 export class InstallFlowCLI extends Installer {
