@@ -1,6 +1,6 @@
 /* Handle flow.json config file */
 import { window, workspace, commands } from 'vscode'
-import { FILE_PATH_EMPTY } from '../../utils/constants'
+import { FILE_PATH_EMPTY } from '../../utils/utils'
 import { Settings } from '../../settings/settings'
 import * as fs from 'fs'
 import { StateCache } from '../../utils/state-cache'

@@ -71,10 +71,7 @@ export class DependencyInstaller {
       setTimeout(() => { resolve() }, 2000)
     })
 
-    console.log('missing dependencies: ', missing)
-
     for (const installer of missing) {
-      console.log('entering for loop --- ' + installer.getName())
       try {
         // Check if dependencies are installed
         const missingDeps = installer.dependencies
@@ -86,14 +83,11 @@ export class DependencyInstaller {
           throw new InstallError('Cannot install ' + installer.getName() + '. Missing depdenencies: ' + missingDeps.map(x => x?.getName()).join(', '))
         }
 
-        console.log('Installing ' + installer.getName() + '...')
         await installer.runInstall()
-        console.log('Installed ' + installer.getName() + ' successfully.')
         installed.push(installer)
       } catch (err) {
         if (err instanceof InstallError) {
           void window.showErrorMessage(err.message)
-          console.log('Failed to install ' + installer.getName() + ': ' + err.message)
         }
       }
     }
