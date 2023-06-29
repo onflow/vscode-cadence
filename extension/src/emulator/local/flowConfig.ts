@@ -137,8 +137,11 @@ async function readLocalConfig (): Promise<string> {
           (res, folder) => ([...res, path.resolve(folder.uri.fsPath, settings.customConfigPath)]),
           [] as string[],
         )
-        if(files.length === 1) {
+        if (files.length === 1) {
           configFilePath = files[0]
+        } else if(files.length === 0) {
+          void window.showErrorMessage(`File specified at ${settings.customConfigPath} not found.  Please verify the file exists.`)
+          throw new Error('File not found')
         } else {
           void window.showErrorMessage(`Multiple flow.json files found: ${files.join(', ')}.  Please specify an absolute path to the desired flow.json file in your workspace settings.`)
           throw new Error('Multiple flow.json files found')
@@ -153,14 +156,14 @@ async function readLocalConfig (): Promise<string> {
     }
   } else {
     // Default config search for flow.json in workspace
-    const file = await workspace.findFiles('flow.json')
-    if (file.length === 0) {
+    const files = (await workspace.findFiles('flow.json')).map(f => f.fsPath)
+    if (files.length === 0) {
       return FILE_PATH_EMPTY
-    } else if(file.length > 1) {
-      void window.showErrorMessage(`Multiple flow.json files found: ${file.join(', ')}.  Please specify an absolute path to the desired flow.json file in your workspace settings.`)
+    } else if(files.length > 1) {
+      void window.showErrorMessage(`Multiple flow.json files found: ${files.join(', ')}.  Please specify an absolute path to the desired flow.json file in your workspace settings.`)
       throw new Error('Multiple flow.json files found')
     }
-    configFilePath = file[0].fsPath
+    configFilePath = files[0]
   }
 
   return configFilePath
