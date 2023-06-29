@@ -133,13 +133,13 @@ async function readLocalConfig (): Promise<string> {
       if (path.isAbsolute(settings.customConfigPath)) {
         configFilePath = settings.customConfigPath
       } else {
-        const files = workspace.workspaceFolders.reduce(
+        const files = workspace.workspaceFolders.reduce<string[]>(
           (res, folder) => ([...res, path.resolve(folder.uri.fsPath, settings.customConfigPath)]),
-          [] as string[],
+          []
         )
         if (files.length === 1) {
           configFilePath = files[0]
-        } else if(files.length === 0) {
+        } else if (files.length === 0) {
           void window.showErrorMessage(`File specified at ${settings.customConfigPath} not found.  Please verify the file exists.`)
           throw new Error('File not found')
         } else {
@@ -159,7 +159,7 @@ async function readLocalConfig (): Promise<string> {
     const files = (await workspace.findFiles('flow.json')).map(f => f.fsPath)
     if (files.length === 0) {
       return FILE_PATH_EMPTY
-    } else if(files.length > 1) {
+    } else if (files.length > 1) {
       void window.showErrorMessage(`Multiple flow.json files found: ${files.join(', ')}.  Please specify an absolute path to the desired flow.json file in your workspace settings.`)
       throw new Error('Multiple flow.json files found')
     }
