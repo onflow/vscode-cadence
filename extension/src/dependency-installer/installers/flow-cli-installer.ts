@@ -10,7 +10,7 @@ import { ext } from '../../main'
 
 // Command to check flow-cli
 let CHECK_FLOW_CLI_CMD = 'flow version'
-const COMPATIBLE_FLOW_CLI_VERSIONS = '>=0.45.4'
+const COMPATIBLE_FLOW_CLI_VERSIONS = '>=1.2.0'
 
 // Flow CLI with homebrew
 const CHECK_HOMEBREW_CMD = 'brew help help' // Run this to check if brew is executable
@@ -20,9 +20,9 @@ const BASH_INSTALL_HOMEBREW = '/bin/bash -c "$(curl -fsSL https://raw.githubuser
 const BREW_UPDATE = 'brew update'
 const BREW_INSTALL_FLOW_CLI = 'brew install flow-cli'
 const POWERSHELL_INSTALL_CMD = (githubToken?: string): string =>
-  `iex "& { $(irm 'https://raw.githubusercontent.com/onflow/flow-cli/master/install.ps1') ${
-    githubToken != null ? `-GitHubToken ${githubToken}` : ''
-  }}"`
+  `iex "& { $(irm 'https://raw.githubusercontent.com/onflow/flow-cli/master/install.ps1') } ${
+    githubToken != null ? `-GitHubToken ${githubToken} ` : ''
+  }"`
 const BASH_INSTALL_FLOW_CLI = (githubToken?: string): string =>
   `(${
     githubToken != null ? `export GITHUB_TOKEN=${githubToken} && ` : ''

@@ -20,6 +20,7 @@ export const EMULATOR_ACCOUNT = 'emulator-account'
 
 export function setConfigPath (path: string): void {
   configPath = path
+  flowConfig.invalidate()
 }
 
 export interface FlowConfig {

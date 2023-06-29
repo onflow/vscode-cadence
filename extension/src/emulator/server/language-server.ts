@@ -31,6 +31,7 @@ export class LanguageServerAPI {
   emulatorState$ = new BehaviorSubject<EmulatorState>(EmulatorState.Disconnected)
 
   #watcherTimeout: NodeJS.Timeout | null = null
+  #watcherPromise: Promise<void> | null = null
   #flowConfigWatcher: Promise<Disposable> | null = null
 
   constructor (settings: Settings) {
@@ -50,7 +51,9 @@ export class LanguageServerAPI {
           return EmulatorState.Disconnected
         }
       })
-    ).subscribe((state) => this.emulatorState$.next(state))
+    ).subscribe((state) => {
+      this.emulatorState$.next(state)
+    })
 
     // Subscribe to emulator state changes
     this.emulatorState$.subscribe(emulatorStateChanged)
@@ -66,41 +69,59 @@ export class LanguageServerAPI {
   }
 
   async deactivate (): Promise<void> {
-    await this.stopClient()
-    if (this.#watcherTimeout != null) clearTimeout(this.#watcherTimeout)
-    if (this.#flowConfigWatcher != null) (await this.#flowConfigWatcher).dispose()
+    const deactivationPromises = [this.#watcherPromise]
+    if (this.#watcherTimeout != null) {
+      clearTimeout(this.#watcherTimeout)
+      this.#watcherTimeout = null
+    }
+    if (this.#flowConfigWatcher != null) deactivationPromises.push(this.#flowConfigWatcher.then(watcher => watcher.dispose()))
+    deactivationPromises.push(this.stopClient())
+    await Promise.all(deactivationPromises)
   }
 
   watchEmulator (): void {
     const pollingIntervalMs = 1000
 
     // Loop with setTimeout to avoid overlapping calls
-    void (async function loop (this: LanguageServerAPI) {
-      try {
-        // Wait for client to connect or disconnect
-        if (this.clientState$.getValue() === State.Starting) return
+    async function loop (this: LanguageServerAPI): Promise<void> {
+      this.#watcherPromise = (async () => {
+        try {
+          // Wait for client to connect or disconnect
+          if (this.clientState$.getValue() === State.Starting) return
 
-        // Check if emulator state has changed
-        const emulatorFound = await verifyEmulator()
-        if ((this.emulatorState$.getValue() === EmulatorState.Connected) === emulatorFound) {
-          return // No changes in local emulator state
+          // Check if emulator state has changed
+          const emulatorFound = await verifyEmulator()
+          if ((this.emulatorState$.getValue() === EmulatorState.Connected) === emulatorFound) {
+            return // No changes in local emulator state
+          }
+
+          if (this.#watcherTimeout === null) return
+
+          // Restart language server
+          await this.restart(emulatorFound)
+        } catch (err) {
+          console.log(err)
         }
+      })()
 
-        // Restart language server
-        await this.restart(emulatorFound)
-      } catch (err) {
-        console.log(err)
-      } finally {
+      // Wait for watcher to finish
+      await this.#watcherPromise
+
+      // If watcher hasn't been disposed, restart loop
+      if (this.#watcherTimeout != null) {
         this.#watcherTimeout = setTimeout(() => { void loop.bind(this)() }, pollingIntervalMs)
       }
-    }.bind(this))()
+    }
+
+    // Start loop, must be a timeout for aborts to work
+    this.#watcherTimeout = setTimeout(() => { void loop.bind(this)() }, 0)
   }
 
   async startClient (enableFlow?: boolean): Promise<void> {
     // Prevent starting multiple times
     if (this.clientState$.getValue() === State.Starting) {
-      await firstValueFrom(this.clientState$.pipe(filter(state => state !== State.Starting)))
-      if (this.clientState$.getValue() === State.Running) { return }
+      const newState = await firstValueFrom(this.clientState$.pipe(filter(state => state !== State.Starting)))
+      if (newState === State.Running) { return }
     } else if (this.clientState$.getValue() === State.Running) {
       return
     }
@@ -178,7 +199,7 @@ export class LanguageServerAPI {
     this.client = null
   }
 
-  async restart (enableFlow: boolean): Promise<void> {
+  async restart (enableFlow?: boolean): Promise<void> {
     // Prevent restarting multiple times
     await this.stopClient()
     await this.startClient(enableFlow)
@@ -193,11 +214,6 @@ export class LanguageServerAPI {
       command: cmd,
       arguments: args
     })
-  }
-
-  async reset (): Promise<void> {
-    const enableFlow = await verifyEmulator()
-    await this.restart(enableFlow)
   }
 
   // Sends a request to switch the currently active account.
