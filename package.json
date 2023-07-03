@@ -225,7 +225,7 @@
 	},
 	"dependencies": {
 		"@onflow/decode": "0.0.11",
-		"@sentry/node": "^7.56.0",
+		"@sentry/node": "^7.57.0",
 		"@vscode/vsce": "^2.19.0",
 		"ansi-regex": "^6.0.1",
 		"async-lock": "^1.4.0",
