@@ -12,7 +12,7 @@ async function main (): Promise<void> {
     await runTests({
       extensionDevelopmentPath,
       extensionTestsPath,
-      launchArgs: [testWorkspace, '--disable-telemetry']
+      launchArgs: [testWorkspace, '--disable-telemetry', '--disable-gpu', '--disable-software-rasterizer']
     })
   } catch (err) {
     console.error('Failed to run tests')
