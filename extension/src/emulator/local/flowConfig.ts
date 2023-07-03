@@ -4,7 +4,9 @@ import * as util from 'util'
 import * as cp from 'child_process'
 import { FILE_PATH_EMPTY } from '../../utils/utils'
 import { Settings } from '../../settings/settings'
+import * as os from 'os'
 import * as fs from 'fs'
+import * as path from 'path'
 import { StateCache } from '../../utils/state-cache'
 import { Disposable } from 'vscode-languageclient'
 
@@ -79,7 +81,9 @@ async function retrieveConfigPath (): Promise<string> {
   let configPath = await readLocalConfig()
   if (configPath === FILE_PATH_EMPTY) {
     // Couldn't find config file, prompt user
-    if (!await promptInitializeConfig()) { throw Error('No valid config path') }
+    if (!(await promptInitializeConfig())) {
+      throw Error('No valid config path')
+    }
     configPath = await readLocalConfig()
   }
   return configPath
@@ -88,7 +92,10 @@ async function retrieveConfigPath (): Promise<string> {
 // Prompt the user to create a new config file
 async function promptInitializeConfig (): Promise<boolean> {
   let rootPath: string | undefined
-  if ((workspace.workspaceFolders != null) && (workspace.workspaceFolders.length > 0)) {
+  if (
+    workspace.workspaceFolders != null &&
+    workspace.workspaceFolders.length > 0
+  ) {
     rootPath = workspace.workspaceFolders[0].uri.fsPath
   } else {
     rootPath = workspace.rootPath // ref: deprecated
@@ -98,7 +105,10 @@ async function promptInitializeConfig (): Promise<boolean> {
   }
 
   const continueMessage = 'Continue'
-  const selection = await window.showInformationMessage('Missing Flow CLI configuration. Create a new one?', continueMessage)
+  const selection = await window.showInformationMessage(
+    'Missing Flow CLI configuration. Create a new one?',
+    continueMessage
+  )
   if (selection !== continueMessage) {
     return false
   }
@@ -111,22 +121,49 @@ async function promptInitializeConfig (): Promise<boolean> {
 // Search for config file in workspace
 async function readLocalConfig (): Promise<string> {
   const settings = Settings.getWorkspaceSettings()
-  let configFilePath: string
+  let configFilePath: string | undefined
 
   if (settings.customConfigPath !== '') {
-    // Check custom flow.json path
-    const file = settings.customConfigPath
-    if (!fs.existsSync(file)) {
-      throw new Error('Can\'t access custom flow.json file: ' + file)
+    if (settings.customConfigPath[0] === '~') {
+      configFilePath = path.join(
+        os.homedir(),
+        settings.customConfigPath.slice(1)
+      )
+    } else if (workspace.workspaceFolders != null) {
+      if (path.isAbsolute(settings.customConfigPath)) {
+        configFilePath = settings.customConfigPath
+      } else {
+        const files = workspace.workspaceFolders.reduce<string[]>(
+          (res, folder) => ([...res, path.resolve(folder.uri.fsPath, settings.customConfigPath)]),
+          []
+        )
+        if (files.length === 1) {
+          configFilePath = files[0]
+        } else if (files.length === 0) {
+          void window.showErrorMessage(`File specified at ${settings.customConfigPath} not found.  Please verify the file exists.`)
+          throw new Error('File not found')
+        } else {
+          void window.showErrorMessage(`Multiple flow.json files found: ${files.join(', ')}.  Please specify an absolute path to the desired flow.json file in your workspace settings.`)
+          throw new Error('Multiple flow.json files found')
+        }
+      }
     }
-    configFilePath = file
+
+    if (configFilePath === undefined || !fs.existsSync(configFilePath)) {
+      throw new Error(
+        "Can't access custom flow.json file: " + settings.customConfigPath
+      )
+    }
   } else {
     // Default config search for flow.json in workspace
-    const file = await workspace.findFiles('flow.json')
-    if (file.length !== 1) {
+    const files = (await workspace.findFiles('flow.json')).map(f => f.fsPath)
+    if (files.length === 0) {
       return FILE_PATH_EMPTY
+    } else if (files.length > 1) {
+      void window.showErrorMessage(`Multiple flow.json files found: ${files.join(', ')}.  Please specify an absolute path to the desired flow.json file in your workspace settings.`)
+      throw new Error('Multiple flow.json files found')
     }
-    configFilePath = file[0].fsPath
+    configFilePath = files[0]
   }
 
   return configFilePath
