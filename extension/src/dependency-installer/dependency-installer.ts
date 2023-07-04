@@ -101,8 +101,13 @@ export class DependencyInstaller {
       void window.showErrorMessage('Failed to install all dependencies.  The following may need to be installed manually: ' + failed.map(x => x.getName()).join(', '))
     } else {
       if (process.platform === 'win32') {
+        // Windows requires a restart of VSCode to refresh environment variables
         void window.showInformationMessage('All dependencies installed successfully.  Newly installed dependencies will not be available in terminals until VSCode is restarted.')
+      } else if(process.platform !== "darwin") {
+        // Linux requires a fresh login to refresh environment variables for new terminals
+        void window.showInformationMessage('All dependencies installed successfully.  Newly installed dependencies will not be available in terminals until you log out and back in.')
       } else {
+        // MacOS requires a restart of active terminals to refresh environment variables
         void window.showInformationMessage('All dependencies installed successfully.  You may need to restart active terminals.')
       }
     }
