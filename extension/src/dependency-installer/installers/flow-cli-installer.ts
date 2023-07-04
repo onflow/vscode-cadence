@@ -30,7 +30,7 @@ export class InstallFlowCLI extends Installer {
   constructor () {
     // Homebrew is a dependency for macos and linux
     const dependencies: Array<new () => Installer> = []
-    if (process.platform === 'darwin' || process.platform === 'linux') {
+    if (process.platform === 'darwin') {
       dependencies.push(HomebrewInstaller)
     }
 
@@ -46,7 +46,6 @@ export class InstallFlowCLI extends Installer {
     try {
       switch (OS_TYPE) {
         case 'darwin':
-        case 'linux':
           await this.#install_macos()
           break
         case 'win32':

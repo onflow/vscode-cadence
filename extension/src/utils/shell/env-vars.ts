@@ -1,7 +1,7 @@
 
 import { StateCache } from '../state-cache'
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
-import * as vscode from 'vscode'
+import { getDefaultShell } from './default-shell'
 
 const PRINT_ENV_POWERSHELL = `
 $machineEnv = [Environment]::GetEnvironmentVariables('Machine')
@@ -28,8 +28,8 @@ foreach ($key in $env.Keys) {
 }`
 
 export const envVars = new StateCache(async () => {
-  const shell = vscode.env.shell
-  return await getEnvVars(shell)
+  let shell = getDefaultShell()
+  return await getEnvVars(shell).catch(() => process.env)
 })
 
 async function getEnvVars (shell: string): Promise<{ [key: string]: string | undefined }> {

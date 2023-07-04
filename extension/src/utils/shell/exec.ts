@@ -2,6 +2,7 @@ import { ExecOptions, exec } from 'child_process'
 import { promisify } from 'util'
 import { envVars } from './env-vars'
 import * as vscode from 'vscode'
+import { getDefaultShell } from './default-shell'
 
 export async function execDefault (cmd: string, options: ExecOptions = {}): Promise<boolean> {
   const OS_TYPE = process.platform
@@ -21,13 +22,13 @@ export async function execPowerShell (cmd: string, options: ExecOptions = {}): P
 // Execute command in default shell
 export async function execUnixDefault (cmd: string, options: ExecOptions = {}): Promise<boolean> {
   const env = await envVars.getValue()
-  return await promisify(exec)(cmd, { env, shell: vscode.env.shell, ...options }).then(() => true).catch(() => false)
+  return await promisify(exec)(cmd, { env, shell: getDefaultShell(), ...options }).then(() => true).catch(() => false)
 }
 
 // Execute a command in vscode terminal
 export async function execVscodeTerminal (name: string, command: string, shellPath?: string): Promise<void> {
   const OS_TYPE = process.platform
-  if (shellPath == null) { shellPath = OS_TYPE === 'win32' ? 'powershell.exe' : vscode.env.shell }
+  if (shellPath == null) { shellPath = OS_TYPE === 'win32' ? 'powershell.exe' : getDefaultShell() }
 
   const term = vscode.window.createTerminal({
     name,
