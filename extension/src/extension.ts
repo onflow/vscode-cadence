@@ -33,13 +33,20 @@ export class Extension {
     // Initialize UI
     this.#uiCtrl = new UIController()
 
-    // Check for any missing dependencies
-    this.#dependencyInstaller = new DependencyInstaller()
-
     // Initialize Emulator
     this.emulatorCtrl = new EmulatorController(settings)
     this.emulatorCtrl.api.emulatorState$.subscribe(() => {
       void this.emulatorStateChanged()
+    })
+
+    // Check for any missing dependencies
+    // The language server will start if all dependencies are installed
+    // Otherwise, the language server will not start and will start after
+    // the user installs the missing dependencies
+    this.#dependencyInstaller = new DependencyInstaller()
+    this.#dependencyInstaller.missingDependencies.subscribe((deps) => {
+      if (deps.length === 0) void this.emulatorCtrl.activate()
+      else void this.emulatorCtrl.deactivate()
     })
 
     // Initialize ExtensionCommands
@@ -71,8 +78,8 @@ export class Extension {
     await this.#uiCtrl.emulatorStateChanged()
   }
 
-  checkDependencies (): void {
-    this.#dependencyInstaller.checkDependencies()
+  async checkDependencies (): Promise<void> {
+    await this.#dependencyInstaller.checkDependencies()
   }
 
   async installMissingDependencies (): Promise<void> {

@@ -10,6 +10,7 @@ import { verifyEmulator } from '../local/emulatorScanner'
 import { Disposable, ExecuteCommandRequest } from 'vscode-languageclient'
 import { BehaviorSubject, combineLatest, filter, firstValueFrom, map } from 'rxjs'
 import * as telemetry from '../../telemetry/telemetry'
+import { envVars } from '../../utils/shell/env-vars'
 
 // Identities for commands handled by the Language server
 const CREATE_ACCOUNT_SERVER = 'cadence.server.flow.createAccount'
@@ -57,12 +58,10 @@ export class LanguageServerAPI {
 
     // Subscribe to emulator state changes
     this.emulatorState$.subscribe(emulatorStateChanged)
-
-    // Activate the language server
-    void this.activate()
   }
 
   async activate (): Promise<void> {
+    await this.deactivate()
     await this.startClient()
     void this.watchEmulator()
     void this.watchFlowConfiguration()
@@ -79,7 +78,12 @@ export class LanguageServerAPI {
     await Promise.all(deactivationPromises)
   }
 
+  get isActive (): boolean {
+    return this.#watcherTimeout != null
+  }
+
   watchEmulator (): void {
+    // Polling interval in milliseconds
     const pollingIntervalMs = 1000
 
     // Loop with setTimeout to avoid overlapping calls
@@ -100,7 +104,7 @@ export class LanguageServerAPI {
           // Restart language server
           await this.restart(emulatorFound)
         } catch (err) {
-          console.log(err)
+          console.error(err)
         }
       })()
 
@@ -153,12 +157,16 @@ export class LanguageServerAPI {
       } catch (err) { void err }
     }
 
+    const env = await envVars.getValue()
     this.client = new LanguageClient(
       'cadence',
       'Cadence',
       {
         command: this.settings.flowCommand,
-        args: ['cadence', 'language-server', `--enable-flow-client=${String(enableFlow)}`]
+        args: ['cadence', 'language-server', `--enable-flow-client=${String(enableFlow)}`],
+        options: {
+          env
+        }
       },
       {
         documentSelector: [{ scheme: 'file', language: 'cadence' }],
@@ -173,12 +181,12 @@ export class LanguageServerAPI {
       }
     )
 
+    this.client.onDidChangeState((event) => {
+      this.clientState$.next(event.newState)
+    })
+
     await this.client.start()
-      .then(() => {
-        this.clientState$.next(State.Running)
-      })
       .catch((err: Error) => {
-        this.clientState$.next(State.Stopped)
         void window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
       })
 
@@ -192,6 +200,9 @@ export class LanguageServerAPI {
   }
 
   async stopClient (): Promise<void> {
+    // Prevent stopping multiple times (important since LanguageClient state may be startFailed)
+    if (this.clientState$.getValue() === State.Stopped) return
+
     // Set emulator state to disconnected
     this.clientState$.next(State.Stopped)
 

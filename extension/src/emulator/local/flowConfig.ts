@@ -1,7 +1,5 @@
 /* Handle flow.json config file */
 import { window, workspace, commands } from 'vscode'
-import * as util from 'util'
-import * as cp from 'child_process'
 import { FILE_PATH_EMPTY } from '../../utils/utils'
 import { Settings } from '../../settings/settings'
 import * as os from 'os'
@@ -9,8 +7,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { StateCache } from '../../utils/state-cache'
 import { Disposable } from 'vscode-languageclient'
-
-const exec = util.promisify(cp.exec)
+import { execDefault } from '../../utils/shell/exec'
 
 // Path to flow.json file
 let configPath: string | undefined
@@ -113,7 +110,7 @@ async function promptInitializeConfig (): Promise<boolean> {
     return false
   }
 
-  await exec('flow init', { cwd: rootPath })
+  await execDefault('flow init', { cwd: rootPath })
 
   return true
 }

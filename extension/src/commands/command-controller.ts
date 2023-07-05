@@ -56,7 +56,7 @@ export class CommandController {
     await ext?.emulatorCtrl.copyActiveAccount()
   }
 
-  #checkDependencies (): void {
-    ext?.checkDependencies()
+  async #checkDependencies (): Promise<void> {
+    await ext?.checkDependencies()
   }
 }

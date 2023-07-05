@@ -77,4 +77,18 @@ suite('State Cache Unit Tests', () => {
 
     await assert.rejects(async () => { await stateCache.getValue() }, { message: 'dummy error' })
   }).timeout(2000)
+
+  test('Does not return undefined for subscription to first value', async () => {
+    const fetcher = async (): Promise<string> => {
+      return 'FOOBAR'
+    }
+    const stateCache = new StateCache(fetcher)
+
+    ASSERT_EQUAL(await new Promise<string>((resolve) => {
+      const subscription = stateCache.subscribe(val => {
+        resolve(val)
+        subscription.unsubscribe()
+      })
+    }), 'FOOBAR')
+  })
 })

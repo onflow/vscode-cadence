@@ -1,4 +1,4 @@
-import { BehaviorSubject, Observable, Observer, firstValueFrom, map, skip } from 'rxjs'
+import { BehaviorSubject, Observable, Observer, Subscription, firstValueFrom, map, skip } from 'rxjs'
 
 enum ValidationState {
   Valid = 0,
@@ -78,7 +78,7 @@ export class StateCache<T> {
     this.invalidate()
   }
 
-  subscribe (observerOrNext?: Partial<Observer<T>> | ((value: T) => void) | undefined): void {
-    this.#observable.subscribe(observerOrNext)
+  subscribe (observerOrNext?: Partial<Observer<T>> | ((value: T) => void) | undefined): Subscription {
+    return this.#observable.subscribe(observerOrNext)
   }
 }

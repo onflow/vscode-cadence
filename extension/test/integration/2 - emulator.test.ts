@@ -14,11 +14,12 @@ suite('Emulator Controller', () => {
   let emuCtrl: EmulatorController
   let settings: Settings
 
-  before(function () {
+  before(async function () {
     this.timeout(MaxTimeout)
     settings = getMockSettings()
     flowConfig.setConfigPath(settings.customConfigPath)
     emuCtrl = new EmulatorController(settings)
+    await emuCtrl.activate()
   })
 
   after(async function () {
