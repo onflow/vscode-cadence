@@ -1,6 +1,6 @@
 /* Installer for Flow CLI */
 import { window } from 'vscode'
-import { execUnixDefault, execPowerShell, execDefault, execVscodeTerminal } from '../../utils/shell/exec'
+import { execDefault, execVscodeTerminal, tryExecDefault, tryExecPowerShell, tryExecUnixDefault } from '../../utils/shell/exec'
 import { promptUserInfoMessage, promptUserErrorMessage } from '../../ui/prompts'
 import { Installer } from '../installer'
 import { execSync } from 'child_process'
@@ -68,13 +68,13 @@ export class InstallFlowCLI extends Installer {
 
   async #install_windows (): Promise<void> {
     // Retry if bad GH token
-    if (this.#githubToken != null && await execPowerShell(POWERSHELL_INSTALL_CMD(this.#githubToken))) { return }
+    if (this.#githubToken != null && await tryExecPowerShell(POWERSHELL_INSTALL_CMD(this.#githubToken))) { return }
     await execVscodeTerminal('Install Flow CLI', POWERSHELL_INSTALL_CMD(this.#githubToken))
   }
 
   async #install_bash_cmd (): Promise<void> {
     // Retry if bad GH token
-    if (this.#githubToken != null && await execUnixDefault(BASH_INSTALL_FLOW_CLI(this.#githubToken))) { return }
+    if (this.#githubToken != null && await tryExecUnixDefault(BASH_INSTALL_FLOW_CLI(this.#githubToken))) { return }
     await execVscodeTerminal('Install Flow CLI', BASH_INSTALL_FLOW_CLI())
   }
 
@@ -100,10 +100,10 @@ export class InstallFlowCLI extends Installer {
 
   async checkVersion (): Promise<boolean> {
     // Get user's version informaton
-    const buffer: Buffer = execSync(CHECK_FLOW_CLI_CMD)
+    const versionOutput = (await execDefault(CHECK_FLOW_CLI_CMD)).stdout
 
     // Format version string from output
-    let versionStr: string | null = parseFlowCliVersion(buffer)
+    let versionStr: string | null = parseFlowCliVersion(versionOutput)
 
     versionStr = semver.clean(versionStr)
     if (versionStr === null) return false
@@ -131,7 +131,7 @@ export class InstallFlowCLI extends Installer {
 
   async verifyInstall (): Promise<boolean> {
     // Check if flow-cli is executable
-    if (!await execDefault(CHECK_FLOW_CLI_CMD)) return false
+    if (!await tryExecDefault(CHECK_FLOW_CLI_CMD)) return false
 
     // Check flow-cli version number
     return await this.checkVersion()

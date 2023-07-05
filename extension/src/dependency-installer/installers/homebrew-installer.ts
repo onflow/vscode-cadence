@@ -1,5 +1,5 @@
 /* Installer for Flow CLI */
-import { execDefault, execVscodeTerminal } from '../../utils/shell/exec'
+import { execVscodeTerminal, tryExecDefault } from '../../utils/shell/exec'
 import { Installer } from '../installer'
 
 // Flow CLI with homebrew
@@ -16,6 +16,6 @@ export class HomebrewInstaller extends Installer {
   }
 
   async verifyInstall (): Promise<boolean> {
-    return await execDefault(CHECK_HOMEBREW_CMD)
+    return await tryExecDefault(CHECK_HOMEBREW_CMD)
   }
 }

@@ -4,7 +4,13 @@ import { envVars } from './env-vars'
 import * as vscode from 'vscode'
 import { getDefaultShell } from './default-shell'
 
-export async function execDefault (cmd: string, options: ExecOptions = {}): Promise<boolean> {
+type ExecResult = Promise<{
+  stdout: string
+  stderr: string
+}>
+
+// Execute a command in default shell
+export async function execDefault (cmd: string, options: ExecOptions = {}): ExecResult {
   const OS_TYPE = process.platform
   if (OS_TYPE === 'win32') {
     return await execPowerShell(cmd, options)
@@ -14,15 +20,27 @@ export async function execDefault (cmd: string, options: ExecOptions = {}): Prom
 }
 
 // Execute a command in powershell
-export async function execPowerShell (cmd: string, options: ExecOptions = {}): Promise<boolean> {
+export async function execPowerShell (cmd: string, options: ExecOptions = {}): ExecResult {
   const env = await envVars.getValue()
-  return await promisify(exec)(cmd, { env, shell: 'powershell.exe', ...options }).then(() => true).catch(() => false)
+  return await promisify(exec)(cmd, { env, shell: 'powershell.exe', ...options })
 }
 
 // Execute command in default shell
-export async function execUnixDefault (cmd: string, options: ExecOptions = {}): Promise<boolean> {
+export async function execUnixDefault (cmd: string, options: ExecOptions = {}): ExecResult {
   const env = await envVars.getValue()
-  return await promisify(exec)(cmd, { env, shell: getDefaultShell(), ...options }).then(() => true).catch(() => false)
+  return await promisify(exec)(cmd, { env, shell: getDefaultShell(), ...options })
+}
+
+export async function tryExecDefault (cmd: string, options: ExecOptions = {}): Promise<boolean> {
+  return await execDefault(cmd, options).then(() => true).catch(() => false)
+}
+
+export async function tryExecPowerShell (cmd: string, options: ExecOptions = {}): Promise<boolean> {
+  return await execPowerShell(cmd, options).then(() => true).catch(() => false)
+}
+
+export async function tryExecUnixDefault (cmd: string, options: ExecOptions = {}): Promise<boolean> {
+  return await execUnixDefault(cmd, options).then(() => true).catch(() => false)
 }
 
 // Execute a command in vscode terminal
