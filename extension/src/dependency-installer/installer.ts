@@ -6,10 +6,10 @@ import { envVars } from '../utils/shell/env-vars'
 export class InstallError extends Error {}
 
 export abstract class Installer {
-  dependencies: Array<new () => Installer>
+  dependencies: Array<new (refreshDependencies: () => Promise<void>) => Installer>
   #installerName: string
 
-  constructor (name: string, dependencies: Array<new () => Installer>) {
+  constructor (name: string, dependencies: Array<new (refreshDependencies: () => Promise<void>) => Installer>) {
     this.dependencies = dependencies
     this.#installerName = name
   }

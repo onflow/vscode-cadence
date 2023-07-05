@@ -4,7 +4,7 @@ import { Installer, InstallError } from './installer'
 import { promptUserErrorMessage } from '../ui/prompts'
 import { StateCache } from '../utils/state-cache'
 
-const INSTALLERS: Array<new () => Installer> = [
+const INSTALLERS: Array<new (refreshDependencies: () => Promise<void>) => Installer> = [
   InstallFlowCLI
 ]
 
@@ -52,13 +52,13 @@ export class DependencyInstaller {
 
   #registerInstallers (): void {
     // Recursively register installers and their dependencies in the correct order
-    (function registerInstallers (this: DependencyInstaller, installers: Array<new () => Installer>) {
+    (function registerInstallers (this: DependencyInstaller, installers: Array<new (refreshDependencies: () => Promise<void>) => Installer>) {
       installers.forEach((_installer) => {
         // Check if installer is already registered
         if (this.registeredInstallers.find(x => x instanceof _installer) != null) { return }
 
         // Register installer and dependencies
-        const installer = new _installer()
+        const installer = new _installer(this.checkDependencies.bind(this))
         registerInstallers.bind(this)(installer.dependencies)
         this.registeredInstallers.push(installer)
       })

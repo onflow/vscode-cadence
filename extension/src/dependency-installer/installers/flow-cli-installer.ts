@@ -26,9 +26,9 @@ const VERSION_INFO_URL = 'https://raw.githubusercontent.com/onflow/flow-cli/mast
 export class InstallFlowCLI extends Installer {
   #githubToken: string | undefined
 
-  constructor () {
+  constructor (private readonly refreshDependencies: () => Promise<void>) {
     // Homebrew is a dependency for macos and linux
-    const dependencies: Array<new () => Installer> = []
+    const dependencies: Array<new (refreshDependencies: () => Promise<void>) => Installer> = []
     if (process.platform === 'darwin') {
       dependencies.push(HomebrewInstaller)
     }
@@ -90,8 +90,9 @@ export class InstallFlowCLI extends Installer {
       promptUserInfoMessage(
         'There is a new Flow CLI version available: ' + latestStr,
         'Install latest Flow CLI',
-        () => {
-          void this.runInstall()
+        async () => {
+          await this.runInstall()
+          await this.refreshDependencies()
         }
       )
     }
@@ -115,8 +116,9 @@ export class InstallFlowCLI extends Installer {
       promptUserErrorMessage(
         'Incompatible Flow CLI version: ' + versionStr,
         'Install latest Flow CLI',
-        () => {
-          void this.runInstall()
+        async () => {
+          await this.runInstall()
+          await this.refreshDependencies()
         }
       )
       return false
