@@ -40,6 +40,8 @@ export class DependencyInstaller {
   }
 
   async checkDependencies (): Promise<void> {
+    // Invalidate and wait for state to update
+    // This will trigger the missingDependencies subscriptions
     this.missingDependencies.invalidate()
     await this.missingDependencies.getValue()
   }
@@ -103,7 +105,7 @@ export class DependencyInstaller {
       if (process.platform === 'win32') {
         // Windows requires a restart of VSCode to refresh environment variables
         void window.showInformationMessage('All dependencies installed successfully.  Newly installed dependencies will not be available in terminals until VSCode is restarted.')
-      } else if(process.platform !== "darwin") {
+      } else if (process.platform !== 'darwin') {
         // Linux requires a fresh login to refresh environment variables for new terminals
         void window.showInformationMessage('All dependencies installed successfully.  Newly installed dependencies will not be available in terminals until you log out and back in.')
       } else {

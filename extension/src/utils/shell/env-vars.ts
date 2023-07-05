@@ -28,7 +28,7 @@ foreach ($key in $env.Keys) {
 }`
 
 export const envVars = new StateCache(async () => {
-  let shell = getDefaultShell()
+  const shell = getDefaultShell()
   return await getEnvVars(shell).catch(() => process.env)
 })
 

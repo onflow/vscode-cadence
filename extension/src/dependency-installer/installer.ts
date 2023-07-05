@@ -35,8 +35,7 @@ export abstract class Installer {
       throw new InstallError('Failed to install: ' + this.#installerName)
     }
 
-    void window.showInformationMessage(this.#installerName + ' installed sucessfully. ' +
-    'You may need to reload the extension.')
+    void window.showInformationMessage(this.#installerName + ' installed sucessfully.')
   }
 
   // Installation logic
