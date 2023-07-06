@@ -6,7 +6,6 @@ import { StateCache } from '../../src/utils/state-cache'
 import { SemVer } from 'semver'
 import { JSONSchemaProvider } from '../../src/json-schema-provider'
 import * as fetch from 'node-fetch'
-import path = require('path')
 import { cwd } from 'process'
 import { readFileSync } from 'fs'
 
@@ -19,26 +18,26 @@ suite('JSON schema tests', () => {
 
   before(async function () {
     this.timeout(MaxTimeout)
-    
+
     // Mock extension context
     mockContext = {
       extensionPath: cwd(),
-      subscriptions: [] as vscode.Disposable[],
-    } as vscode.ExtensionContext
+      subscriptions: [] as vscode.Disposable[]
+    } as any
 
     // Mock flow version
     mockFlowVersion = new StateCache<SemVer | null>(async () => mockFlowVersionValue)
 
-    // Mock fetch
+    // Mock fetch (assertion is for linter workaround)
     originalFetch = fetch.default
-    fetch.default = async (url: string) => {
+    ;(fetch as unknown as any).default = async (url: string) => {
       // only mock valid response for version 1.0.0 for testing
       // other versions will return 404 and emulate a missing schema
       if (url === 'https://raw.githubusercontent.com/onflow/flow-cli/v1.0.0/flowkit/flow-schema.json') {
         return {
           ok: true,
           text: async () => JSON.stringify({
-            'dummy': 'schema for flow.json'
+            dummy: 'schema for flow.json'
           })
         } as any
       } else {
@@ -56,8 +55,8 @@ suite('JSON schema tests', () => {
   after(async function () {
     this.timeout(MaxTimeout)
 
-    // Restore fetch
-    fetch.default = originalFetch
+    // Restore fetch (assertion is for linter workaround)
+    ;(fetch as unknown as any).default = originalFetch
 
     // Clear subscriptions
     mockContext.subscriptions.forEach((sub) => sub.dispose())
@@ -91,7 +90,7 @@ suite('JSON schema tests', () => {
     // Assert that the schema is the same as the remote schema
     await vscode.workspace.fs.readFile(vscode.Uri.parse('cadence-schema:///flow.json')).then((data) => {
       assert.strictEqual(data.toString(), JSON.stringify({
-        'dummy': 'schema for flow.json'
+        dummy: 'schema for flow.json'
       }))
     })
   }).timeout(MaxTimeout)
