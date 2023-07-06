@@ -6,8 +6,8 @@ import { StateCache } from '../../src/utils/state-cache'
 import { SemVer } from 'semver'
 import { JSONSchemaProvider } from '../../src/json-schema-provider'
 import * as fetch from 'node-fetch'
-import { cwd } from 'process'
 import { readFileSync } from 'fs'
+import * as path from 'path'
 
 suite('JSON schema tests', () => {
   let mockFlowVersionValue: SemVer | null = null
@@ -21,7 +21,7 @@ suite('JSON schema tests', () => {
 
     // Mock extension context
     mockContext = {
-      extensionPath: cwd(),
+      extensionPath: path.resolve(__dirname, '../..'),
       subscriptions: [] as vscode.Disposable[]
     } as any
 
