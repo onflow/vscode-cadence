@@ -21,7 +21,7 @@ suite('JSON schema tests', () => {
 
     // Mock extension context
     mockContext = {
-      extensionPath: path.resolve(__dirname, '../..'),
+      extensionPath: path.resolve(__dirname, '../../../..'),
       subscriptions: [] as vscode.Disposable[]
     } as any
 
@@ -69,7 +69,7 @@ suite('JSON schema tests', () => {
 
     // Assert that the schema is the same as the local schema
     await vscode.workspace.fs.readFile(vscode.Uri.parse('cadence-schema:///flow.json')).then((data) => {
-      assert.strictEqual(data.toString(), readFileSync('./flow-schema.json', 'utf-8'))
+      assert.strictEqual(data.toString(), readFileSync(path.resolve(mockContext.extensionPath, './flow-schema.json'), 'utf-8'))
     })
   }).timeout(MaxTimeout)
 
@@ -79,7 +79,7 @@ suite('JSON schema tests', () => {
 
     // Assert that the schema is the same as the local schema
     await vscode.workspace.fs.readFile(vscode.Uri.parse('cadence-schema:///flow.json')).then((data) => {
-      assert.strictEqual(data.toString(), readFileSync('./flow-schema.json', 'utf-8'))
+      assert.strictEqual(data.toString(), readFileSync(path.resolve(mockContext.extensionPath, './flow-schema.json'), 'utf-8'))
     })
   }).timeout(MaxTimeout)
 
