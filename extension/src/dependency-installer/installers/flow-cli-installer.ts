@@ -1,15 +1,15 @@
 /* Installer for Flow CLI */
 import { window } from 'vscode'
-import { execDefault, execVscodeTerminal, tryExecDefault, tryExecPowerShell, tryExecUnixDefault } from '../../utils/shell/exec'
+import { execVscodeTerminal, tryExecPowerShell, tryExecUnixDefault } from '../../utils/shell/exec'
 import { promptUserInfoMessage, promptUserErrorMessage } from '../../ui/prompts'
 import { Installer } from '../installer'
 import * as semver from 'semver'
 import fetch from 'node-fetch'
 import { ext } from '../../main'
 import { HomebrewInstaller } from './homebrew-installer'
+import { flowVersion } from '../../utils/flow-version'
 
 // Command to check flow-cli
-const CHECK_FLOW_CLI_CMD = 'flow version'
 const COMPATIBLE_FLOW_CLI_VERSIONS = '>=1.2.0'
 
 // Shell install commands
@@ -79,10 +79,7 @@ export class InstallFlowCLI extends Installer {
 
   async findLatestVersion (currentVersion: semver.SemVer): Promise<void> {
     const response = await fetch(VERSION_INFO_URL)
-    const text = await response.text()
-
-    let latestStr: string | null = parseFlowCliVersion(text)
-    latestStr = semver.clean(text)
+    const latestStr = semver.clean(await response.text())
     const latest: semver.SemVer | null = semver.parse(latestStr)
 
     // Check if latest version > current version
@@ -98,23 +95,14 @@ export class InstallFlowCLI extends Installer {
     }
   }
 
-  async checkVersion (): Promise<boolean> {
+  async checkVersion (vsn?: semver.SemVer): Promise<boolean> {
     // Get user's version informaton
-    const versionOutput = (await execDefault(CHECK_FLOW_CLI_CMD)).stdout
-
-    // Format version string from output
-    let versionStr: string | null = parseFlowCliVersion(versionOutput)
-
-    versionStr = semver.clean(versionStr)
-    if (versionStr === null) return false
-
-    // Ensure user has a compatible version number installed
-    const version: semver.SemVer | null = semver.parse(versionStr)
+    const version = vsn ?? await flowVersion.getValue(true)
     if (version === null) return false
 
     if (!semver.satisfies(version, COMPATIBLE_FLOW_CLI_VERSIONS)) {
       promptUserErrorMessage(
-        'Incompatible Flow CLI version: ' + versionStr,
+        'Incompatible Flow CLI version: ' + version.format(),
         'Install latest Flow CLI',
         async () => {
           await this.runInstall()
@@ -131,14 +119,11 @@ export class InstallFlowCLI extends Installer {
   }
 
   async verifyInstall (): Promise<boolean> {
-    // Check if flow-cli is executable
-    if (!await tryExecDefault(CHECK_FLOW_CLI_CMD)) return false
+    // Check if flow version is valid to verify install
+    const version = await flowVersion.getValue(true)
+    if (version == null) return false
 
     // Check flow-cli version number
-    return await this.checkVersion()
+    return await this.checkVersion(version)
   }
-}
-
-export function parseFlowCliVersion (buffer: Buffer | string): string {
-  return (buffer.toString().split('\n')[0]).split(' ')[1]
 }
