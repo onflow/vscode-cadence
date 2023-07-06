@@ -62,7 +62,6 @@ export class LanguageServerAPI {
 
   async activate (): Promise<void> {
     await this.deactivate()
-    await this.startClient()
     void this.watchEmulator()
     void this.watchFlowConfiguration()
   }
@@ -102,7 +101,8 @@ export class LanguageServerAPI {
           if (this.#watcherTimeout === null) return
 
           // Restart language server
-          await this.restart(emulatorFound)
+          await this.stopClient()
+          await this.startClient(emulatorFound)
         } catch (err) {
           console.error(err)
         }
@@ -121,7 +121,7 @@ export class LanguageServerAPI {
     this.#watcherTimeout = setTimeout(() => { void loop.bind(this)() }, 0)
   }
 
-  async startClient (enableFlow?: boolean): Promise<void> {
+  async startClient (enableFlow: boolean): Promise<void> {
     // Prevent starting multiple times
     if (this.clientState$.getValue() === State.Starting) {
       const newState = await firstValueFrom(this.clientState$.pipe(filter(state => state !== State.Starting)))
@@ -133,10 +133,7 @@ export class LanguageServerAPI {
     // Set client state to starting
     this.clientState$.next(State.Starting)
 
-    // Resolve whether to use flow and assign state
-    if (enableFlow === undefined) {
-      enableFlow = await verifyEmulator()
-    }
+    // Set whether flow integration is enabled
     this.flowEnabled$.next(enableFlow)
 
     if (enableFlow) {
@@ -148,7 +145,9 @@ export class LanguageServerAPI {
     let configPath = this.settings.customConfigPath
 
     if (configPath === '' || configPath === undefined) {
+      console.log("enter")
       configPath = await Config.getConfigPath()
+      console.log("exit")
     }
 
     if (this.settings.flowCommand !== 'flow') {
@@ -210,10 +209,25 @@ export class LanguageServerAPI {
     this.client = null
   }
 
-  async restart (enableFlow?: boolean): Promise<void> {
-    // Prevent restarting multiple times
+  async restart (): Promise<void> {
+    if(!this.isActive) {
+      window.showErrorMessage('Client failed to restart, are you sure you have the Flow CLI installed?')
+      throw new Error('Client failed to restart')
+    }
+    
+    // To restart, simply stop the client and the watcher will restart it
     await this.stopClient()
-    await this.startClient(enableFlow)
+    await new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        window.showErrorMessage('Client failed to restart, please restart VSCode')
+        reject(new Error('Client failed to restart'))
+      }, 5000)
+
+      firstValueFrom(this.clientState$.pipe(filter(state => state === State.Running))).then(() => {
+        resolve()
+        clearTimeout(timeout)
+      })
+    })
   }
 
   emulatorConnected (): boolean {

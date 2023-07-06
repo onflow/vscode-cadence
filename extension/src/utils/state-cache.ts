@@ -6,6 +6,8 @@ enum ValidationState {
   FetchingAndQueued = 2
 }
 
+let counter = 0
+
 /**
  * @template T
  * @class StateCache
@@ -15,10 +17,11 @@ enum ValidationState {
  * - The value is always up to date
  * - The value is only fetched once per invalidation
  */
-export class StateCache<T> {
+export class StateCache<T> extends Observable<T> {
   #validationState: ValidationState = ValidationState.Valid
   #value: BehaviorSubject<[T | null, Error | null] | undefined> = new BehaviorSubject<[T | null, Error | null] | undefined>(undefined)
   #fetcher: () => Promise<T>
+  val = counter++
 
   // Observable to subscribe to in order to skip initial undefined value and clean up errors
   #observable: Observable<T> = (this.#value as BehaviorSubject<[T | null, Error | null]>).pipe(skip(1), map(([value, error]) => {
@@ -30,6 +33,10 @@ export class StateCache<T> {
   }))
 
   constructor (fetcher: () => Promise<T>) {
+    // Initialize as an observable
+    super((subscriber) => this.#observable.subscribe(subscriber))
+
+    // Setup fetcher and fetch initial value
     this.#fetcher = fetcher
     this.invalidate()
   }
@@ -43,8 +50,14 @@ export class StateCache<T> {
       ;[value, error] = await (firstValueFrom((this.#value as BehaviorSubject<[T, Error]>).pipe(skip(queueNumber + 1))))
     }
 
+    // If error, rethrow with added stack trace
     if (error !== null) {
-      throw error
+      // Create a new Error object
+      const newError = new Error(error.message);
+      // Append the original error's stack trace to the new error
+      if (error.stack) newError.stack += '\n\nOriginal Stack Trace:\n' + error.stack;
+      // Throw the new error
+      throw newError;
     } else {
       return value as T
     }
@@ -52,10 +65,12 @@ export class StateCache<T> {
 
   async #fetch (): Promise<void> {
     let value: T | undefined
+    console.log("startfetch", this.val)
     try {
       value = await this.#fetcher()
       this.#value.next([value, null])
     } catch (e: any) {
+      console.log("caught", this.val, e)
       this.#value.next([null, e])
     }
 
@@ -76,9 +91,5 @@ export class StateCache<T> {
   setFetcher (fetcher: () => Promise<T>): void {
     this.#fetcher = fetcher
     this.invalidate()
-  }
-
-  subscribe (observerOrNext?: Partial<Observer<T>> | ((value: T) => void) | undefined): Subscription {
-    return this.#observable.subscribe(observerOrNext)
   }
 }

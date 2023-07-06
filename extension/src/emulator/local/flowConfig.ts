@@ -7,7 +7,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { StateCache } from '../../utils/state-cache'
 import { Disposable } from 'vscode-languageclient'
-import { execDefault } from '../../utils/shell/exec'
+import { tryExecDefault } from '../../utils/shell/exec'
 
 // Path to flow.json file
 let configPath: string | undefined
@@ -78,27 +78,18 @@ async function retrieveConfigPath (): Promise<string> {
   let configPath = await readLocalConfig()
   if (configPath === FILE_PATH_EMPTY) {
     // Couldn't find config file, prompt user
-    if (!(await promptInitializeConfig())) {
-      throw Error('No valid config path')
-    }
-    configPath = await readLocalConfig()
+    void promptInitializeConfig()
+    throw new Error('Config file not found')
   }
   return configPath
 }
 
 // Prompt the user to create a new config file
-async function promptInitializeConfig (): Promise<boolean> {
-  let rootPath: string | undefined
-  if (
-    workspace.workspaceFolders != null &&
-    workspace.workspaceFolders.length > 0
-  ) {
-    rootPath = workspace.workspaceFolders[0].uri.fsPath
-  } else {
-    rootPath = workspace.rootPath // ref: deprecated
-  }
-  if (rootPath === undefined) {
-    return false
+async function promptInitializeConfig (): Promise<void> {
+  let rootPath = workspace.workspaceFolders?.[0]?.uri?.fsPath
+
+  if (rootPath == null) {
+    void window.showErrorMessage('No workspace folder found. Please open a workspace folder and try again.')
   }
 
   const continueMessage = 'Continue'
@@ -107,12 +98,17 @@ async function promptInitializeConfig (): Promise<boolean> {
     continueMessage
   )
   if (selection !== continueMessage) {
-    return false
+    return
   }
 
-  await execDefault('flow init', { cwd: rootPath })
+  const didInit = await tryExecDefault('flow init', { cwd: rootPath })
 
-  return true
+  if (!didInit) {
+    void window.showErrorMessage('Failed to initialize Flow CLI configuration.')
+  } else {
+    void window.showInformationMessage('Flow CLI configuration created.')
+    flowConfig.invalidate()
+  }
 }
 
 // Search for config file in workspace
