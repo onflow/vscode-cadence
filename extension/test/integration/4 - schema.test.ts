@@ -64,7 +64,7 @@ suite('JSON schema tests', () => {
     ;(mockContext as any).subscriptions = []
   })
 
-  test('JSON Schema: Defaults to local schema when version not found', async () => {
+  test('Defaults to local schema when version not found', async () => {
     mockFlowVersionValue = new SemVer('0.0.0')
     mockFlowVersion.invalidate()
 
@@ -74,7 +74,7 @@ suite('JSON schema tests', () => {
     })
   }).timeout(MaxTimeout)
 
-  test('JSON Schema: Defaults to local schema when version is invalid', async () => {
+  test('Defaults to local schema when version is invalid', async () => {
     mockFlowVersionValue = null
     mockFlowVersion.invalidate()
 
@@ -84,7 +84,7 @@ suite('JSON schema tests', () => {
     })
   }).timeout(MaxTimeout)
 
-  test('JSON Schema: Fetches remote schema for current CLI version', async () => {
+  test('Fetches remote schema for current CLI version', async () => {
     mockFlowVersionValue = new SemVer('1.0.0')
     mockFlowVersion.invalidate()
 
