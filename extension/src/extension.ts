@@ -9,6 +9,7 @@ import { DependencyInstaller } from './dependency-installer/dependency-installer
 import { Settings } from './settings/settings'
 import { EmulatorState } from './emulator/server/language-server'
 import { JSONSchemaProvider } from './json-schema-provider'
+import { flowVersion } from './utils/flow-version'
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -32,7 +33,7 @@ export class Extension {
     this.ctx = ctx
 
     // Register JSON schema provider
-    if (ctx != null) JSONSchemaProvider.register(ctx)
+    if (ctx != null) JSONSchemaProvider.register(ctx, flowVersion)
 
     // Initialize UI
     this.#uiCtrl = new UIController()
