@@ -75,7 +75,7 @@ export async function getAccountKey (accountName: string, filepath?: string): Pr
 
 async function retrieveConfigPath (): Promise<string> {
   // Try to search for config file
-  let configPath = await readLocalConfig()
+  const configPath = await readLocalConfig()
   if (configPath === FILE_PATH_EMPTY) {
     // Couldn't find config file, prompt user
     void promptInitializeConfig()
@@ -86,7 +86,7 @@ async function retrieveConfigPath (): Promise<string> {
 
 // Prompt the user to create a new config file
 async function promptInitializeConfig (): Promise<void> {
-  let rootPath = workspace.workspaceFolders?.[0]?.uri?.fsPath
+  const rootPath = workspace.workspaceFolders?.[0]?.uri?.fsPath
 
   if (rootPath == null) {
     void window.showErrorMessage('No workspace folder found. Please open a workspace folder and try again.')

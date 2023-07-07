@@ -1,4 +1,4 @@
-import { BehaviorSubject, Observable, Observer, Subscription, firstValueFrom, map, skip } from 'rxjs'
+import { BehaviorSubject, Observable, firstValueFrom, map, skip } from 'rxjs'
 
 enum ValidationState {
   Valid = 0,
@@ -53,18 +53,20 @@ export class StateCache<T> extends Observable<T> {
     // If error, rethrow with added stack trace
     if (error !== null) {
       // Create a new Error object
-      const newError = new Error(error.message);
+      const newError = new Error(error.message)
       // Append the original error's stack trace to the new error
-      if (error.stack) newError.stack += '\n\nOriginal Stack Trace:\n' + error.stack;
+      if (error.stack != null) {
+        newError.stack = (newError.stack ?? '') + '\n\nOriginal Stack Trace:\n' + error.stack
+      }
       // Throw the new error
-      throw newError;
+      throw newError
     } else {
       return value as T
     }
   }
 
   async #fetch (): Promise<void> {
-    let value: T | null = null, error: Error | null = null
+    let value: T | null = null; let error: Error | null = null
     try {
       value = await this.#fetcher()
     } catch (e: any) {
@@ -73,7 +75,7 @@ export class StateCache<T> extends Observable<T> {
 
     this.#validationState -= 1
     this.#value.next([value, error])
-    
+
     if (this.#validationState > 0) {
       void this.#fetch()
     }

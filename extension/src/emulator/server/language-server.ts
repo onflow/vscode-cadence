@@ -208,21 +208,24 @@ export class LanguageServerAPI {
   }
 
   async restart (): Promise<void> {
-    if(!this.isActive) {
-      window.showErrorMessage('Client failed to restart, are you sure you have the Flow CLI installed?')
+    if (!this.isActive) {
+      void window.showErrorMessage('Client failed to restart, are you sure you have the Flow CLI installed?')
       throw new Error('Client failed to restart')
     }
-    
+
     // To restart, simply stop the client and the watcher will restart it
     await this.stopClient()
     await new Promise<void>((resolve, reject) => {
       const timeout = setTimeout(() => {
-        window.showErrorMessage('Client failed to restart, please restart VSCode')
+        void window.showErrorMessage('Client failed to restart, please restart VSCode')
         reject(new Error('Client failed to restart'))
       }, 5000)
 
-      firstValueFrom(this.clientState$.pipe(filter(state => state === State.Running))).then(() => {
+      void firstValueFrom(this.clientState$.pipe(filter(state => state === State.Running))).then(() => {
         resolve()
+      }).catch((err) => {
+        reject(err)
+      }).finally(() => {
         clearTimeout(timeout)
       })
     })
