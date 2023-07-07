@@ -64,17 +64,16 @@ export class StateCache<T> extends Observable<T> {
   }
 
   async #fetch (): Promise<void> {
-    let value: T | undefined
-    console.log("startfetch", this.val)
+    let value: T | null = null, error: Error | null = null
     try {
       value = await this.#fetcher()
-      this.#value.next([value, null])
     } catch (e: any) {
-      console.log("caught", this.val, e)
-      this.#value.next([null, e])
+      error = e
     }
 
     this.#validationState -= 1
+    this.#value.next([value, error])
+    
     if (this.#validationState > 0) {
       void this.#fetch()
     }

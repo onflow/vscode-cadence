@@ -145,9 +145,7 @@ export class LanguageServerAPI {
     let configPath = this.settings.customConfigPath
 
     if (configPath === '' || configPath === undefined) {
-      console.log("enter")
       configPath = await Config.getConfigPath()
-      console.log("exit")
     }
 
     if (this.settings.flowCommand !== 'flow') {
