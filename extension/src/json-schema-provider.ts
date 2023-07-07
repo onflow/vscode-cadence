@@ -55,15 +55,10 @@ export class JSONSchemaProvider implements vscode.FileSystemProvider, vscode.Dis
   }
 
   async readFile (uri: vscode.Uri): Promise<Uint8Array> {
-    try {
-      if (uri.path === '/flow.json') {
-        return Buffer.from(await this.#flowSchema.getValue(), 'utf-8')
-      } else {
-        throw new Error('Unknown schema')
-      }
-    } catch (e) {
-      console.error(e)
-      return Buffer.from([])
+    if (uri.path === '/flow.json') {
+      return Buffer.from(await this.#flowSchema.getValue(), 'utf-8')
+    } else {
+      throw new Error('Unknown schema')
     }
   }
 
