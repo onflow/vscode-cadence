@@ -40,26 +40,6 @@ jobs:
       - name: Package
         run: npm run package
 
-  test:
-    name: Tests
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Integration Tests
-        run: npm run test
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   windows-build:
     name: Windows Build
     runs-on: windows-latest
@@ -76,11 +56,14 @@ jobs:
         run: npm ci
 
       - name: Package
-        run: npm run package-windows
+        run: npm run package
 
-  windows-test:
-    name: Windows Tests
-    runs-on: windows-latest
+  test:
+    name: Tests
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -93,7 +76,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Setup Xvfb (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          nohup Xvfb :99 -screen 0 1024x768x16 > /dev/null 2>&1 &
+          echo "XVFB_PID=$!" >> "$GITHUB_ENV"
+          echo "DISPLAY=:99.0" >> "$GITHUB_ENV"
+          while [ ! -e /tmp/.X11-unix/X99 ]; do sleep 0.1; done
+
       - name: Integration Tests
-        run: npm run test-windows
+        run: npm run test
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cleanup Xvfb (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: kill $XVFB_PID
