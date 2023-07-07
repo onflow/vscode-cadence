@@ -9,7 +9,7 @@
 		"url": "https://github.com/onflow/vscode-cadence.git"
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run -S esbuild-base -- -minify",
+		"vscode:prepublish": "npm run -S esbuild-base -- --minify",
 		"esbuild-base": "esbuild ./extension/src/main.ts --bundle --outfile=out/extension/src/main.js --external:vscode --format=cjs --platform=node",
 		"esbuild": "npm run -S esbuild-base -- --sourcemap",
 		"esbuild-watch": "npm run -S esbuild-base -- --sourcemap --watch",
