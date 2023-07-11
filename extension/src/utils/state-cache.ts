@@ -6,8 +6,6 @@ enum ValidationState {
   FetchingAndQueued = 2
 }
 
-let counter = 0
-
 /**
  * @template T
  * @class StateCache
@@ -21,7 +19,6 @@ export class StateCache<T> extends Observable<T> {
   #validationState: ValidationState = ValidationState.Valid
   #value: BehaviorSubject<[T | null, Error | null] | undefined> = new BehaviorSubject<[T | null, Error | null] | undefined>(undefined)
   #fetcher: () => Promise<T>
-  val = counter++
 
   // Observable to subscribe to in order to skip initial undefined value and clean up errors
   #observable: Observable<T> = (this.#value as BehaviorSubject<[T | null, Error | null]>).pipe(skip(1), map(([value, error]) => {
