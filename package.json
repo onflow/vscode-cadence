@@ -31,7 +31,8 @@
 	],
 	"icon": "images/icon.png",
 	"activationEvents": [
-		"onLanguage:cadence"
+		"onLanguage:cadence",
+		"onFileSystem:cadence-schema"
 	],
 	"main": "./out/extension/src/main.js",
 	"contributes": {
@@ -195,6 +196,12 @@
 					"meta.embedded.block.cadence": "cadence"
 				}
 			}
+		],
+		"jsonValidation": [
+			{
+				"fileMatch": "flow.json",
+				"url": "cadence-schema:///flow.json"
+			}
 		]
 	},
 	"devDependencies": {
@@ -203,7 +210,7 @@
 		"@types/glob": "^8.0.1",
 		"@types/mixpanel": "^2.14.5",
 		"@types/mocha": "^10.0.1",
-		"@types/node": "^20.3.1",
+		"@types/node": "^20.4.1",
 		"@types/object-hash": "^3.0.2",
 		"@types/semver": "^7.5.0",
 		"@types/uuid": "^9.0.2",
@@ -211,7 +218,7 @@
 		"@vscode/test-electron": "^2.3.3",
 		"chai": "^4.3.7",
 		"esbuild": "^0.18.11",
-		"glob": "^10.3.1",
+		"glob": "^10.3.3",
 		"mocha": "^10.2.0",
 		"nyc": "^15.1.0",
 		"ovsx": "^0.8.1",
@@ -233,7 +240,7 @@
 		"object-hash": "^3.0.0",
 		"os-name": "^5.0.1",
 		"rxjs": "^7.8.1",
-		"semver": "^7.5.3",
+		"semver": "^7.5.4",
 		"sleep-synchronously": "^2.0.0",
 		"uuid": "^9.0.0",
 		"vscode-languageclient": "^8.1.0"

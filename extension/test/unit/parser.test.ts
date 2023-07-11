@@ -1,4 +1,4 @@
-import { parseFlowCliVersion } from '../../src/dependency-installer/installers/flow-cli-installer'
+import { parseFlowCliVersion } from '../../src/utils/flow-version'
 import { ASSERT_EQUAL } from '../globals'
 
 suite('Parsing Unit Tests', () => {

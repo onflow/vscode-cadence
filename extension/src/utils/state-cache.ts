@@ -30,15 +30,16 @@ export class StateCache<T> extends Observable<T> {
   }))
 
   constructor (fetcher: () => Promise<T>) {
-    // Initialize as an observable
-    super((subscriber) => this.#observable.subscribe(subscriber))
-
-    // Setup fetcher and fetch initial value
+    super((...args) => this.#observable.subscribe(...args))
     this.#fetcher = fetcher
     this.invalidate()
   }
 
-  async getValue (): Promise<T> {
+  async getValue (refresh?: boolean): Promise<T> {
+    // If refresh flag is set, invalidate the cache
+    if (refresh === true) this.invalidate()
+
+    // Wait for up to date value
     let value: T | null, error: Error | null
     if (this.#validationState === ValidationState.Valid) {
       [value, error] = (this.#value as BehaviorSubject<[T | null, Error | null]>).getValue()
