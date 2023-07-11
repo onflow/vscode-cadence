@@ -31,7 +31,8 @@
 	],
 	"icon": "images/icon.png",
 	"activationEvents": [
-		"onLanguage:cadence"
+		"onLanguage:cadence",
+		"onFileSystem:cadence-schema"
 	],
 	"main": "./out/extension/src/main.js",
 	"contributes": {
@@ -194,6 +195,12 @@
 				"embeddedLanguages": {
 					"meta.embedded.block.cadence": "cadence"
 				}
+			}
+		],
+		"jsonValidation": [
+			{
+				"fileMatch": "flow.json",
+				"url": "cadence-schema:///flow.json"
 			}
 		]
 	},

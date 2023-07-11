@@ -1,4 +1,4 @@
-import { BehaviorSubject, Observable, Observer, Subscription, firstValueFrom, map, skip } from 'rxjs'
+import { BehaviorSubject, Observable, firstValueFrom, map, skip } from 'rxjs'
 
 enum ValidationState {
   Valid = 0,
@@ -15,7 +15,7 @@ enum ValidationState {
  * - The value is always up to date
  * - The value is only fetched once per invalidation
  */
-export class StateCache<T> {
+export class StateCache<T> extends Observable<T> {
   #validationState: ValidationState = ValidationState.Valid
   #value: BehaviorSubject<[T | null, Error | null] | undefined> = new BehaviorSubject<[T | null, Error | null] | undefined>(undefined)
   #fetcher: () => Promise<T>
@@ -30,11 +30,16 @@ export class StateCache<T> {
   }))
 
   constructor (fetcher: () => Promise<T>) {
+    super((...args) => this.#observable.subscribe(...args))
     this.#fetcher = fetcher
     this.invalidate()
   }
 
-  async getValue (): Promise<T> {
+  async getValue (refresh?: boolean): Promise<T> {
+    // If refresh flag is set, invalidate the cache
+    if (refresh === true) this.invalidate()
+
+    // Wait for up to date value
     let value: T | null, error: Error | null
     if (this.#validationState === ValidationState.Valid) {
       [value, error] = (this.#value as BehaviorSubject<[T | null, Error | null]>).getValue()
@@ -51,15 +56,16 @@ export class StateCache<T> {
   }
 
   async #fetch (): Promise<void> {
-    let value: T | undefined
+    let value: T | null = null; let error: Error | null = null
     try {
       value = await this.#fetcher()
-      this.#value.next([value, null])
     } catch (e: any) {
-      this.#value.next([null, e])
+      error = e
     }
 
     this.#validationState -= 1
+    this.#value.next([value, error])
+
     if (this.#validationState > 0) {
       void this.#fetch()
     }
@@ -76,9 +82,5 @@ export class StateCache<T> {
   setFetcher (fetcher: () => Promise<T>): void {
     this.#fetcher = fetcher
     this.invalidate()
-  }
-
-  subscribe (observerOrNext?: Partial<Observer<T>> | ((value: T) => void) | undefined): Subscription {
-    return this.#observable.subscribe(observerOrNext)
   }
 }
