@@ -18,7 +18,8 @@ export class JSONSchemaProvider implements vscode.FileSystemProvider, vscode.Dis
   #contentProviderDisposable: vscode.Disposable | undefined
   #flowVersionSubscription: Subscription
   #flowVersion: StateCache<SemVer | null>
-  #flowSchema: StateCache<string> = new StateCache(async () => await this.#resolveFlowSchema())
+  #flowSchema: StateCache<string>
+  #showLocalError: boolean = false
 
   static register (ctx: vscode.ExtensionContext, flowVersion: StateCache<SemVer | null>): void {
     if (JSONSchemaProvider.#instance != null) {
@@ -47,6 +48,7 @@ export class JSONSchemaProvider implements vscode.FileSystemProvider, vscode.Dis
   ) {
     this.#flowVersion = flowVersion
     this.#contentProviderDisposable = contentProviderDisposable
+    this.#flowSchema = new StateCache(async () => await this.#resolveFlowSchema())
 
     // Invalidate the schema when the flow-cli version changes
     this.#flowVersionSubscription = this.#flowVersion.subscribe(
@@ -56,7 +58,26 @@ export class JSONSchemaProvider implements vscode.FileSystemProvider, vscode.Dis
 
   async readFile (uri: vscode.Uri): Promise<Uint8Array> {
     if (uri.path === '/flow.json') {
-      return Buffer.from(await this.#flowSchema.getValue(), 'utf-8')
+      const schema = await this.#flowSchema.getValue()
+      if (this.#showLocalError) {
+        void vscode.window.showWarningMessage('Failed to fetch flow.json schema from flow-cli repo, using local schema instead.  Please update flow-cli to the latest version to get the latest schema.')
+        this.#showLocalError = false
+      }
+      return Buffer.from(schema, 'utf-8')
+    } else {
+      throw new Error('Unknown schema')
+    }
+  }
+
+  async stat (uri: vscode.Uri): Promise<vscode.FileStat> {
+    if (uri.path === '/flow.json') {
+      // Mocked values
+      return {
+        type: vscode.FileType.File,
+        ctime: 0,
+        mtime: 0,
+        size: await this.#flowSchema.getValue().then(x => x.length)
+      }
     } else {
       throw new Error('Unknown schema')
     }
@@ -83,7 +104,7 @@ export class JSONSchemaProvider implements vscode.FileSystemProvider, vscode.Dis
       return await response.text()
     }).catch(async () => {
       // Fallback to local schema
-      void vscode.window.showWarningMessage('Failed to fetch schema from flow-cli repo, using local schema instead.  Please update flow-cli to the latest version to get the latest schema.')
+      this.#showLocalError = true
       const schemaUrl = resolve(this.ctx.extensionPath, 'flow-schema.json')
       return await promisify(readFile)(schemaUrl).then(x => x.toString())
     })
@@ -93,10 +114,6 @@ export class JSONSchemaProvider implements vscode.FileSystemProvider, vscode.Dis
   // These methods are required to implement the vscode.FileSystemProvider interface
   onDidChangeFile: vscode.Event<vscode.FileChangeEvent[]> = new vscode.EventEmitter<vscode.FileChangeEvent[]>().event
   watch (uri: vscode.Uri, options: { readonly recursive: boolean, readonly excludes: readonly string[] }): vscode.Disposable {
-    throw new Error('Method not implemented.')
-  }
-
-  stat (uri: vscode.Uri): vscode.FileStat | Thenable<vscode.FileStat> {
     throw new Error('Method not implemented.')
   }
 
