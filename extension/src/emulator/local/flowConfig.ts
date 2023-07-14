@@ -48,7 +48,7 @@ export interface FlowConfig {
 
 // Call this function to get the path to flow.json
 export async function getConfigPath (): Promise<string> {
-  const resolvedConfigPath = configPath || await retrieveConfigPath()
+  const resolvedConfigPath = configPath ?? await retrieveConfigPath()
   handleConfigChanges()
   return resolvedConfigPath
 }

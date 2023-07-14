@@ -93,7 +93,7 @@ export class LanguageServerAPI {
           if (this.clientState$.getValue() === State.Starting) return
 
           // Check if emulator state has changed
-          let emulatorFound = await verifyEmulator()
+          const emulatorFound = await verifyEmulator()
           const emulatorStateChanged = this.flowEnabled$.getValue() !== emulatorFound
           const clientIsRunning = this.clientState$.getValue() === State.Running
           if (!emulatorStateChanged && clientIsRunning) {
@@ -199,7 +199,7 @@ export class LanguageServerAPI {
       } else {
         void window.showInformationMessage('Flow Emulator Connected')
       }
-    } catch(e) {
+    } catch (e) {
       this.clientState$.next(State.Stopped)
       throw e
     }
