@@ -48,8 +48,16 @@ export class StateCache<T> extends Observable<T> {
       ;[value, error] = await (firstValueFrom((this.#value as BehaviorSubject<[T, Error]>).pipe(skip(queueNumber + 1))))
     }
 
+    // If error, rethrow with added stack trace
     if (error !== null) {
-      throw error
+      // Create a new Error object
+      const newError = new Error(error.message)
+      // Append the original error's stack trace to the new error
+      if (error.stack != null) {
+        newError.stack = (newError.stack ?? '') + '\n\nOriginal Stack Trace:\n' + error.stack
+      }
+      // Throw the new error
+      throw newError
     } else {
       return value as T
     }
