@@ -93,16 +93,17 @@ export class LanguageServerAPI {
           if (this.clientState$.getValue() === State.Starting) return
 
           // Check if emulator state has changed
-          const emulatorFound = await verifyEmulator()
-          if ((this.emulatorState$.getValue() === EmulatorState.Connected) === emulatorFound) {
+          let emulatorFound = await verifyEmulator()
+          const emulatorStateChanged = this.flowEnabled$.getValue() !== emulatorFound
+          const clientIsRunning = this.clientState$.getValue() === State.Running
+          if (!emulatorStateChanged && clientIsRunning) {
             return // No changes in local emulator state
           }
 
           if (this.#watcherTimeout === null) return
 
           // Restart language server
-          await this.stopClient()
-          await this.startClient(emulatorFound)
+          await this.restart(emulatorFound)
         } catch (err) {
           console.error(err)
         }
@@ -121,78 +122,86 @@ export class LanguageServerAPI {
     this.#watcherTimeout = setTimeout(() => { void loop.bind(this)() }, 0)
   }
 
-  async startClient (enableFlow: boolean): Promise<void> {
-    // Prevent starting multiple times
-    if (this.clientState$.getValue() === State.Starting) {
-      const newState = await firstValueFrom(this.clientState$.pipe(filter(state => state !== State.Starting)))
-      if (newState === State.Running) { return }
-    } else if (this.clientState$.getValue() === State.Running) {
-      return
-    }
-
-    // Set client state to starting
-    this.clientState$.next(State.Starting)
-
-    // Set whether flow integration is enabled
-    this.flowEnabled$.next(enableFlow)
-
-    if (enableFlow) {
-      void telemetry.emulatorConnected()
-    }
-
-    const numberOfAccounts: number = this.settings.numAccounts
-    const accessCheckMode: string = this.settings.accessCheckMode
-    let configPath = this.settings.customConfigPath
-
-    if (configPath === '' || configPath === undefined) {
-      configPath = await Config.getConfigPath()
-    }
-
-    if (this.settings.flowCommand !== 'flow') {
-      try {
-        exec('killall dlv') // Required when running language server locally on mac
-      } catch (err) { void err }
-    }
-
-    const env = await envVars.getValue()
-    this.client = new LanguageClient(
-      'cadence',
-      'Cadence',
-      {
-        command: this.settings.flowCommand,
-        args: ['cadence', 'language-server', `--enable-flow-client=${String(enableFlow)}`],
-        options: {
-          env
-        }
-      },
-      {
-        documentSelector: [{ scheme: 'file', language: 'cadence' }],
-        synchronize: {
-          configurationSection: 'cadence'
-        },
-        initializationOptions: {
-          configPath,
-          numberOfAccounts: `${numberOfAccounts}`,
-          accessCheckMode
-        }
+  async startClient (enableFlow?: boolean): Promise<void> {
+    try {
+      // Prevent starting multiple times
+      if (this.clientState$.getValue() === State.Starting) {
+        const newState = await firstValueFrom(this.clientState$.pipe(filter(state => state !== State.Starting)))
+        if (newState === State.Running) { return }
+      } else if (this.clientState$.getValue() === State.Running) {
+        return
       }
-    )
 
-    this.client.onDidChangeState((event) => {
-      this.clientState$.next(event.newState)
-    })
+      // Set client state to starting
+      this.clientState$.next(State.Starting)
 
-    await this.client.start()
-      .catch((err: Error) => {
-        void window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
+      // Resolve whether to use flow and assign state
+      if (enableFlow === undefined) {
+        enableFlow = await verifyEmulator()
+      }
+      this.flowEnabled$.next(enableFlow)
+
+      if (enableFlow) {
+        void telemetry.emulatorConnected()
+      }
+
+      const numberOfAccounts: number = this.settings.numAccounts
+      const accessCheckMode: string = this.settings.accessCheckMode
+      let configPath = this.settings.customConfigPath
+
+      if (configPath === '' || configPath === undefined) {
+        configPath = await Config.getConfigPath()
+      }
+
+      if (this.settings.flowCommand !== 'flow') {
+        try {
+          exec('killall dlv') // Required when running language server locally on mac
+        } catch (err) { void err }
+      }
+
+      const env = await envVars.getValue()
+      this.client = new LanguageClient(
+        'cadence',
+        'Cadence',
+        {
+          command: this.settings.flowCommand,
+          args: ['cadence', 'language-server', `--enable-flow-client=${String(enableFlow)}`],
+          options: {
+            env
+          }
+        },
+        {
+          documentSelector: [{ scheme: 'file', language: 'cadence' }],
+          synchronize: {
+            configurationSection: 'cadence'
+          },
+          initializationOptions: {
+            configPath,
+            numberOfAccounts: `${numberOfAccounts}`,
+            accessCheckMode
+          }
+        }
+      )
+
+      this.client.onDidChangeState((event) => {
+        this.clientState$.next(event.newState)
       })
 
-    if (!enableFlow) {
-      void window.showWarningMessage(`Couldn't connect to emulator. Run 'flow emulator' in a terminal 
-      to enable all extension features. If you want to deploy contracts, send transactions or execute 
-      scripts you need a running emulator.`)
-    } else {
-      void window.showInformationMessage('Flow Emulator Connected')
+      await this.client.start()
+        .catch((err: Error) => {
+          void window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
+        })
+
+      if (!enableFlow) {
+        void window.showWarningMessage(`Couldn't connect to emulator. Run 'flow emulator' in a terminal 
+        to enable all extension features. If you want to deploy contracts, send transactions or execute 
+        scripts you need a running emulator.`)
+      } else {
+        void window.showInformationMessage('Flow Emulator Connected')
+      }
+    } catch(e) {
+      this.clientState$.next(State.Stopped)
+      throw e
     }
   }
 
@@ -207,28 +216,10 @@ export class LanguageServerAPI {
     this.client = null
   }
 
-  async restart (): Promise<void> {
-    if (!this.isActive) {
-      void window.showErrorMessage('Client failed to restart, are you sure you have the Flow CLI installed?')
-      throw new Error('Client failed to restart')
-    }
-
-    // To restart, simply stop the client and the watcher will restart it
+  async restart (enableFlow?: boolean): Promise<void> {
+    // Prevent restarting multiple times
     await this.stopClient()
-    await new Promise<void>((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        void window.showErrorMessage('Client failed to restart, please restart VSCode')
-        reject(new Error('Client failed to restart'))
-      }, 5000)
-
-      void firstValueFrom(this.clientState$.pipe(filter(state => state === State.Running))).then(() => {
-        resolve()
-      }).catch((err) => {
-        reject(err)
-      }).finally(() => {
-        clearTimeout(timeout)
-      })
-    })
+    await this.startClient(enableFlow)
   }
 
   emulatorConnected (): boolean {

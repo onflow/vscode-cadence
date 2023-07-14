@@ -9,7 +9,7 @@ import { StateCache } from '../../utils/state-cache'
 import { Disposable } from 'vscode-languageclient'
 import { tryExecDefault } from '../../utils/shell/exec'
 
-// Path to flow.json file
+// Explicitly set path to flow.json file (for testing)
 let configPath: string | undefined
 export const flowConfig: StateCache<FlowConfig> = new StateCache(fetchConfig)
 
@@ -48,11 +48,9 @@ export interface FlowConfig {
 
 // Call this function to get the path to flow.json
 export async function getConfigPath (): Promise<string> {
-  if (configPath === undefined) {
-    configPath = await retrieveConfigPath()
-    handleConfigChanges()
-  }
-  return configPath
+  const resolvedConfigPath = configPath || await retrieveConfigPath()
+  handleConfigChanges()
+  return resolvedConfigPath
 }
 
 export async function fetchConfig (filepath?: string): Promise<FlowConfig> {
