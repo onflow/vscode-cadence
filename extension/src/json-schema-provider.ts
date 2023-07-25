@@ -105,7 +105,7 @@ export class JSONSchemaProvider implements vscode.FileSystemProvider, vscode.Dis
     }).catch(async () => {
       // Fallback to local schema
       this.#showLocalError = true
-      const schemaUrl = resolve(this.ctx.extensionPath, 'schema.json')
+      const schemaUrl = resolve(this.ctx.extensionPath, 'flow-schema.json')
       return await promisify(readFile)(schemaUrl).then(x => x.toString())
     })
   }
