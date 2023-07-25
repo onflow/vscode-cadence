@@ -26,7 +26,7 @@ export class JSONSchemaProvider implements vscode.FileSystemProvider, vscode.Dis
       JSONSchemaProvider.#instance.dispose()
     }
 
-    // Create a provider for the flow-schema URI scheme, this will be deactivated when the extension is deactivated
+    // Create a provider for the cadence-schema URI scheme, this will be deactivated when the extension is deactivated
     JSONSchemaProvider.#instance = new JSONSchemaProvider(
       ctx,
       flowVersion,
@@ -105,7 +105,7 @@ export class JSONSchemaProvider implements vscode.FileSystemProvider, vscode.Dis
     }).catch(async () => {
       // Fallback to local schema
       this.#showLocalError = true
-      const schemaUrl = resolve(this.ctx.extensionPath, 'flow-schema.json')
+      const schemaUrl = resolve(this.ctx.extensionPath, 'schema.json')
       return await promisify(readFile)(schemaUrl).then(x => x.toString())
     })
   }
