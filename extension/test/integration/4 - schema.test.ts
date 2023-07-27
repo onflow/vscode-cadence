@@ -33,7 +33,7 @@ suite('JSON schema tests', () => {
     ;(fetch as unknown as any).default = async (url: string) => {
       // only mock valid response for version 1.0.0 for testing
       // other versions will return 404 and emulate a missing schema
-      if (url === 'https://raw.githubusercontent.com/onflow/flow-cli/v1.0.0/flowkit/flow-schema.json') {
+      if (url === 'https://raw.githubusercontent.com/onflow/flow-cli/v1.0.0/flowkit/schema.json') {
         return {
           ok: true,
           text: async () => JSON.stringify({

@@ -7,7 +7,7 @@ import fetch from 'node-fetch'
 import { StateCache } from './utils/state-cache'
 import { Subscription } from 'rxjs'
 
-const GET_FLOW_SCHEMA_URL = (version: SemVer): string => `https://raw.githubusercontent.com/onflow/flow-cli/v${version.format()}/flowkit/flow-schema.json`
+const GET_FLOW_SCHEMA_URL = (version: SemVer): string => `https://raw.githubusercontent.com/onflow/flow-cli/v${version.format()}/flowkit/schema.json`
 
 // This class provides the JSON schema for the flow.json file
 // It is accessible via the URI scheme "cadence-schema:///flow.json"
@@ -26,7 +26,7 @@ export class JSONSchemaProvider implements vscode.FileSystemProvider, vscode.Dis
       JSONSchemaProvider.#instance.dispose()
     }
 
-    // Create a provider for the flow-schema URI scheme, this will be deactivated when the extension is deactivated
+    // Create a provider for the cadence-schema URI scheme, this will be deactivated when the extension is deactivated
     JSONSchemaProvider.#instance = new JSONSchemaProvider(
       ctx,
       flowVersion,
