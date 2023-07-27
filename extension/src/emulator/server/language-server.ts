@@ -245,6 +245,7 @@ export class LanguageServerAPI {
     // Configure subscriber to reset watcher on flow configuration change
     this.#workspaceSettingsSubscriber?.unsubscribe()
     this.#workspaceSettingsSubscriber = Settings.getWorkspaceSettings().didChange$.subscribe(() => {
+      Config.flowConfig.invalidate()
       void this.watchFlowConfiguration()
     })
 

@@ -124,8 +124,15 @@ async function readLocalConfig (): Promise<string> {
       if (path.isAbsolute(settings.customConfigPath)) {
         configFilePath = settings.customConfigPath
       } else {
+        // Find all files matching relative path in workspace
         const files = workspace.workspaceFolders.reduce<string[]>(
-          (res, folder) => ([...res, path.resolve(folder.uri.fsPath, settings.customConfigPath)]),
+          (res, folder) => {
+            const filePath = path.resolve(folder.uri.fsPath, settings.customConfigPath)
+            if (fs.existsSync(filePath)) {
+              res.push(filePath)
+            }
+            return res
+          },
           []
         )
         if (files.length === 1) {
