@@ -1,5 +1,5 @@
 /* Handle flow.json config file */
-import { window, workspace, commands } from 'vscode'
+import { window, workspace, commands, Uri } from 'vscode'
 import { FILE_PATH_EMPTY } from '../../utils/utils'
 import { Settings } from '../../settings/settings'
 import * as os from 'os'
@@ -161,19 +161,26 @@ async function readLocalConfig (): Promise<string> {
 }
 
 export async function watchFlowConfigChanges (changedEvent: () => {}): Promise<Disposable> {
-  const path = await getConfigPath()
-  const configWatcher = workspace.createFileSystemWatcher(path)
+  const watchPath = await getConfigPath().catch(() => "**/flow.json")
+  const configWatcher = workspace.createFileSystemWatcher(watchPath)
 
   let updateDelay: any = null
-  return configWatcher.onDidChange(e => {
+  function watcherHandler(e: Uri) {
     // request deduplication - we do this to avoid spamming requests in a short time period but rather aggragete into one
     if (updateDelay == null) {
       updateDelay = setTimeout(() => {
+        flowConfig.invalidate()
         changedEvent()
         updateDelay = null
       }, 500)
     }
-  })
+  }
+
+  configWatcher.onDidChange(watcherHandler)
+  configWatcher.onDidCreate(watcherHandler)
+  configWatcher.onDidDelete(watcherHandler)
+
+  return configWatcher
 }
 
 // Called when configuration is changed
