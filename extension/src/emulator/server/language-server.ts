@@ -253,6 +253,8 @@ export class LanguageServerAPI {
 
     // Watch for changes to flow configuration
     this.#flowConfigWatcher = Config.watchFlowConfigChanges(async () => {
+      Config.flowConfig.invalidate()
+
       // Reload configuration command is only available when flow integration is enabled
       if (!this.flowEnabled$.getValue()) return
 

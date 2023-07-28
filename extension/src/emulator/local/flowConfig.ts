@@ -105,7 +105,6 @@ async function promptInitializeConfig (): Promise<void> {
     void window.showErrorMessage('Failed to initialize Flow CLI configuration.')
   } else {
     void window.showInformationMessage('Flow CLI configuration created.')
-    flowConfig.invalidate()
   }
 }
 
@@ -168,6 +167,8 @@ async function readLocalConfig (): Promise<string> {
 }
 
 export async function watchFlowConfigChanges (changedEvent: () => {}): Promise<Disposable> {
+  // Watch for changes to config file
+  // If it does not exist, wait for flow.json to be created
   const watchPath = await getConfigPath().catch(() => '**/flow.json')
   const configWatcher = workspace.createFileSystemWatcher(watchPath)
 
@@ -176,7 +177,6 @@ export async function watchFlowConfigChanges (changedEvent: () => {}): Promise<D
     // request deduplication - we do this to avoid spamming requests in a short time period but rather aggragete into one
     if (updateDelay == null) {
       updateDelay = setTimeout(() => {
-        flowConfig.invalidate()
         changedEvent()
         updateDelay = null
       }, 500)
