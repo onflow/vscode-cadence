@@ -64,7 +64,7 @@ export class LanguageServerAPI {
   async activate (): Promise<void> {
     await this.deactivate()
     this.watchEmulator()
-    console.log("activate")
+    console.log('activate')
     await this.watchFlowConfiguration()
   }
 
@@ -107,7 +107,7 @@ export class LanguageServerAPI {
           // Restart language server
           await this.restart(emulatorFound)
         } catch (err) {
-          //or(err)
+          // or(err)
         }
       })()
 
@@ -258,7 +258,7 @@ export class LanguageServerAPI {
       if (!this.flowEnabled$.getValue()) return
 
       // Reload configuration
-      console.log("RELOADING CONFIGURATION")
+      console.log('RELOADING CONFIGURATION')
       if (this.clientState$.getValue() === State.Running) {
         await this.#sendRequest(RELOAD_CONFIGURATION)
       } else if (this.clientState$.getValue() === State.Starting) {

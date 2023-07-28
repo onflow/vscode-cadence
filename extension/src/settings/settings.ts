@@ -1,13 +1,6 @@
 /* Workspace Settings */
-import { Subject } from 'rxjs'
-import { workspace, window, WorkspaceConfiguration } from 'vscode'
-
-export interface CadenceConfiguration extends WorkspaceConfiguration {
-  flowCommand: string
-  numAccounts: number
-  accessCheckMode: string
-  customConfigPath: string
-}
+import { Observable, Subject } from 'rxjs'
+import { workspace, window } from 'vscode'
 
 export class Settings {
   // Workspace settings singleton
@@ -19,7 +12,7 @@ export class Settings {
   customConfigPath!: string // If empty then search the workspace for flow.json
 
   #didChange: Subject<void> = new Subject()
-  get didChange$ () {
+  get didChange$ (): Observable<void> {
     return this.#didChange.asObservable()
   }
 
@@ -43,45 +36,38 @@ export class Settings {
 
     // Watch for workspace settings changes
     workspace.onDidChangeConfiguration((e) => {
-      if(e.affectsConfiguration('cadence')) {
-        /*if(e.affectsConfiguration('cadence.flowCommand')) {
-          const flowCommand: string | undefined = workspace.getConfiguration('cadence').get(Settings.CONFIG_FLOW_COMMAND)
-          if (flowCommand === undefined) {
-            throw new Error(`Missing ${Settings.CONFIG_FLOW_COMMAND} config`)
-          }
-          this.flowCommand = flowCommand
-        }*/
-        this.loadSettings()
+      if (e.affectsConfiguration('cadence')) {
+        this.#loadSettings()
         this.#didChange.next()
       }
     })
 
-    this.loadSettings()
+    this.#loadSettings()
   }
 
-  loadSettings() {
+  #loadSettings (): void {
     // Retrieve workspace settings
-    const cadenceConfig: CadenceConfiguration = workspace.getConfiguration('cadence') as CadenceConfiguration
+    const cadenceConfig = workspace.getConfiguration('cadence')
 
-    const flowCommand: string | undefined = cadenceConfig.flowCommand
+    const flowCommand: string | undefined = cadenceConfig.get('flowCommand')
     if (flowCommand === undefined) {
-      throw new Error(`Missing flowCommand config`)
+      throw new Error('Missing flowCommand config')
     }
     this.flowCommand = flowCommand
 
-    let numAccounts: number | undefined = cadenceConfig.numAccounts
+    let numAccounts: number | undefined = cadenceConfig.get('numAccounts')
     if (numAccounts === undefined || numAccounts <= 0) {
       numAccounts = 3
     }
     this.numAccounts = numAccounts
 
-    let accessCheckMode: string | undefined = cadenceConfig.accessCheckMode
+    let accessCheckMode: string | undefined = cadenceConfig.get('accessCheckMode')
     if (accessCheckMode === undefined) {
       accessCheckMode = 'strict'
     }
     this.accessCheckMode = accessCheckMode
 
-    let customConfigPath: string | undefined = cadenceConfig.customConfigPath
+    let customConfigPath: string | undefined = cadenceConfig.get('customConfigPath')
     if (customConfigPath === undefined) {
       customConfigPath = ''
     }
