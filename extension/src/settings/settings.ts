@@ -1,4 +1,5 @@
 /* Workspace Settings */
+import { Observable, Subject } from 'rxjs'
 import { workspace, window } from 'vscode'
 
 export class Settings {
