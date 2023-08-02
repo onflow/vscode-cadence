@@ -74,6 +74,7 @@ export class LanguageServerAPI {
       this.#watcherTimeout = null
     }
     if (this.#flowConfigWatcher != null) deactivationPromises.push(this.#flowConfigWatcher.then(watcher => watcher.dispose()))
+    if (this.#workspaceSettingsSubscriber != null) this.#workspaceSettingsSubscriber.unsubscribe()
     deactivationPromises.push(this.stopClient())
     await Promise.all(deactivationPromises)
   }
