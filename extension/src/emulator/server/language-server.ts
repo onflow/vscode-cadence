@@ -8,7 +8,7 @@ import * as response from './responses'
 import { exec } from 'child_process'
 import { verifyEmulator } from '../local/emulatorScanner'
 import { Disposable, ExecuteCommandRequest } from 'vscode-languageclient'
-import { BehaviorSubject, combineLatest, filter, firstValueFrom, map } from 'rxjs'
+import { BehaviorSubject, Subscription, combineLatest, filter, firstValueFrom, map } from 'rxjs'
 import * as telemetry from '../../telemetry/telemetry'
 import { envVars } from '../../utils/shell/env-vars'
 
@@ -34,6 +34,7 @@ export class LanguageServerAPI {
   #watcherTimeout: NodeJS.Timeout | null = null
   #watcherPromise: Promise<void> | null = null
   #flowConfigWatcher: Promise<Disposable> | null = null
+  #workspaceSettingsSubscriber: Subscription | null = null
 
   constructor (settings: Settings) {
     this.settings = settings
@@ -62,8 +63,8 @@ export class LanguageServerAPI {
 
   async activate (): Promise<void> {
     await this.deactivate()
-    void this.watchEmulator()
-    void this.watchFlowConfiguration()
+    this.watchEmulator()
+    await this.watchFlowConfiguration()
   }
 
   async deactivate (): Promise<void> {
@@ -240,8 +241,15 @@ export class LanguageServerAPI {
 
   // Watch and reload flow configuration when changed.
   async watchFlowConfiguration (): Promise<void> {
+    // Configure subscriber to reset watcher on flow configuration change
+    this.#workspaceSettingsSubscriber?.unsubscribe()
+    this.#workspaceSettingsSubscriber = this.settings.didChange$.subscribe(() => {
+      Config.flowConfig.invalidate()
+      void this.watchFlowConfiguration()
+    })
+
     // Dispose of existing watcher
-    (await this.#flowConfigWatcher)?.dispose()
+    ;(await this.#flowConfigWatcher)?.dispose()
 
     // Watch for changes to flow configuration
     this.#flowConfigWatcher = Config.watchFlowConfigChanges(async () => {
@@ -250,6 +258,7 @@ export class LanguageServerAPI {
       // Reload configuration command is only available when flow integration is enabled
       if (!this.flowEnabled$.getValue()) return
 
+      // Reload configuration
       if (this.clientState$.getValue() === State.Running) {
         await this.#sendRequest(RELOAD_CONFIGURATION)
       } else if (this.clientState$.getValue() === State.Starting) {

@@ -1,5 +1,5 @@
 /* Handle flow.json config file */
-import { window, workspace, commands } from 'vscode'
+import { window, workspace, commands, Uri } from 'vscode'
 import { FILE_PATH_EMPTY } from '../../utils/utils'
 import { Settings } from '../../settings/settings'
 import * as os from 'os'
@@ -105,7 +105,6 @@ async function promptInitializeConfig (): Promise<void> {
     void window.showErrorMessage('Failed to initialize Flow CLI configuration.')
   } else {
     void window.showInformationMessage('Flow CLI configuration created.')
-    flowConfig.invalidate()
   }
 }
 
@@ -124,8 +123,15 @@ async function readLocalConfig (): Promise<string> {
       if (path.isAbsolute(settings.customConfigPath)) {
         configFilePath = settings.customConfigPath
       } else {
+        // Find all files matching relative path in workspace
         const files = workspace.workspaceFolders.reduce<string[]>(
-          (res, folder) => ([...res, path.resolve(folder.uri.fsPath, settings.customConfigPath)]),
+          (res, folder) => {
+            const filePath = path.resolve(folder.uri.fsPath, settings.customConfigPath)
+            if (fs.existsSync(filePath)) {
+              res.push(filePath)
+            }
+            return res
+          },
           []
         )
         if (files.length === 1) {
@@ -161,11 +167,13 @@ async function readLocalConfig (): Promise<string> {
 }
 
 export async function watchFlowConfigChanges (changedEvent: () => {}): Promise<Disposable> {
-  const path = await getConfigPath()
-  const configWatcher = workspace.createFileSystemWatcher(path)
+  // Watch for changes to config file
+  // If it does not exist, wait for flow.json to be created
+  const watchPath = await getConfigPath().catch(() => '**/flow.json')
+  const configWatcher = workspace.createFileSystemWatcher(watchPath)
 
   let updateDelay: any = null
-  return configWatcher.onDidChange(e => {
+  function watcherHandler (e: Uri): void {
     // request deduplication - we do this to avoid spamming requests in a short time period but rather aggragete into one
     if (updateDelay == null) {
       updateDelay = setTimeout(() => {
@@ -173,7 +181,13 @@ export async function watchFlowConfigChanges (changedEvent: () => {}): Promise<D
         updateDelay = null
       }, 500)
     }
-  })
+  }
+
+  configWatcher.onDidChange(watcherHandler)
+  configWatcher.onDidCreate(watcherHandler)
+  configWatcher.onDidDelete(watcherHandler)
+
+  return configWatcher
 }
 
 // Called when configuration is changed

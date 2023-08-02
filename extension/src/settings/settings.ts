@@ -1,4 +1,5 @@
 /* Workspace Settings */
+import { Observable, Subject } from 'rxjs'
 import { workspace, window } from 'vscode'
 
 export class Settings {
@@ -14,6 +15,11 @@ export class Settings {
   numAccounts!: number
   accessCheckMode!: string
   customConfigPath!: string // If empty then search the workspace for flow.json
+
+  #didChange: Subject<void> = new Subject()
+  get didChange$ (): Observable<void> {
+    return this.#didChange.asObservable()
+  }
 
   static getWorkspaceSettings (): Settings {
     if (Settings.#instance === undefined) {
@@ -32,6 +38,19 @@ export class Settings {
     if (skipInitialization !== undefined && skipInitialization) {
       return
     }
+
+    // Watch for workspace settings changes
+    workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration('cadence')) {
+        this.#loadSettings()
+        this.#didChange.next()
+      }
+    })
+
+    this.#loadSettings()
+  }
+
+  #loadSettings (): void {
     // Retrieve workspace settings
     const cadenceConfig = workspace.getConfiguration('cadence')
 
