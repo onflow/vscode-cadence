@@ -214,7 +214,7 @@
 		"@types/object-hash": "^3.0.3",
 		"@types/semver": "^7.5.1",
 		"@types/uuid": "^9.0.2",
-		"@types/vscode": "^1.65.0",
+		"@types/vscode": "^1.82.0",
 		"@vscode/test-electron": "^2.3.4",
 		"chai": "^4.3.7",
 		"esbuild": "^0.19.2",
