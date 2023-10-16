@@ -205,7 +205,7 @@
 		]
 	},
 	"devDependencies": {
-		"@types/chai": "^4.3.6",
+		"@types/chai": "^4.3.8",
 		"@types/expect": "^24.3.0",
 		"@types/glob": "^8.0.1",
 		"@types/mixpanel": "^2.14.5",
@@ -216,7 +216,7 @@
 		"@types/uuid": "^9.0.3",
 		"@types/vscode": "^1.65.0",
 		"@vscode/test-electron": "^2.3.4",
-		"chai": "^4.3.8",
+		"chai": "^4.3.10",
 		"esbuild": "^0.19.2",
 		"glob": "^10.3.4",
 		"mocha": "^10.2.0",
