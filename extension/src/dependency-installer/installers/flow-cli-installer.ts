@@ -100,7 +100,9 @@ export class InstallFlowCLI extends Installer {
     const version = vsn ?? await flowVersion.getValue(true)
     if (version === null) return false
 
-    if (!semver.satisfies(version, COMPATIBLE_FLOW_CLI_VERSIONS)) {
+    if (!semver.satisfies(version, COMPATIBLE_FLOW_CLI_VERSIONS, {
+      includePrerelease: true
+    })) {
       promptUserErrorMessage(
         'Incompatible Flow CLI version: ' + version.format(),
         'Install latest Flow CLI',
