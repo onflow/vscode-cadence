@@ -1,4 +1,4 @@
-import { fetchConfig, getAccountKey } from '../../src/emulator/local/flowConfig'
+import { fetchConfig } from '../../src/emulator/local/flowConfig'
 import * as assert from 'assert'
 import * as path from 'path'
 
@@ -12,10 +12,5 @@ suite('Flow Config Tests', () => {
     assert.strictEqual(JSON.stringify(config.deployments), '{}')
     assert.strictEqual(JSON.stringify(config.emulators), '{"default":{"port":3569,"serviceAccount":"emulator-account"}}')
     assert.strictEqual(JSON.stringify(config.networks), '{"emulator":"127.0.0.1:3569","mainnet":"access.mainnet.nodes.onflow.org:9000","testnet":"access.devnet.nodes.onflow.org:9000"}')
-  })
-
-  test('Get Account key', async () => {
-    const key = await getAccountKey('emulator-account', flowJsonPath)
-    assert.strictEqual(key, 'd2f9b3e122aa5289fb38edab611c8d1c2aa88d6fd8e3943a306a493361639812')
   })
 })

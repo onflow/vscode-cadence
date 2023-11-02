@@ -4,7 +4,6 @@ import * as mixpanel from './mixpanel-wrapper'
 import { env, ExtensionContext } from 'vscode'
 import * as pkg from '../../../package.json'
 import * as uuid from 'uuid'
-import { DEBUG_ACTIVE } from '../utils/debug'
 import * as playground from './playground'
 
 let extensionContext: ExtensionContext
@@ -24,16 +23,16 @@ export async function initialize (ctx: ExtensionContext): Promise<void> {
   extensionContext = ctx
 
   // Check if user is allowing telemetry for vscode globally
-  const activate: boolean = env.isTelemetryEnabled && !DEBUG_ACTIVE
+  const telemetryEnabled: boolean = env.isTelemetryEnabled
 
   // Get unique UID
   const uid = await getUID()
 
   // Initialize Sentry
-  await sentry.sentryInit(activate, uid, pkg.version)
+  await sentry.sentryInit(telemetryEnabled, uid, pkg.version)
 
   // Initialize Mixpanel
-  await mixpanel.mixpanelInit(activate, uid, pkg.version)
+  await mixpanel.mixpanelInit(telemetryEnabled, uid, pkg.version)
 
   // Send initial statistics
   sendActivationStatistics()
