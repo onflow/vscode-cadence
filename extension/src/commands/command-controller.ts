@@ -34,26 +34,11 @@ export class CommandController {
   // those handled by the Language Server).
   #registerCommands (): void {
     this.#registerCommand(commandID.RESTART_SERVER, this.#restartServer.bind(this))
-    this.#registerCommand(commandID.CREATE_ACCOUNT, this.#createAccount.bind(this))
-    this.#registerCommand(commandID.SWITCH_ACCOUNT, this.#switchActiveAccount.bind(this))
     this.#registerCommand(commandID.CHECK_DEPENDENCIES, this.#checkDependencies.bind(this))
-    this.#registerCommand(commandID.COPY_ACTIVE_ACCOUNT, this.#copyActiveAccount.bind(this))
   }
 
   async #restartServer (): Promise<void> {
-    await ext?.emulatorCtrl.restartServer()
-  }
-
-  async #createAccount (): Promise<void> {
-    await ext?.emulatorCtrl.createNewAccount()
-  }
-
-  async #switchActiveAccount (): Promise<void> {
-    await ext?.emulatorCtrl.switchActiveAccount()
-  }
-
-  async #copyActiveAccount (): Promise<void> {
-    await ext?.emulatorCtrl.copyActiveAccount()
+    await ext?.languageServer.restart()
   }
 
   async #checkDependencies (): Promise<void> {

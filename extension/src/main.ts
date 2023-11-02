@@ -21,7 +21,6 @@ export async function activate (ctx: ExtensionContext): Promise<Extension | null
   Telemetry.withTelemetry(() => {
     const settings = Settings.getWorkspaceSettings()
     ext = Extension.initialize(settings, ctx)
-    void ext.emulatorStateChanged()
   })
 
   return ext
@@ -31,12 +30,6 @@ export async function activate (ctx: ExtensionContext): Promise<Extension | null
 export function deactivate (): Thenable<void> | undefined {
   void Telemetry.deactivate()
   return (ext === undefined ? undefined : ext?.deactivate())
-}
-
-export function emulatorStateChanged (): void {
-  if (Extension.initialized) {
-    void ext?.emulatorStateChanged()
-  }
 }
 
 export async function testActivate (settings: Settings): Promise<Extension> {

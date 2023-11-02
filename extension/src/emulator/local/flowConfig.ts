@@ -13,8 +13,6 @@ import { tryExecDefault } from '../../utils/shell/exec'
 let configPath: string | undefined
 export const flowConfig: StateCache<FlowConfig> = new StateCache(fetchConfig)
 
-export const EMULATOR_ACCOUNT = 'emulator-account'
-
 export function setConfigPath (path: string): void {
   configPath = path
   flowConfig.invalidate()
@@ -56,19 +54,6 @@ export async function getConfigPath (): Promise<string> {
 export async function fetchConfig (filepath?: string): Promise<FlowConfig> {
   const flowJsonPath = filepath ?? await getConfigPath()
   return JSON.parse(fs.readFileSync(flowJsonPath, 'utf-8'))
-}
-
-export async function getAccountKey (accountName: string, filepath?: string): Promise<string | undefined> {
-  const fc = (filepath == null) ? await flowConfig.getValue() : await fetchConfig(filepath)
-
-  let emulatorKey: string | undefined
-  try {
-    emulatorKey = fc.accounts[accountName].key
-  } catch (err) {
-    console.log(`Missing key for ${accountName} in ${configPath as string}`)
-  }
-
-  return emulatorKey
 }
 
 async function retrieveConfigPath (): Promise<string> {

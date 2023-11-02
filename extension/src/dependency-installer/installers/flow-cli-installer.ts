@@ -38,8 +38,7 @@ export class InstallFlowCLI extends Installer {
   }
 
   async install (): Promise<void> {
-    const isActive = ext?.emulatorCtrl.api.isActive === true
-    if (isActive) await ext?.emulatorCtrl.api.deactivate()
+    await ext?.languageServer.stopClient()
     const OS_TYPE = process.platform
 
     try {
@@ -57,7 +56,7 @@ export class InstallFlowCLI extends Installer {
     } catch {
       void window.showErrorMessage('Failed to install Flow CLI')
     }
-    if (isActive) await ext?.emulatorCtrl.api.activate()
+    await ext?.languageServer.startClient()
   }
 
   async #install_macos (): Promise<void> {
