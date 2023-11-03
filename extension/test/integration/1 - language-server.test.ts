@@ -5,7 +5,6 @@ import { LanguageServerAPI } from '../../src/server/language-server'
 import { FlowConfig } from '../../src/server/flow-config'
 import { Settings } from '../../src/settings/settings'
 import { MaxTimeout } from '../globals'
-import { mock } from 'node:test'
 import { of } from 'rxjs'
 import { State } from 'vscode-languageclient'
 
@@ -23,7 +22,7 @@ suite('Language Server & Emulator Integration', () => {
       configPath$: of(),
       configPath: null
     } as any
-    
+
     LS = new LanguageServerAPI(settings, mockConfig)
     await LS.activate()
   })

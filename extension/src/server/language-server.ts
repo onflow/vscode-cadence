@@ -109,7 +109,7 @@ export class LanguageServerAPI {
           void window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
         })
     } catch (e) {
-      this.client?.stop()
+      await this.client?.stop()
       this.clientState$.next(State.Stopped)
       throw e
     }
@@ -132,10 +132,10 @@ export class LanguageServerAPI {
   }
 
   #subscribeToConfigChanges (): void {
-    this.#configModifiedSubscription = this.config.fileModified$.subscribe(async () => {
+    this.#configModifiedSubscription = this.config.fileModified$.subscribe(() => {
       // Reload configuration
       if (this.clientState$.getValue() === State.Running) {
-        await this.#sendRequest(RELOAD_CONFIGURATION)
+        void this.#sendRequest(RELOAD_CONFIGURATION)
       } else if (this.clientState$.getValue() === State.Starting) {
         // Wait for client to connect
         void firstValueFrom(this.clientState$.pipe(filter((state) => state === State.Running))).then(() => {

@@ -1,13 +1,10 @@
 import { getMockSettings } from '../mock/mockSettings'
-import {FlowConfig} from '../../src/server/flow-config'
 import { Settings } from '../../src/settings/settings'
 import { MaxTimeout } from '../globals'
 import { before, after } from 'mocha'
 import * as assert from 'assert'
 import { ext, testActivate } from '../../src/main'
 import * as commands from '../../src/commands/command-constants'
-import { mock } from 'node:test'
-import { of } from 'rxjs'
 
 suite('Extension Commands', () => {
   let settings: Settings

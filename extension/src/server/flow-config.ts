@@ -18,6 +18,7 @@ export class FlowConfig implements Disposable {
     path: null,
     isCustom: false
   })
+
   #fileModified$ = new Subject<void>()
 
   #workspaceSettingsSubscriber: Subscription | null = null
@@ -29,7 +30,7 @@ export class FlowConfig implements Disposable {
     this.#settings = settings
 
     // Load initial config path
-    this.reloadConfigPath()
+    void this.reloadConfigPath()
 
     // Create observable for config path, debounced and without metadata
     this.#configPath$ = this.#configPathSubject$.pipe(
@@ -66,13 +67,13 @@ export class FlowConfig implements Disposable {
     let configPath: string | null = null
     let isCustomPath = false
     try {
-      const {path, isCustom} = await this.#getConfigPath()
-      if(path !== '' && path !== null) {
+      const { path, isCustom } = await this.#getConfigPath()
+      if (path !== '' && path !== null) {
         configPath = path
         isCustomPath = isCustom
       }
     } catch (err) {}
-    this.#configPathSubject$.next({path: configPath, isCustom: isCustomPath})
+    this.#configPathSubject$.next({ path: configPath, isCustom: isCustomPath })
   }
 
   async #getConfigPath (): Promise<{ path: string | null, isCustom: boolean }> {
@@ -80,16 +81,16 @@ export class FlowConfig implements Disposable {
     // It may throw an error if the path is invalid
     // If no custom path is configured, search for default config file
     const customPath = this.#resolveCustomConfigPath()
-    if(customPath == null || customPath === '') {
-      return {isCustom: false, path: await this.#resolveDefaultConfigPath()}
+    if (customPath == null || customPath === '') {
+      return { isCustom: false, path: await this.#resolveDefaultConfigPath() }
     }
-    return {isCustom: false, path: customPath}
+    return { isCustom: false, path: customPath }
   }
 
   // Search for config file in workspace
   async #resolveDefaultConfigPath (): Promise<string | null> {
     // Default config search for flow.json in workspace
-    const files = findFilesInAnyWorkspace("./flow.json")
+    const files = findFilesInAnyWorkspace('./flow.json')
     if (files.length === 0) {
       // Couldn't find config file, prompt user
       void this.promptInitializeConfig()
@@ -116,36 +117,36 @@ export class FlowConfig implements Disposable {
         customConfigPath.slice(1)
       )
     } else if (path.isAbsolute(customConfigPath)) {
-        resolvedPath = customConfigPath
+      resolvedPath = customConfigPath
     } else if (workspace.workspaceFolders != null) {
-        // Find all files matching relative path in workspace
-        const files = workspace.workspaceFolders.reduce<string[]>(
-          (res, folder) => {
-            const filePath = path.resolve(folder.uri.fsPath, customConfigPath)
-            if (fs.existsSync(filePath)) {
-              res.push(filePath)
-            }
-            return res
-          },
-          []
-        )
+      // Find all files matching relative path in workspace
+      const files = workspace.workspaceFolders.reduce<string[]>(
+        (res, folder) => {
+          const filePath = path.resolve(folder.uri.fsPath, customConfigPath)
+          if (fs.existsSync(filePath)) {
+            res.push(filePath)
+          }
+          return res
+        },
+        []
+      )
 
-        // Check that only one file was found (could be in multiple workspaces)
-        if (files.length === 1) {
-          resolvedPath = files[0]
-        } else if (files.length === 0) {
-          void window.showErrorMessage(fileNotFoundMessage)
-          throw new Error("Custom file not found")
-        } else {
-          void window.showErrorMessage(`Multiple flow.json files found: ${files.join(', ')}.  Please specify an absolute path to the desired flow.json file in your workspace settings.`)
-          throw new Error("Multiple flow.json files found")
-        }
+      // Check that only one file was found (could be in multiple workspaces)
+      if (files.length === 1) {
+        resolvedPath = files[0]
+      } else if (files.length === 0) {
+        void window.showErrorMessage(fileNotFoundMessage)
+        throw new Error('Custom file not found')
+      } else {
+        void window.showErrorMessage(`Multiple flow.json files found: ${files.join(', ')}.  Please specify an absolute path to the desired flow.json file in your workspace settings.`)
+        throw new Error('Multiple flow.json files found')
+      }
     }
 
     // Verify that the path exists if it was resolved
-    if (resolvedPath && !fs.existsSync(resolvedPath)) {
+    if (resolvedPath != null && !fs.existsSync(resolvedPath)) {
       void window.showErrorMessage(fileNotFoundMessage)
-      throw new Error("Custom file not found")
+      throw new Error('Custom file not found')
     }
 
     return resolvedPath
@@ -180,7 +181,7 @@ export class FlowConfig implements Disposable {
   // Watch and reload flow configuration when changed.
   #watchWorkspaceConfiguration (): Subscription {
     return this.#settings.didChange$.subscribe(() => {
-      this.reloadConfigPath()
+      void this.reloadConfigPath()
     })
   }
 
@@ -188,24 +189,22 @@ export class FlowConfig implements Disposable {
     let configWatcher: FileSystemWatcher
 
     // Recursively bind watcher every time config path changes
-    const bindWatcher = () => {
-      if(configWatcher) {
-        configWatcher.dispose()
-      }
-      
+    const bindWatcher = (): void => {
+      configWatcher?.dispose()
+
       // If custom config path is set, watch that file
       // Otherwise watch for flow.json in workspace
-      const watchPath = this.#configPathSubject$.value.isCustom && this.#configPathSubject$.value.path ? this.#configPathSubject$.value.path : "**/flow.json"
+      const watchPath = this.#configPathSubject$.value.isCustom && this.#configPathSubject$.value.path != null ? this.#configPathSubject$.value.path : '**/flow.json'
 
       // Watch for changes to config file
       // If it does not exist, wait for flow.json to be created
       configWatcher = workspace.createFileSystemWatcher(watchPath)
-      
-      const configPathChangeHandler = () => {
-        this.reloadConfigPath()
+
+      const configPathChangeHandler = (): void => {
+        void this.reloadConfigPath()
       }
-      const configModifyHandler = (file: Uri) => {
-        if (this.#configPathSubject$.value.path && pathsAreEqual(file.fsPath, this.#configPathSubject$.value.path)) {
+      const configModifyHandler = (file: Uri): void => {
+        if (this.#configPathSubject$.value.path != null && pathsAreEqual(file.fsPath, this.#configPathSubject$.value.path)) {
           this.#fileModified$.next()
         }
       }
