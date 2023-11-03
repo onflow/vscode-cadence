@@ -1,15 +1,17 @@
 import { LanguageClient, State } from 'vscode-languageclient/node'
 import { window } from 'vscode'
-import * as Config from '../local/flowConfig'
-import { Settings } from '../../settings/settings'
+import { Settings } from '../settings/settings'
 import { exec } from 'child_process'
 import { Disposable, ExecuteCommandRequest } from 'vscode-languageclient'
 import { BehaviorSubject, Subscription, filter, firstValueFrom } from 'rxjs'
-import { envVars } from '../../utils/shell/env-vars'
+import { envVars } from '../utils/shell/env-vars'
+import { FlowConfig } from './flow-config'
 
 // Identities for commands handled by the Language server
 const RELOAD_CONFIGURATION = 'cadence.server.flow.reloadConfiguration'
+
 export class LanguageServerAPI {
+  config: FlowConfig
   client: LanguageClient | null = null
   settings: Settings
 
@@ -18,20 +20,28 @@ export class LanguageServerAPI {
   #watcherTimeout: NodeJS.Timeout | null = null
   #watcherPromise: Promise<void> | null = null
   #flowConfigWatcher: Promise<Disposable> | null = null
-  #workspaceSettingsSubscriber: Subscription | null = null
+  #configPathSubscription: Subscription | null = null
+  #configModifiedSubscription: Subscription | null = null
 
-  constructor (settings: Settings) {
+  constructor (settings: Settings, config: FlowConfig) {
     this.settings = settings
+    this.config = config
   }
 
   async activate (): Promise<void> {
     await this.deactivate()
     await this.startClient()
-    await this.watchFlowConfiguration()
+    this.#subscribeToConfigChanges()
   }
 
   async deactivate (): Promise<void> {
-    const deactivationPromises = [this.#watcherPromise]
+    function unsubscribe (subscription: Subscription | null): void {
+      if (subscription != null) {
+        subscription.unsubscribe()
+      }
+    }
+
+    const deactivationPromises = [this.#watcherPromise, unsubscribe(this.#configPathSubscription), unsubscribe(this.#configModifiedSubscription)]
     if (this.#watcherTimeout != null) {
       clearTimeout(this.#watcherTimeout)
       this.#watcherTimeout = null
@@ -59,11 +69,7 @@ export class LanguageServerAPI {
       this.clientState$.next(State.Starting)
 
       const accessCheckMode: string = this.settings.accessCheckMode
-      let configPath = this.settings.customConfigPath
-
-      if (configPath === '' || configPath === undefined) {
-        configPath = await Config.getConfigPath()
-      }
+      const configPath: string | null = this.config.configPath
 
       if (this.settings.flowCommand !== 'flow') {
         try {
@@ -103,6 +109,7 @@ export class LanguageServerAPI {
           void window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
         })
     } catch (e) {
+      this.client?.stop()
       this.clientState$.next(State.Stopped)
       throw e
     }
@@ -124,30 +131,8 @@ export class LanguageServerAPI {
     await this.startClient()
   }
 
-  async #sendRequest (cmd: string, args: any[] = []): Promise<any> {
-    return await this.client?.sendRequest(ExecuteCommandRequest.type, {
-      command: cmd,
-      arguments: args
-    })
-  }
-
-
-  // Watch and reload flow configuration when changed.
-  async watchFlowConfiguration (): Promise<void> {
-    // Configure subscriber to reset watcher on flow configuration change
-    this.#workspaceSettingsSubscriber?.unsubscribe()
-    this.#workspaceSettingsSubscriber = this.settings.didChange$.subscribe(() => {
-      Config.flowConfig.invalidate()
-      void this.watchFlowConfiguration()
-    })
-
-    // Dispose of existing watcher
-    ;(await this.#flowConfigWatcher)?.dispose()
-
-    // Watch for changes to flow configuration
-    this.#flowConfigWatcher = Config.watchFlowConfigChanges(async () => {
-      Config.flowConfig.invalidate()
-
+  #subscribeToConfigChanges (): void {
+    this.#configModifiedSubscription = this.config.fileModified$.subscribe(async () => {
       // Reload configuration
       if (this.clientState$.getValue() === State.Running) {
         await this.#sendRequest(RELOAD_CONFIGURATION)
@@ -157,6 +142,18 @@ export class LanguageServerAPI {
           void this.#sendRequest(RELOAD_CONFIGURATION)
         })
       }
+    })
+
+    this.#configPathSubscription = this.config.configPath$.subscribe(() => {
+      // Restart client
+      void this.restart()
+    })
+  }
+
+  async #sendRequest (cmd: string, args: any[] = []): Promise<any> {
+    return await this.client?.sendRequest(ExecuteCommandRequest.type, {
+      command: cmd,
+      arguments: args
     })
   }
 }

@@ -5,7 +5,8 @@ import { DependencyInstaller } from './dependency-installer/dependency-installer
 import { Settings } from './settings/settings'
 import { JSONSchemaProvider } from './json-schema-provider'
 import { flowVersion } from './utils/flow-version'
-import { LanguageServerAPI } from './emulator/server/language-server'
+import { LanguageServerAPI } from './server/language-server'
+import { FlowConfig } from './server/flow-config'
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -31,8 +32,9 @@ export class Extension {
     if (ctx != null) JSONSchemaProvider.register(ctx, flowVersion)
 
     // Initialize Language Server
-    this.languageServer = new LanguageServerAPI(settings)
-    this.languageServer.activate()
+    const flowConfig = new FlowConfig(settings)
+    this.languageServer = new LanguageServerAPI(settings, flowConfig)
+    void this.languageServer.activate()
 
     // Check for any missing dependencies
     // The language server will start if all dependencies are installed

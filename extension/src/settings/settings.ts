@@ -1,4 +1,6 @@
 /* Workspace Settings */
+import { homedir } from 'os'
+import path = require('path')
 import { Observable, Subject } from 'rxjs'
 import { workspace, window } from 'vscode'
 
@@ -73,6 +75,12 @@ export class Settings {
     )
     if (customConfigPath === undefined) {
       customConfigPath = ''
+    }
+    if (customConfigPath[0] === '~') {
+      customConfigPath = path.join(
+        homedir(),
+        customConfigPath.slice(1)
+      )
     }
     this.customConfigPath = customConfigPath
   }

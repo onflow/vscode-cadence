@@ -1,21 +1,30 @@
 import * as assert from 'assert'
 import { before, after } from 'mocha'
 import { getMockSettings } from '../mock/mockSettings'
-import { LanguageServerAPI } from '../../src/emulator/server/language-server'
-import { setConfigPath } from '../../src/emulator/local/flowConfig'
+import { LanguageServerAPI } from '../../src/server/language-server'
+import { FlowConfig } from '../../src/server/flow-config'
 import { Settings } from '../../src/settings/settings'
 import { MaxTimeout } from '../globals'
+import { mock } from 'node:test'
+import { of } from 'rxjs'
+import { State } from 'vscode-languageclient'
 
 suite('Language Server & Emulator Integration', () => {
   let LS: LanguageServerAPI
   let settings: Settings
+  let mockConfig: FlowConfig
 
   before(async function () {
     this.timeout(MaxTimeout)
     // Initialize language server
     settings = getMockSettings()
-    setConfigPath(settings.customConfigPath)
-    LS = new LanguageServerAPI(settings)
+    mockConfig = {
+      fileModified$: of(),
+      configPath$: of(),
+      configPath: null
+    } as any
+    
+    LS = new LanguageServerAPI(settings, mockConfig)
     await LS.activate()
   })
 
@@ -27,6 +36,6 @@ suite('Language Server & Emulator Integration', () => {
   test('Language Server Client', async () => {
     await LS.startClient()
     assert.notStrictEqual(LS.client, undefined)
-    assert.strictEqual(LS.client?.isRunning(), true)
+    assert.equal(LS.client?.state, State.Running)
   })
 })
