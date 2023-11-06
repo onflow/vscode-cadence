@@ -10,8 +10,7 @@ import { BehaviorSubject, Observable, Subject, Subscription, distinctUntilChange
 import { findFilesInAnyWorkspace, pathsAreEqual } from '../utils/utils'
 
 export class FlowConfig implements Disposable {
-  #configPath$: Observable<string | null>
-  #configPathSubject$ = new BehaviorSubject<{
+  #configPath$ = new BehaviorSubject<{
     path: string | null
     isCustom: boolean
   }>({
@@ -32,12 +31,6 @@ export class FlowConfig implements Disposable {
     // Load initial config path
     void this.reloadConfigPath()
 
-    // Create observable for config path, debounced and without metadata
-    this.#configPath$ = this.#configPathSubject$.pipe(
-      map(({ path }) => path),
-      distinctUntilChanged(),
-      throttleTime(500))
-
     // Watch for config changes
     this.#configChangeWatcher = this.#watchForConfigChanges()
 
@@ -46,21 +39,25 @@ export class FlowConfig implements Disposable {
   }
 
   get configPath (): string | null {
-    return this.#configPathSubject$.value.path
+    return this.#configPath$.value.path
   }
 
-  get configPath$ (): Observable<string | null> {
-    return this.#configPath$
+  get pathChanged$ (): Observable<void> {
+    return this.#configPath$.pipe(
+      map(({ path }) => path),
+      distinctUntilChanged(),
+      map(() => {})
+    )
   }
 
-  get fileModified$ (): Subject<void> {
-    return this.#fileModified$
+  get fileModified$ (): Observable<void> {
+    return this.#fileModified$.asObservable()
   }
 
   dispose (): void {
     this.#workspaceSettingsSubscriber?.unsubscribe()
     this.#configChangeWatcher?.dispose()
-    this.#configPathSubject$.complete()
+    this.#configPath$.complete()
   }
 
   async reloadConfigPath (): Promise<void> {
@@ -73,7 +70,7 @@ export class FlowConfig implements Disposable {
         isCustomPath = isCustom
       }
     } catch (err) {}
-    this.#configPathSubject$.next({ path: configPath, isCustom: isCustomPath })
+    this.#configPath$.next({ path: configPath, isCustom: isCustomPath })
   }
 
   async #getConfigPath (): Promise<{ path: string | null, isCustom: boolean }> {
@@ -194,7 +191,7 @@ export class FlowConfig implements Disposable {
 
       // If custom config path is set, watch that file
       // Otherwise watch for flow.json in workspace
-      const watchPath = this.#configPathSubject$.value.isCustom && this.#configPathSubject$.value.path != null ? this.#configPathSubject$.value.path : '**/flow.json'
+      const watchPath = this.#configPath$.value.isCustom && this.configPath != null ? this.configPath : '**/flow.json'
 
       // Watch for changes to config file
       // If it does not exist, wait for flow.json to be created
@@ -204,7 +201,7 @@ export class FlowConfig implements Disposable {
         void this.reloadConfigPath()
       }
       const configModifyHandler = (file: Uri): void => {
-        if (this.#configPathSubject$.value.path != null && pathsAreEqual(file.fsPath, this.#configPathSubject$.value.path)) {
+        if (this.configPath != null && pathsAreEqual(file.fsPath, this.configPath)) {
           this.#fileModified$.next()
         }
       }
@@ -218,7 +215,7 @@ export class FlowConfig implements Disposable {
     bindWatcher()
 
     // If config path changes, dispose of current watcher and bind a new one to bind to new path
-    const configSubscription = this.#configPath$.subscribe(() => {
+    const configSubscription = this.pathChanged$.subscribe(() => {
       configWatcher.dispose()
       bindWatcher()
     })

@@ -144,7 +144,7 @@ export class LanguageServerAPI {
       }
     })
 
-    this.#configPathSubscription = this.config.configPath$.subscribe(() => {
+    this.#configPathSubscription = this.config.pathChanged$.subscribe(() => {
       // Restart client
       void this.restart()
     })
