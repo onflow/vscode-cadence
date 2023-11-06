@@ -19,7 +19,7 @@ suite('Language Server & Emulator Integration', () => {
     settings = getMockSettings()
     mockConfig = {
       fileModified$: of(),
-      configPath$: of(),
+      pathChanged$: of(),
       configPath: null
     } as any
 

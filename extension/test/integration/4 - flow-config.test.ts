@@ -1,17 +1,147 @@
 
-import { of } from "rxjs";
+import { Subject, firstValueFrom, of, skip } from "rxjs";
 import { FlowConfig } from "../../src/server/flow-config";
 import { Settings } from "../../src/settings/settings";
+import { before, afterEach } from "mocha"
 import * as assert from "assert";
+import * as path from "path"
+import * as fs from "fs"
+
+const workspacePath = path.resolve(__dirname, "./fixtures/workspace");
 
 suite("flow config tests", () => {
-  test("recognizes custom config path", () => {
+  let config: FlowConfig
+  let rootConfigPath: string
+  let rootConfig: Buffer
+
+  function deleteRootConfig() {
+    fs.unlinkSync(rootConfigPath);
+  }
+
+  function restoreRootConfig() {
+    fs.writeFileSync(rootConfigPath, rootConfig);
+  }
+
+  before(() => {
+    // cache config at root if deleted later
+    rootConfigPath = path.resolve(workspacePath, "flow.json");
+    rootConfig = fs.readFileSync(rootConfigPath);
+
+    console.log(rootConfig)
+  })
+
+  afterEach(() => {
+    config?.dispose();
+
+    // restore config at root
+    restoreRootConfig();
+  })
+
+  test("recognizes custom config path", async () => {
     let mockSettings: Settings = {
-      customConfigPath: "/foo/flow.json",
+      customConfigPath: "./foo/flow.json",
       didChange$: of(),
     } as any;
 
-    const config = new FlowConfig(mockSettings);
-    assert.strictEqual(config.configPath, "/foo/flow.json");
+    config = new FlowConfig(mockSettings);
+    await config.activate();
+
+    assert.strictEqual(config.configPath, path.resolve(workspacePath, "./foo/flow.json"));
   });
+
+  test("recognizes config path from project root", async () => {
+    let mockSettings: Settings = {
+      customConfigPath: "",
+      didChange$: of(),
+    } as any;
+
+    config = new FlowConfig(mockSettings);
+    await config.activate();
+
+    assert.strictEqual(config.configPath, path.resolve(workspacePath, "./flow.json"));
+  });
+
+  test('recognizes custom config change & emits pathChanged$', async () => {
+    const didChange$ = new Subject<void>();
+    let mockSettings = {
+      customConfigPath: "./foo/flow.json",
+      didChange$: didChange$.asObservable(),
+    } as Partial<Settings> as Settings;
+
+    config = new FlowConfig(mockSettings);
+    await config.activate();
+    assert.strictEqual(config.configPath, path.resolve(workspacePath, "./foo/flow.json"));
+
+    mockSettings.customConfigPath = "./bar/flow.json";
+    didChange$.next();
+
+    await firstValueFrom(config.pathChanged$);
+    assert.strictEqual(config.configPath, path.resolve(workspacePath, "./bar/flow.json"));
+  });
+
+
+  test('ignores non-existent custom config path', async () => {
+    let mockSettings: Settings = {
+      customConfigPath: "./missing/flow.json",
+      didChange$: of(),
+    } as any;
+
+    config = new FlowConfig(mockSettings);
+    await config.activate();
+    assert.strictEqual(config.configPath, null);
+  });
+
+  test('null if no config at root or custom path', async () => {
+    // temporarily delete config at root
+    deleteRootConfig();
+
+    let mockSettings: Settings = {
+      customConfigPath: "",
+      didChange$: of(),
+    } as any;
+
+    config = new FlowConfig(mockSettings);
+    await config.activate();
+    assert.strictEqual(config.configPath, null);
+  })
+
+  test('detects config creation at root', async () => {
+    // temporarily delete config at root
+    deleteRootConfig();
+
+    let mockSettings: Settings = {
+      customConfigPath: "",
+      didChange$: of(),
+    } as any;
+
+    config = new FlowConfig(mockSettings);
+    await config.activate();
+    assert.strictEqual(config.configPath, null);
+
+    // restore config at root
+    restoreRootConfig();
+
+    await firstValueFrom(config.pathChanged$);
+    assert.strictEqual(config.configPath, rootConfigPath);
+  })
+
+  test('detects creation of previously non-existent custom config', async () => {
+    let mockSettings: Settings = {
+      customConfigPath: "./missing/flow.json",
+      didChange$: of(),
+    } as any;
+
+    config = new FlowConfig(mockSettings);
+    await config.activate();
+    assert.strictEqual(config.configPath, null);
+
+    // create custom config
+    fs.writeFileSync(path.resolve(workspacePath, "./missing/flow.json"), "{}");
+
+    await firstValueFrom(config.pathChanged$);
+    assert.strictEqual(config.configPath, path.resolve(workspacePath, "./missing/flow.json"));
+
+    // delete custom config
+    fs.unlinkSync(path.resolve(workspacePath, "./missing/flow.json"));
+  })
 })

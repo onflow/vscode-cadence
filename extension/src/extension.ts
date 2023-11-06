@@ -34,7 +34,9 @@ export class Extension {
     // Initialize Language Server
     const flowConfig = new FlowConfig(settings)
     this.languageServer = new LanguageServerAPI(settings, flowConfig)
-    void this.languageServer.activate()
+    flowConfig.activate().then(() => {
+      void this.languageServer.activate()
+    })
 
     // Check for any missing dependencies
     // The language server will start if all dependencies are installed
