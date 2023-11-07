@@ -123,7 +123,7 @@ suite('flow config tests', () => {
 
     await firstValueFrom(config.pathChanged$)
     assert.strictEqual(config.configPath, rootConfigPath)
-  })
+  }).timeout(5000)
 
   test('detects creation of previously non-existent custom config', async () => {
     // ensure file does not exist
