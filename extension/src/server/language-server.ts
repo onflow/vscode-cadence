@@ -132,14 +132,16 @@ export class LanguageServerAPI {
   }
 
   #subscribeToConfigChanges (): void {
+    const tryReloadConfig = () => void this.#sendRequest(RELOAD_CONFIGURATION).catch(() => {})
+    
     this.#configModifiedSubscription = this.config.fileModified$.subscribe(() => {
       // Reload configuration
       if (this.clientState$.getValue() === State.Running) {
-        void this.#sendRequest(RELOAD_CONFIGURATION)
+        tryReloadConfig()
       } else if (this.clientState$.getValue() === State.Starting) {
         // Wait for client to connect
         void firstValueFrom(this.clientState$.pipe(filter((state) => state === State.Running))).then(() => {
-          void this.#sendRequest(RELOAD_CONFIGURATION)
+          tryReloadConfig()
         })
       }
     })
