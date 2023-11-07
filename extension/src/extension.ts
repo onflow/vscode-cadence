@@ -34,7 +34,7 @@ export class Extension {
     // Initialize Language Server
     const flowConfig = new FlowConfig(settings)
     this.languageServer = new LanguageServerAPI(settings, flowConfig)
-    flowConfig.activate().then(() => {
+    void flowConfig.activate().then(() => {
       void this.languageServer.activate()
     })
 

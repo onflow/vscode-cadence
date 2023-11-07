@@ -8,5 +8,3 @@ export function getMockSettings (): Settings {
   mockSettings.flowCommand = 'flow'
   return mockSettings
 }
-
-

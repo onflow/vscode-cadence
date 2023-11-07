@@ -21,6 +21,7 @@ export class FlowConfig implements Disposable {
     isCustom: false,
     exists: false
   })
+
   #fileModified$ = new Subject<void>()
   #pathChanged$: Connectable<void>
 
@@ -37,7 +38,7 @@ export class FlowConfig implements Disposable {
     this.#pathChanged$ = connectable(this.#configPath$.pipe(
       map(({ path, exists }) => (path != null && exists) ? path : null),
       distinctUntilChanged(),
-      map(() => {}),
+      map(() => {})
     ))
     this.#pathChangedConnection$ = this.#pathChanged$.connect()
   }
@@ -59,7 +60,7 @@ export class FlowConfig implements Disposable {
   }
 
   get configPath (): string | null {
-    const {path, exists} = this.#configPath$.value
+    const { path, exists } = this.#configPath$.value
     return path != null && exists ? path : null
   }
 
@@ -108,7 +109,7 @@ export class FlowConfig implements Disposable {
 
     let resolvedPath: string
     const fileNotFoundMessage = `File specified at ${customConfigPath} not found.  Please verify the file exists.`
-    
+
     if (customConfigPath[0] === '~') {
       resolvedPath = path.join(
         os.homedir(),
@@ -134,10 +135,10 @@ export class FlowConfig implements Disposable {
         resolvedPath = files[0]
       } else if (files.length === 0) {
         void window.showErrorMessage(fileNotFoundMessage)
-        return { path: customConfigPath, isCustom: true, exists: false}
+        return { path: customConfigPath, isCustom: true, exists: false }
       } else {
         void window.showErrorMessage(`Multiple flow.json files found: ${files.join(', ')}.  Please specify an absolute path to the desired flow.json file in your workspace settings.`)
-        return { path: customConfigPath, isCustom: true, exists: false}
+        return { path: customConfigPath, isCustom: true, exists: false }
       }
     } else {
       return null
@@ -146,7 +147,7 @@ export class FlowConfig implements Disposable {
     // Verify that the path exists if it was resolved
     if (!fs.existsSync(resolvedPath)) {
       void window.showErrorMessage(fileNotFoundMessage)
-      return { path: customConfigPath, isCustom: true, exists: false}
+      return { path: customConfigPath, isCustom: true, exists: false }
     }
 
     return { path: resolvedPath, isCustom: true, exists: true }
