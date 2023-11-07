@@ -26,8 +26,6 @@ suite("flow config tests", () => {
     // cache config at root if deleted later
     rootConfigPath = path.resolve(workspacePath, "flow.json");
     rootConfig = fs.readFileSync(rootConfigPath);
-
-    console.log(rootConfig)
   })
 
   afterEach(() => {
@@ -41,7 +39,7 @@ suite("flow config tests", () => {
     let mockSettings: Settings = {
       customConfigPath: "./foo/flow.json",
       didChange$: of(),
-    } as any;
+    } as Partial<Settings> as Settings;
 
     config = new FlowConfig(mockSettings);
     await config.activate();
@@ -53,7 +51,7 @@ suite("flow config tests", () => {
     let mockSettings: Settings = {
       customConfigPath: "",
       didChange$: of(),
-    } as any;
+    } as Partial<Settings> as Settings;
 
     config = new FlowConfig(mockSettings);
     await config.activate();
@@ -72,10 +70,13 @@ suite("flow config tests", () => {
     await config.activate();
     assert.strictEqual(config.configPath, path.resolve(workspacePath, "./foo/flow.json"));
 
+    const pathChangedPromise = firstValueFrom(config.pathChanged$);
+
+    // update custom config path
     mockSettings.customConfigPath = "./bar/flow.json";
     didChange$.next();
 
-    await firstValueFrom(config.pathChanged$);
+    await pathChangedPromise;
     assert.strictEqual(config.configPath, path.resolve(workspacePath, "./bar/flow.json"));
   });
 
@@ -84,7 +85,7 @@ suite("flow config tests", () => {
     let mockSettings: Settings = {
       customConfigPath: "./missing/flow.json",
       didChange$: of(),
-    } as any;
+    } as Partial<Settings> as Settings;
 
     config = new FlowConfig(mockSettings);
     await config.activate();
@@ -112,7 +113,7 @@ suite("flow config tests", () => {
     let mockSettings: Settings = {
       customConfigPath: "",
       didChange$: of(),
-    } as any;
+    } as Partial<Settings> as Settings;
 
     config = new FlowConfig(mockSettings);
     await config.activate();
@@ -126,22 +127,28 @@ suite("flow config tests", () => {
   })
 
   test('detects creation of previously non-existent custom config', async () => {
+    // ensure file does not exist
+    if (fs.existsSync(path.resolve(workspacePath, "./missing/flow.json"))) {
+      fs.unlinkSync(path.resolve(workspacePath, "./missing/flow.json"));
+    }
+
     let mockSettings: Settings = {
       customConfigPath: "./missing/flow.json",
       didChange$: of(),
-    } as any;
+    } as Partial<Settings> as Settings;
 
     config = new FlowConfig(mockSettings);
     await config.activate();
     assert.strictEqual(config.configPath, null);
 
-    // create custom config
+    // create custom config must create if non-existent
+    fs.mkdirSync(path.resolve(workspacePath, "./missing"), { recursive: true });
     fs.writeFileSync(path.resolve(workspacePath, "./missing/flow.json"), "{}");
 
     await firstValueFrom(config.pathChanged$);
     assert.strictEqual(config.configPath, path.resolve(workspacePath, "./missing/flow.json"));
 
-    // delete custom config
+    // delete custom config after test
     fs.unlinkSync(path.resolve(workspacePath, "./missing/flow.json"));
   })
 })

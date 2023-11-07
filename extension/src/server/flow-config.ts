@@ -6,7 +6,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { Disposable } from 'vscode-languageclient'
 import { tryExecDefault } from '../utils/shell/exec'
-import { BehaviorSubject, Observable, Subject, Subscription, distinctUntilChanged, map, skip } from 'rxjs'
+import { BehaviorSubject, Observable, Subject, Subscription, connectable, distinctUntilChanged, map, Connectable } from 'rxjs'
 import { findFilesInAnyWorkspace, pathsAreEqual } from '../utils/utils'
 
 export interface FlowConfigFile {
@@ -22,7 +22,9 @@ export class FlowConfig implements Disposable {
     exists: false
   })
   #fileModified$ = new Subject<void>()
+  #pathChanged$: Connectable<void>
 
+  #pathChangedConnection$: Subscription | null = null
   #workspaceSettingsSubscriber: Subscription | null = null
   #configChangeWatcher: Disposable | null = null
   #workspaceFolderWatcher: Disposable | null = null
@@ -31,6 +33,13 @@ export class FlowConfig implements Disposable {
 
   constructor (settings: Settings) {
     this.#settings = settings
+
+    this.#pathChanged$ = connectable(this.#configPath$.pipe(
+      map(({ path, exists }) => (path != null && exists) ? path : null),
+      distinctUntilChanged(),
+      map(() => {}),
+    ))
+    this.#pathChangedConnection$ = this.#pathChanged$.connect()
   }
 
   async activate (): Promise<void> {
@@ -50,16 +59,12 @@ export class FlowConfig implements Disposable {
   }
 
   get configPath (): string | null {
-    return this.#configPath$.value.path
+    const {path, exists} = this.#configPath$.value
+    return path != null && exists ? path : null
   }
 
   get pathChanged$ (): Observable<void> {
-    return this.#configPath$.pipe(
-      skip(1),
-      map(({ path }) => path),
-      distinctUntilChanged(),
-      map(() => {})
-    )
+    return this.#pathChanged$
   }
 
   get fileModified$ (): Observable<void> {
@@ -67,8 +72,10 @@ export class FlowConfig implements Disposable {
   }
 
   dispose (): void {
+    this.#pathChangedConnection$?.unsubscribe()
     this.#workspaceSettingsSubscriber?.unsubscribe()
     this.#configChangeWatcher?.dispose()
+    this.#workspaceFolderWatcher?.dispose()
     this.#configPath$.complete()
   }
 
