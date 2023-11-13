@@ -205,7 +205,7 @@
 		]
 	},
 	"devDependencies": {
-		"@types/chai": "^4.3.8",
+		"@types/chai": "^4.3.10",
 		"@types/expect": "^24.3.0",
 		"@types/glob": "^8.0.1",
 		"@types/mixpanel": "^2.14.7",
