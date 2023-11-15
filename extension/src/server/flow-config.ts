@@ -119,16 +119,7 @@ export class FlowConfig implements Disposable {
       resolvedPath = customConfigPath
     } else if (workspace.workspaceFolders != null) {
       // Find all files matching relative path in workspace
-      const files = workspace.workspaceFolders.reduce<string[]>(
-        (res, folder) => {
-          const filePath = path.resolve(folder.uri.fsPath, customConfigPath)
-          if (fs.existsSync(filePath)) {
-            res.push(filePath)
-          }
-          return res
-        },
-        []
-      )
+      const files = findFilesInAnyWorkspace(customConfigPath)
 
       // Check that only one file was found (could be in multiple workspaces)
       if (files.length === 1) {
