@@ -195,24 +195,30 @@ export class FlowConfig implements Disposable {
 
       // If custom config path is set, watch that file
       // Otherwise watch for flow.json in workspace
-      const watchPath = this.#configPath$.value.isCustom && this.configPath != null ? this.configPath : '**/flow.json'
-
-      // Watch for changes to config file
-      // If it does not exist, wait for flow.json to be created
-      configWatcher = workspace.createFileSystemWatcher(watchPath)
-
-      const configPathChangeHandler = (): void => {
-        void this.reloadConfigPath()
+      let watchPaths = this.#configPath$.value.isCustom && this.#configPath$.value.path != null ? [this.#configPath$.value.path] : null
+      if (watchPaths == null) { 
+        // Watch all possible flow.json files in each workspace folder
+        watchPaths = workspace.workspaceFolders?.map(folder => path.resolve(folder.uri.fsPath, './flow.json')) ?? []
       }
-      const configModifyHandler = (file: Uri): void => {
-        if (this.configPath != null && pathsAreEqual(file.fsPath, this.configPath)) {
-          this.#fileModified$.next()
+
+      watchPaths.forEach(watchPath => {
+        // Watch for changes to config file
+        // If it does not exist, wait for flow.json to be created
+        configWatcher = workspace.createFileSystemWatcher(watchPath)
+
+        const configPathChangeHandler = (): void => {
+          void this.reloadConfigPath()
         }
-      }
+        const configModifyHandler = (file: Uri): void => {
+          if (this.configPath != null && pathsAreEqual(file.fsPath, this.configPath)) {
+            this.#fileModified$.next()
+          }
+        }
 
-      configWatcher.onDidCreate(configPathChangeHandler)
-      configWatcher.onDidDelete(configPathChangeHandler)
-      configWatcher.onDidChange(configModifyHandler)
+        configWatcher.onDidCreate(configPathChangeHandler)
+        configWatcher.onDidDelete(configPathChangeHandler)
+        configWatcher.onDidChange(configModifyHandler)
+      })
     }
 
     // Bind initial watcher
