@@ -95,21 +95,6 @@
 				"title": "Restart language server"
 			},
 			{
-				"command": "cadence.createAccount",
-				"category": "Cadence",
-				"title": "Create account"
-			},
-			{
-				"command": "cadence.switchActiveAccount",
-				"category": "Cadence",
-				"title": "Switch account"
-			},
-			{
-				"command": "cadence.copyActiveAccount",
-				"category": "Cadence",
-				"title": "Copy active account to clipboard"
-			},
-			{
 				"command": "cadence.checkDepencencies",
 				"category": "Cadence",
 				"title": "Check Dependencies"
@@ -122,12 +107,6 @@
 					"type": "string",
 					"default": "flow",
 					"description": "The command to invoke the Flow CLI.",
-					"scope": "resource"
-				},
-				"cadence.numAccounts": {
-					"type": "number",
-					"default": 3,
-					"description": "The number of default accounts to create.",
 					"scope": "resource"
 				},
 				"cadence.accessCheckMode": {
@@ -147,17 +126,6 @@
 					],
 					"description": "Configures if access modifiers are required and how they are are enforced.",
 					"scope": "resource"
-				},
-				"cadence.trace.server": {
-					"scope": "window",
-					"type": "string",
-					"enum": [
-						"off",
-						"messages",
-						"verbose"
-					],
-					"default": "off",
-					"description": "Traces the communication between VS Code and the Cadence language server."
 				},
 				"cadence.customConfigPath": {
 					"type": "string",
