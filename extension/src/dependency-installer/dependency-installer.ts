@@ -42,8 +42,7 @@ export class DependencyInstaller {
   async checkDependencies (): Promise<void> {
     // Invalidate and wait for state to update
     // This will trigger the missingDependencies subscriptions
-    this.missingDependencies.invalidate()
-    await this.missingDependencies.getValue()
+    await this.missingDependencies.getValue(true)
   }
 
   async installMissing (): Promise<void> {

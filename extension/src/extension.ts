@@ -45,19 +45,11 @@ export class Extension {
     this.#dependencyInstaller = new DependencyInstaller()
 
     // Initialize ExtensionCommands
-    this.#commands = new CommandController()
+    this.#commands = new CommandController(this.#dependencyInstaller)
   }
 
   // Called on exit
   async deactivate (): Promise<void> {}
-
-  async checkDependencies (): Promise<void> {
-    await this.#dependencyInstaller.checkDependencies()
-  }
-
-  async installMissingDependencies (): Promise<void> {
-    await this.#dependencyInstaller.installMissing()
-  }
 
   async executeCommand (command: string): Promise<boolean> {
     return await this.#commands.executeCommand(command)
