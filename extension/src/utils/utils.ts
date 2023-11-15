@@ -1,5 +1,5 @@
 import { existsSync } from 'fs'
-import path = require('path')
+import * as path from 'path'
 import { workspace } from 'vscode'
 
 export const FILE_PATH_EMPTY = ''

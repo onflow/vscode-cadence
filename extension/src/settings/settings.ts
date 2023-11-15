@@ -1,6 +1,6 @@
 /* Workspace Settings */
 import { homedir } from 'os'
-import path = require('path')
+import * as path from 'path'
 import { Observable, Subject } from 'rxjs'
 import { workspace, window } from 'vscode'
 
