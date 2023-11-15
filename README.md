@@ -23,22 +23,9 @@ Once installed, the extension will help you install other dependencies such as t
 
 ## Features
 
-### Flow Emulator Integration
-The extension will automatically connect to your local running Flow Emulator. This will enable
-blockchain interaction features such as deploying contracts, executing transaction & scripts, and enabling flow imports. If an emulator is not detected, basic language support is still provided.
+#### Cadence Language Server
 
-### Deploy Contracts
-Deploy contracts to the emulator without leaving the VSCode editor. The address the contract
-gets deployed to is returned and available for copying.
-
-![Deploy Contracts](./docs/deploy_contracts.gif)
-
-### Code Generation
-Write cadence code with the speed of light and get your product live before
-that afternoon coffee. How? Use the snippets provided by VSCode extension.
-
-![Code Generation](./docs/code_gen.gif)
-
+The Cadence extension provides a language server for Cadence. The language server is responsible for providing language features like code completion, diagnostics, and more.  It is packaged within the Flow CLI and is managed by the extension.
 
 ### Debugging
 Use the debugger build into VSCode on Cadence files by creating a launch.json file. Make sure to have an emulator connected to enable debugging. 
@@ -76,4 +63,4 @@ Use the debugger build into VSCode on Cadence files by creating a launch.json fi
 - Add missing members when implementing an interface
 - Apply removal suggestion
 - Apply replacement suggestion
-- Run the emulator, submit transactions, scripts from the editor
+- Flow.json schema validation

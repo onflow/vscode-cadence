@@ -10,7 +10,7 @@ import { HomebrewInstaller } from './homebrew-installer'
 import { flowVersion } from '../../utils/flow-version'
 
 // Command to check flow-cli
-const COMPATIBLE_FLOW_CLI_VERSIONS = '>=1.2.0'
+const COMPATIBLE_FLOW_CLI_VERSIONS = '>=1.6.0'
 
 // Shell install commands
 const BREW_INSTALL_FLOW_CLI = 'brew update && brew install flow-cli'
@@ -38,8 +38,8 @@ export class InstallFlowCLI extends Installer {
   }
 
   async install (): Promise<void> {
-    const isActive = ext?.emulatorCtrl.api.isActive === true
-    if (isActive) await ext?.emulatorCtrl.api.deactivate()
+    const isActive = ext?.languageServer.isActive ?? false
+    if (isActive) await ext?.languageServer.deactivate()
     const OS_TYPE = process.platform
 
     try {
@@ -57,7 +57,7 @@ export class InstallFlowCLI extends Installer {
     } catch {
       void window.showErrorMessage('Failed to install Flow CLI')
     }
-    if (isActive) await ext?.emulatorCtrl.api.activate()
+    if (isActive) await ext?.languageServer.activate()
   }
 
   async #install_macos (): Promise<void> {
