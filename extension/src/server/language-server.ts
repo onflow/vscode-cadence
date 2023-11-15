@@ -16,12 +16,10 @@ export class LanguageServerAPI {
   settings: Settings
 
   clientState$ = new BehaviorSubject<State>(State.Stopped)
-
-  #watcherTimeout: NodeJS.Timeout | null = null
-  #watcherPromise: Promise<void> | null = null
-  #flowConfigWatcher: Promise<Disposable> | null = null
   #configPathSubscription: Subscription | null = null
   #configModifiedSubscription: Subscription | null = null
+
+  #isActive = false
 
   constructor (settings: Settings, config: FlowConfig) {
     this.settings = settings
@@ -30,29 +28,20 @@ export class LanguageServerAPI {
 
   async activate (): Promise<void> {
     await this.deactivate()
+
+    this.#isActive = true
     await this.startClient()
     this.#subscribeToConfigChanges()
   }
 
   async deactivate (): Promise<void> {
-    function unsubscribe (subscription: Subscription | null): void {
-      if (subscription != null) {
-        subscription.unsubscribe()
-      }
-    }
-
-    const deactivationPromises = [this.#watcherPromise, unsubscribe(this.#configPathSubscription), unsubscribe(this.#configModifiedSubscription)]
-    if (this.#watcherTimeout != null) {
-      clearTimeout(this.#watcherTimeout)
-      this.#watcherTimeout = null
-    }
-    if (this.#flowConfigWatcher != null) deactivationPromises.push(this.#flowConfigWatcher.then(watcher => watcher.dispose()))
-    deactivationPromises.push(this.stopClient())
-    await Promise.all(deactivationPromises)
+    this.#isActive = false
+    this.#configPathSubscription?.unsubscribe()
+    this.#configModifiedSubscription?.unsubscribe()
   }
 
   get isActive (): boolean {
-    return this.#watcherTimeout != null
+    return this.#isActive
   }
 
   async startClient (): Promise<void> {
