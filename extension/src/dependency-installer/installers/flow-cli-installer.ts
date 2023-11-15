@@ -38,7 +38,7 @@ export class InstallFlowCLI extends Installer {
   }
 
   async install (): Promise<void> {
-    const isActive = ext?.languageServer.isActive
+    const isActive = ext?.languageServer.isActive ?? false
     if (isActive) await ext?.languageServer.deactivate()
     const OS_TYPE = process.platform
 
