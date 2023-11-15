@@ -195,7 +195,7 @@ export class FlowConfig implements Disposable {
 
       // If custom config path is set, watch that file
       // Otherwise watch for flow.json in workspace
-      const relativeWatchPath = this.#configPath$.value.isCustom && this.#configPath$.value.path != null ? this.#configPath$.value.path : "./flow.json"
+      const relativeWatchPath = this.#configPath$.value.isCustom && this.#configPath$.value.path != null ? this.#configPath$.value.path : './flow.json'
       const watchPaths = new Set(workspace.workspaceFolders?.map(folder => path.resolve(folder.uri.fsPath, relativeWatchPath)) ?? [])
 
       watchPaths.forEach(watchPath => {
