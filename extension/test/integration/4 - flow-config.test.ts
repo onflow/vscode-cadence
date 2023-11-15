@@ -109,6 +109,10 @@ suite('flow config tests', () => {
     // temporarily delete config at root
     deleteRootConfig()
 
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 1000)
+    })
+
     const mockSettings = {
       customConfigPath: '',
       didChange$: of()
