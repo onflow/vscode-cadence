@@ -135,6 +135,10 @@ suite('flow config tests', () => {
       fs.unlinkSync(path.resolve(workspacePath, './missing/flow.json'))
     }
 
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 1000)
+    })
+
     const mockSettings = {
       customConfigPath: './missing/flow.json',
       didChange$: of()
