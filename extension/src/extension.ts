@@ -31,18 +31,25 @@ export class Extension {
     // Register JSON schema provider
     if (ctx != null) JSONSchemaProvider.register(ctx, flowVersion)
 
-    // Initialize Language Server
+    // Initialize Flow Config
     const flowConfig = new FlowConfig(settings)
+    void flowConfig.activate()
+
+    // Initialize Language Server
     this.languageServer = new LanguageServerAPI(settings, flowConfig)
-    void flowConfig.activate().then(() => {
-      void this.languageServer.activate()
-    })
 
     // Check for any missing dependencies
     // The language server will start if all dependencies are installed
     // Otherwise, the language server will not start and will start after
     // the user installs the missing dependencies
     this.#dependencyInstaller = new DependencyInstaller(this.languageServer)
+    this.#dependencyInstaller.missingDependencies.subscribe(async (missing) => {
+      if (missing.length === 0) {
+        await this.languageServer.activate()
+      } else {
+        await this.languageServer.deactivate()
+      }
+    })
 
     // Initialize ExtensionCommands
     this.#commands = new CommandController(this.#dependencyInstaller)

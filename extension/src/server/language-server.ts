@@ -27,6 +27,7 @@ export class LanguageServerAPI {
   }
 
   async activate (): Promise<void> {
+    if (this.isActive) return
     await this.deactivate()
 
     this.#isActive = true
