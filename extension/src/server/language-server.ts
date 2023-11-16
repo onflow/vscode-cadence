@@ -27,6 +27,7 @@ export class LanguageServerAPI {
   }
 
   async activate (): Promise<void> {
+    if (this.isActive) return
     await this.deactivate()
 
     this.#isActive = true
@@ -38,6 +39,7 @@ export class LanguageServerAPI {
     this.#isActive = false
     this.#configPathSubscription?.unsubscribe()
     this.#configModifiedSubscription?.unsubscribe()
+    await this.stopClient()
   }
 
   get isActive (): boolean {

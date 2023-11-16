@@ -1,15 +1,23 @@
 /* Abstract Installer class */
 import { window } from 'vscode'
 import { envVars } from '../utils/shell/env-vars'
+import { LanguageServerAPI } from '../server/language-server'
 
 // InstallError is thrown if install fails
 export class InstallError extends Error {}
 
+export interface InstallerContext {
+  refreshDependencies: () => Promise<void>
+  langaugeServerApi: LanguageServerAPI
+}
+
+export type InstallerConstructor = new (context: InstallerContext) => Installer
+
 export abstract class Installer {
-  dependencies: Array<new (refreshDependencies: () => Promise<void>) => Installer>
+  dependencies: InstallerConstructor[]
   #installerName: string
 
-  constructor (name: string, dependencies: Array<new (refreshDependencies: () => Promise<void>) => Installer>) {
+  constructor (name: string, dependencies: InstallerConstructor[]) {
     this.dependencies = dependencies
     this.#installerName = name
   }

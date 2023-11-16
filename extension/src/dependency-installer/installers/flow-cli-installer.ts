@@ -2,10 +2,9 @@
 import { window } from 'vscode'
 import { execVscodeTerminal, tryExecPowerShell, tryExecUnixDefault } from '../../utils/shell/exec'
 import { promptUserInfoMessage, promptUserErrorMessage } from '../../ui/prompts'
-import { Installer } from '../installer'
+import { Installer, InstallerConstructor, InstallerContext } from '../installer'
 import * as semver from 'semver'
 import fetch from 'node-fetch'
-import { ext } from '../../main'
 import { HomebrewInstaller } from './homebrew-installer'
 import { flowVersion } from '../../utils/flow-version'
 
@@ -25,21 +24,23 @@ const BASH_INSTALL_FLOW_CLI = (githubToken?: string): string =>
 const VERSION_INFO_URL = 'https://raw.githubusercontent.com/onflow/flow-cli/master/version.txt'
 export class InstallFlowCLI extends Installer {
   #githubToken: string | undefined
+  #context: InstallerContext
 
-  constructor (private readonly refreshDependencies: () => Promise<void>) {
+  constructor (context: InstallerContext) {
     // Homebrew is a dependency for macos and linux
-    const dependencies: Array<new (refreshDependencies: () => Promise<void>) => Installer> = []
+    const dependencies: InstallerConstructor[] = []
     if (process.platform === 'darwin') {
       dependencies.push(HomebrewInstaller)
     }
 
     super('Flow CLI', dependencies)
     this.#githubToken = process.env.GITHUB_TOKEN
+    this.#context = context
   }
 
   async install (): Promise<void> {
-    const isActive = ext?.languageServer.isActive ?? false
-    if (isActive) await ext?.languageServer.deactivate()
+    const isActive = this.#context.langaugeServerApi.isActive ?? false
+    if (isActive) await this.#context.langaugeServerApi.deactivate()
     const OS_TYPE = process.platform
 
     try {
@@ -57,7 +58,7 @@ export class InstallFlowCLI extends Installer {
     } catch {
       void window.showErrorMessage('Failed to install Flow CLI')
     }
-    if (isActive) await ext?.languageServer.activate()
+    if (isActive) await this.#context.langaugeServerApi.activate()
   }
 
   async #install_macos (): Promise<void> {
@@ -89,7 +90,7 @@ export class InstallFlowCLI extends Installer {
         'Install latest Flow CLI',
         async () => {
           await this.runInstall()
-          await this.refreshDependencies()
+          await this.#context.refreshDependencies()
         }
       )
     }
@@ -108,7 +109,7 @@ export class InstallFlowCLI extends Installer {
         'Install latest Flow CLI',
         async () => {
           await this.runInstall()
-          await this.refreshDependencies()
+          await this.#context.refreshDependencies()
         }
       )
       return false
