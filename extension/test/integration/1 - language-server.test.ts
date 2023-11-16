@@ -22,8 +22,8 @@ suite('Language Server & Emulator Integration', () => {
     fileModified$ = new Subject<void>()
     pathChanged$ = new Subject<string>()
     mockConfig = {
-      fileModified$: fileModified$,
-      pathChanged$: pathChanged$,
+      fileModified$,
+      pathChanged$,
       configPath: null
     } as any
 
@@ -43,14 +43,14 @@ suite('Language Server & Emulator Integration', () => {
   })
 
   test('Deactivate Language Server Client', async () => {
-    const client = LS.client!
+    const client = LS.client
     await LS.deactivate()
 
     // Check that client remains stopped even if config changes
     fileModified$.next()
-    pathChanged$.next("foo")
+    pathChanged$.next('foo')
 
-    assert.equal(client.state, State.Stopped)
+    assert.equal(client?.state, State.Stopped)
     assert.equal(LS.client, null)
     assert.equal(LS.clientState$.getValue(), State.Stopped)
   })

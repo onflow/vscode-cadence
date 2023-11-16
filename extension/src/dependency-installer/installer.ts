@@ -14,10 +14,10 @@ export interface InstallerContext {
 export type InstallerConstructor = new (context: InstallerContext) => Installer
 
 export abstract class Installer {
-  dependencies: Array<InstallerConstructor>
+  dependencies: InstallerConstructor[]
   #installerName: string
 
-  constructor (name: string, dependencies: Array<InstallerConstructor>) {
+  constructor (name: string, dependencies: InstallerConstructor[]) {
     this.dependencies = dependencies
     this.#installerName = name
   }

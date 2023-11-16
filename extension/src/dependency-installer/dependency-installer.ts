@@ -5,7 +5,7 @@ import { promptUserErrorMessage } from '../ui/prompts'
 import { StateCache } from '../utils/state-cache'
 import { LanguageServerAPI } from '../server/language-server'
 
-const INSTALLERS: Array<InstallerConstructor> = [
+const INSTALLERS: InstallerConstructor[] = [
   InstallFlowCLI
 ]
 
@@ -57,7 +57,7 @@ export class DependencyInstaller {
 
   #registerInstallers (): void {
     // Recursively register installers and their dependencies in the correct order
-    (function registerInstallers (this: DependencyInstaller, installers: Array<InstallerConstructor>) {
+    (function registerInstallers (this: DependencyInstaller, installers: InstallerConstructor[]) {
       installers.forEach((_installer) => {
         // Check if installer is already registered
         if (this.registeredInstallers.find(x => x instanceof _installer) != null) { return }

@@ -28,7 +28,7 @@ export class InstallFlowCLI extends Installer {
 
   constructor (context: InstallerContext) {
     // Homebrew is a dependency for macos and linux
-    const dependencies: Array<InstallerConstructor> = []
+    const dependencies: InstallerConstructor[] = []
     if (process.platform === 'darwin') {
       dependencies.push(HomebrewInstaller)
     }
