@@ -43,11 +43,11 @@ export class Extension {
     // Otherwise, the language server will not start and will start after
     // the user installs the missing dependencies
     this.#dependencyInstaller = new DependencyInstaller(this.languageServer)
-    this.#dependencyInstaller.missingDependencies.subscribe(async (missing) => {
+    this.#dependencyInstaller.missingDependencies.subscribe((missing) => {
       if (missing.length === 0) {
-        await this.languageServer.activate()
+        void this.languageServer.activate()
       } else {
-        await this.languageServer.deactivate()
+        void this.languageServer.deactivate()
       }
     })
 
