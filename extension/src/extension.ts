@@ -42,7 +42,7 @@ export class Extension {
     // The language server will start if all dependencies are installed
     // Otherwise, the language server will not start and will start after
     // the user installs the missing dependencies
-    this.#dependencyInstaller = new DependencyInstaller()
+    this.#dependencyInstaller = new DependencyInstaller(this.languageServer)
 
     // Initialize ExtensionCommands
     this.#commands = new CommandController(this.#dependencyInstaller)

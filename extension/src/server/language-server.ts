@@ -38,6 +38,7 @@ export class LanguageServerAPI {
     this.#isActive = false
     this.#configPathSubscription?.unsubscribe()
     this.#configModifiedSubscription?.unsubscribe()
+    await this.stopClient()
   }
 
   get isActive (): boolean {

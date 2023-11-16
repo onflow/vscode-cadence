@@ -1,18 +1,24 @@
 import { window } from 'vscode'
 import { InstallFlowCLI } from './installers/flow-cli-installer'
-import { Installer, InstallError } from './installer'
+import { Installer, InstallerConstructor, InstallerContext, InstallError } from './installer'
 import { promptUserErrorMessage } from '../ui/prompts'
 import { StateCache } from '../utils/state-cache'
+import { LanguageServerAPI } from '../server/language-server'
 
-const INSTALLERS: Array<new (refreshDependencies: () => Promise<void>) => Installer> = [
+const INSTALLERS: Array<InstallerConstructor> = [
   InstallFlowCLI
 ]
 
 export class DependencyInstaller {
   registeredInstallers: Installer[] = []
   missingDependencies: StateCache<Installer[]>
+  #installerContext: InstallerContext
 
-  constructor () {
+  constructor (languageServer: LanguageServerAPI) {
+    this.#installerContext = {
+      refreshDependencies: this.checkDependencies.bind(this),
+      langaugeServerApi: languageServer
+    }
     this.#registerInstallers()
 
     // Create state cache for missing dependencies
@@ -51,13 +57,13 @@ export class DependencyInstaller {
 
   #registerInstallers (): void {
     // Recursively register installers and their dependencies in the correct order
-    (function registerInstallers (this: DependencyInstaller, installers: Array<new (refreshDependencies: () => Promise<void>) => Installer>) {
+    (function registerInstallers (this: DependencyInstaller, installers: Array<InstallerConstructor>) {
       installers.forEach((_installer) => {
         // Check if installer is already registered
         if (this.registeredInstallers.find(x => x instanceof _installer) != null) { return }
 
         // Register installer and dependencies
-        const installer = new _installer(this.checkDependencies.bind(this))
+        const installer = new _installer(this.#installerContext)
         registerInstallers.bind(this)(installer.dependencies)
         this.registeredInstallers.push(installer)
       })

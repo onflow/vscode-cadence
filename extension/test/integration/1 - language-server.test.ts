@@ -5,21 +5,25 @@ import { LanguageServerAPI } from '../../src/server/language-server'
 import { FlowConfig } from '../../src/server/flow-config'
 import { Settings } from '../../src/settings/settings'
 import { MaxTimeout } from '../globals'
-import { of } from 'rxjs'
+import { Subject } from 'rxjs'
 import { State } from 'vscode-languageclient'
 
 suite('Language Server & Emulator Integration', () => {
   let LS: LanguageServerAPI
   let settings: Settings
   let mockConfig: FlowConfig
+  let fileModified$: Subject<void>
+  let pathChanged$: Subject<string>
 
   before(async function () {
     this.timeout(MaxTimeout)
     // Initialize language server
     settings = getMockSettings()
+    fileModified$ = new Subject<void>()
+    pathChanged$ = new Subject<string>()
     mockConfig = {
-      fileModified$: of(),
-      pathChanged$: of(),
+      fileModified$: fileModified$,
+      pathChanged$: pathChanged$,
       configPath: null
     } as any
 
@@ -36,5 +40,18 @@ suite('Language Server & Emulator Integration', () => {
     await LS.startClient()
     assert.notStrictEqual(LS.client, undefined)
     assert.equal(LS.client?.state, State.Running)
+  })
+
+  test('Deactivate Language Server Client', async () => {
+    const client = LS.client!
+    await LS.deactivate()
+
+    // Check that client remains stopped even if config changes
+    fileModified$.next()
+    pathChanged$.next("foo")
+
+    assert.equal(client.state, State.Stopped)
+    assert.equal(LS.client, null)
+    assert.equal(LS.clientState$.getValue(), State.Stopped)
   })
 })

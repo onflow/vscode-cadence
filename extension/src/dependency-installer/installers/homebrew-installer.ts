@@ -1,6 +1,6 @@
 /* Installer for Flow CLI */
 import { execVscodeTerminal, tryExecDefault } from '../../utils/shell/exec'
-import { Installer } from '../installer'
+import { Installer, InstallerConstructor } from '../installer'
 
 // Flow CLI with homebrew
 const CHECK_HOMEBREW_CMD = 'brew help help' // Run this to check if brew is executable
