@@ -7,6 +7,11 @@ import { JSONSchemaProvider } from './json-schema-provider'
 import { flowVersion } from './utils/flow-version'
 import { LanguageServerAPI } from './server/language-server'
 import { FlowConfig } from './server/flow-config'
+import { TestProvider } from './test-provider/test-provider'
+import * as vscode from 'vscode'
+import path = require('path')
+
+import './crypto-polyfill'
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -24,6 +29,7 @@ export class Extension {
   languageServer: LanguageServerAPI
   #dependencyInstaller: DependencyInstaller
   #commands: CommandController
+  #testProvider?: TestProvider
 
   private constructor (settings: Settings, ctx: ExtensionContext | undefined) {
     this.ctx = ctx
@@ -50,13 +56,24 @@ export class Extension {
         void this.languageServer.deactivate()
       }
     })
-
+    
     // Initialize ExtensionCommands
     this.#commands = new CommandController(this.#dependencyInstaller)
+
+    // Initialize TestProvider
+    const extensionPath = ctx?.extensionPath ?? ''
+    const parserBinaryOrLocation = path.resolve(extensionPath, "node_modules/@onflow/cadence-parser/dist/cadence-parser.wasm")
+    const parserBinaryOrLocationBuffer = vscode.workspace.fs.readFile(vscode.Uri.file(parserBinaryOrLocation))
+    parserBinaryOrLocationBuffer.then((buffer) => {
+      this.#testProvider = new TestProvider(Buffer.from(buffer), settings, flowConfig)
+      this.#testProvider.activate()
+    })
   }
 
   // Called on exit
-  async deactivate (): Promise<void> {}
+  async deactivate (): Promise<void> {
+    await this.languageServer.deactivate()
+  }
 
   async executeCommand (command: string): Promise<boolean> {
     return await this.#commands.executeCommand(command)
