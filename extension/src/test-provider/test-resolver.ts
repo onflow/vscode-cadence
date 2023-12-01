@@ -2,8 +2,8 @@ import * as vscode from 'vscode';
 import * as CadenceParser from "@onflow/cadence-parser";
 import * as path from 'path';
 import { CADENCE_TEST_TAG } from './constants';
-import { Subject, debounceTime } from 'rxjs';
 import { StateCache } from '../utils/state-cache';
+import { QueuedMutator, TestTrie } from './test-trie';
 
 interface Ast {
   program: {
@@ -30,118 +30,102 @@ export class TestResolver {
   testTree: StateCache<void>;
   #controller: vscode.TestController
   #parser: Promise<CadenceParser.CadenceParser>
-  #parserBinaryOrLocation: string | Buffer;
   #fileWatcher: vscode.FileSystemWatcher | null = null;
+  #testTrie: QueuedMutator<TestTrie>;
   
-  constructor(parserBinaryOrLocation: string | Buffer, controller: vscode.TestController) {
+  constructor(parserBinaryOrLocation: string | Buffer, controller: vscode.TestController, testTrie: QueuedMutator<TestTrie>) {
     this.#controller = controller;
-    this.#parserBinaryOrLocation = parserBinaryOrLocation;
-    this.#parser = CadenceParser.CadenceParser.create(this.#parserBinaryOrLocation)
-    this.testTree = new StateCache<void>(this.findTests.bind(this));
+    this.#parser = CadenceParser.CadenceParser.create(parserBinaryOrLocation)
+    this.testTree = new StateCache<void>(() => Promise.resolve());
+    this.#testTrie = testTrie;
 
-    this.watchFiles();
+    void this.watchFiles();
+    this.loadAllTests();
   }
 
   async watchFiles(): Promise<void> {
-    vscode.workspace.workspaceFolders?.forEach((folder) => {
-      this.#fileWatcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(folder, '**/*.cdc'));
-      this.#fileWatcher.onDidChange(() => this.testTree.invalidate());
-      this.#fileWatcher.onDidCreate(() => this.testTree.invalidate());
-      this.#fileWatcher.onDidDelete(() => this.testTree.invalidate());
-    })
-  }
+    vscode.workspace.onDidChangeWorkspaceFolders(() => {
+      this.loadAllTests();
+    });
 
-  async findTests(): Promise<void> {
-    const parser = await this.#parser;
+    this.#fileWatcher = vscode.workspace.createFileSystemWatcher('**/*.cdc')
+    this.#fileWatcher.onDidChange((uri: vscode.Uri) => {
+      void this.#testTrie.mutate(async (trie) => {
+        trie.remove(uri.fsPath);
+      })
+      this.addTestsFromFile(uri.fsPath);
+    });
+    this.#fileWatcher.onDidCreate((uri: vscode.Uri) => {
+      this.addTestsFromFile(uri.fsPath);
+    });
+    this.#fileWatcher.onDidDelete((uri: vscode.Uri) => {
+      this.#testTrie.mutate(async (trie) => {
+        trie.remove(uri.fsPath);
+      })
+    });
 
-    // Build test tree
-    const workspaceFolders = vscode.workspace.workspaceFolders ?? []
-    const files = await vscode.workspace.findFiles(`**/*.cdc`);
-    const workspaceFolderTestFiles: {[folder: string]: vscode.Uri[]} = {};
+    this.#fileWatcher = vscode.workspace.createFileSystemWatcher("**");
 
-    for (const file of files) {
-      for (const folder of workspaceFolders) {
-        if (file.fsPath.startsWith(folder.uri.fsPath)) {
-          if (workspaceFolderTestFiles[folder.uri.toString()] == null) {
-            workspaceFolderTestFiles[folder.uri.toString()] = [];
-          }
-          workspaceFolderTestFiles[folder.uri.toString()].push(file);
-        }
-      }
-    }
-
-    // Used to mark all tests that should be in the test tree & not pruned out
-    const liveTests = new Set<string>();
-
-    for (const folderPath of Object.keys(workspaceFolderTestFiles)) {
-      const folder = workspaceFolders.find((folder) => folder.uri.toString() === folderPath);
-      if (folder == null) continue;
-
-      // Create a node for the workspace folder if it doesn't exist
-      let workspaceFolderTestItem = this.#controller.items.get(folder.uri.toString())
-      if(workspaceFolderTestItem == null) {
-        workspaceFolderTestItem = this.#controller.createTestItem(folder.uri.toString(), folder.name, folder.uri);
-      }
-      workspaceFolderTestItem.canResolveChildren = true;
-      workspaceFolderTestItem.tags = [CADENCE_TEST_TAG];
-
-      for (const file of files) {
-        const uri = vscode.Uri.file(file.fsPath)
-        const buffer = await vscode.workspace.fs.readFile(uri);
-        const text = buffer.toString();
-        const ast = await parser.parse(text);
-        const testFunctions = this.findTestsFromAst(uri, ast);
-        if (testFunctions.length === 0) {
-          continue;
-        }
-
-        let currNode = workspaceFolderTestItem;
-
-        // Iterate through each segment of the path and create a node for it
-        const relativePath = path.relative(folder.uri.fsPath, file.fsPath)
-        relativePath.split(path.sep).forEach((segment) => {
-          const segmentUri = vscode.Uri.file(path.join(currNode.uri!.fsPath, segment));
-          let segmentTestItem = currNode.children.get(segmentUri.fsPath);
-          if (segmentTestItem == null) {
-            segmentTestItem = this.#controller.createTestItem(segmentUri.fsPath, segment, segmentUri);
-          }
-
-          segmentTestItem.tags = [CADENCE_TEST_TAG];
-          segmentTestItem.canResolveChildren = true;
-
-          currNode.children.add(segmentTestItem);
-          liveTests.add(segmentTestItem.id);
-          currNode = segmentTestItem;
-        })
-
-        // Leaf node is the file
-        const fileTestItem = currNode;
-        fileTestItem.canResolveChildren = false
-
-        // Add all test functions for the file to the leaf node
-        testFunctions.forEach((testFunction) => {
-          fileTestItem.children.add(testFunction);
-          liveTests.add(testFunction.id);
-        })
-      }
-
-      if (workspaceFolderTestItem.children.size > 0) {
-        this.#controller.items.add(workspaceFolderTestItem);
-        liveTests.add(workspaceFolderTestItem.id);
-      }
-    }
-
-    // Prune out any tests that are no longer in the test tree
-    const pruneTests = (items: vscode.TestItemCollection) => {
-      items.forEach((child) => {
-        if (!liveTests.has(child.id)) {
-          items.delete(child.id);
-        } else {
-          pruneTests(child.children);
+    this.#fileWatcher.onDidCreate(async (uri) => {
+      this.#testTrie.mutate(async (trie) => {
+        const files = await vscode.workspace.findFiles(new vscode.RelativePattern(uri.fsPath, '**/*.cdc'));
+        for (const file of files) {
+          void this.addTestsFromFile(file.fsPath);
         }
       })
-    }
-    pruneTests(this.#controller.items)
+    });
+    this.#fileWatcher.onDidDelete((uri: vscode.Uri) => {
+      this.#testTrie.mutate(async (trie) => {
+        trie.remove(uri.fsPath);
+      })
+    });
+  }
+
+  loadAllTests(): void {
+    const trieItemsPromise = (async () => {
+      const parser = await this.#parser;
+
+      // Build test tree
+      const testFilepaths = (await vscode.workspace.findFiles(`**/*.cdc`)).map((uri) => uri.fsPath);
+      let items: [string, vscode.TestItem[]][] = [];
+
+      for (const filepath of testFilepaths) {
+        const uri = vscode.Uri.file(filepath);
+        const fileContents = await vscode.workspace.fs.readFile(uri);
+        const ast = await parser.parse(fileContents.toString());
+        const tests = this.findTestsFromAst(uri, ast);
+        if (tests.length > 0) {
+          items.push([filepath, tests]);
+        }
+      }
+
+      return items;
+    })
+
+    this.#testTrie.mutate(async (trie) => {
+      const items = await trieItemsPromise();
+
+      // Clear test tree
+      trie.clear();
+      for (const [filepath, tests] of items) {
+        trie.add(filepath, tests);
+      }
+    });
+  }
+
+  addTestsFromFile(filepath: string): void {
+    void this.#testTrie.mutate(async (trie) => {
+      const parser = await this.#parser;
+      
+      const uri = vscode.Uri.file(filepath);
+      const fileContents = await vscode.workspace.fs.readFile(uri);
+      const ast = await parser.parse(fileContents.toString());
+      const tests = this.findTestsFromAst(uri, ast);
+      if(tests.length > 0) {
+        trie.remove(filepath);
+        trie.add(filepath, tests);
+      }
+    })
   }
 
   findTestsFromAst(uri: vscode.Uri, ast: Ast): vscode.TestItem[] {
@@ -170,7 +154,7 @@ export class TestResolver {
     try {
       const {Identifier} = declaration;
       const testId = Identifier.Identifier;
-      const testItem = this.#controller!.createTestItem(`${uri.toString()}/${testId}`, testId, uri);
+      const testItem = this.#controller!.createTestItem(path.join(uri.fsPath, testId), testId, uri);
 
       testItem.range = new vscode.Range(declaration.StartPos.Line - 1, declaration.StartPos.Column, declaration.EndPos.Line, declaration.EndPos.Column);
       testItem.tags = [CADENCE_TEST_TAG];

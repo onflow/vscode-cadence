@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
 import { CADENCE_TEST_TAG } from './constants';
 import { execDefault } from '../utils/shell/exec';
-import path = require('path');
+import * as path from 'path';
 import { Settings } from '../settings/settings';
 import { FlowConfig } from '../server/flow-config';
-import { StateCache } from '../utils/state-cache';
-import { firstValueFrom, skip } from 'rxjs';
+import { QueuedMutator, TestTrie } from './test-trie';
+import { TestResolver } from './test-resolver';
 
 const TEST_RESULT_PASS = "PASS";
 
@@ -17,19 +17,24 @@ type TestResult = {
 
 export class TestRunner {
     #controller: vscode.TestController;
-    #testTree: StateCache<void>;
+    #testTrie: QueuedMutator<TestTrie>;
     #settings: Settings;
     #flowConfig: FlowConfig
+    #testResolver: TestResolver
 
-    constructor(controller: vscode.TestController, testTree: StateCache<void>, settings: Settings, flowConfig: FlowConfig) {
+    constructor(controller: vscode.TestController, testTrie: QueuedMutator<TestTrie>, settings: Settings, flowConfig: FlowConfig, testResolver: TestResolver) {
         this.#controller = controller;
-        this.#testTree = testTree;
+        this.#testTrie = testTrie;
         this.#settings = settings;
         this.#flowConfig = flowConfig;
+        this.#testResolver = testResolver;
+
         this.#controller.createRunProfile('All Tests', vscode.TestRunProfileKind.Run, this.runTests.bind(this), true, CADENCE_TEST_TAG);
     }
 
     async runTests (request: vscode.TestRunRequest, cancellationToken: vscode.CancellationToken): Promise<void> {
+        await this.#testTrie.flush();
+
         const run = this.#controller!.createTestRun(request);
         await Promise.all(request.include?.map(async (test) => {
             await this.runTestItem(test, run, cancellationToken);
@@ -71,31 +76,44 @@ export class TestRunner {
             run.started(testItem);
         })
 
-        // Save the file if it is dirty & wait for the test tree to update
-        if(vscode.window.activeTextEditor?.document.uri.toString() === test.uri?.toString() && vscode.window.activeTextEditor?.document.isDirty) {
-            await vscode.window.activeTextEditor?.document.save();
-            await firstValueFrom(this.#testTree)
-            test.children.forEach((testItem) => {
+        // If files are dirty they must be saved before running tests
+        // The trie is updated with the new test items after the file is saved
+        let resolvedTest: vscode.TestItem | null = test;
+        const openDocument = vscode.workspace.textDocuments.find((document) => document.uri.fsPath === test.uri!.fsPath);
+        if(openDocument != null && openDocument.isDirty) {
+            await openDocument.save();
+            void this.#testResolver.addTestsFromFile(test.uri!.fsPath)
+            await this.#testTrie.flush()
+
+            const currentTrie = this.#testTrie.state;
+            resolvedTest = currentTrie.get(test.uri!.fsPath)
+
+            if (resolvedTest == null) {
+                throw new Error(`Failed to find test item for ${test.uri!.fsPath} in test trie`)
+            }
+
+            // Make sure that new test items are notified as started
+            resolvedTest.children.forEach((testItem) => {
                 run.started(testItem);
             })
         }
 
         // Execute the tests
-        const testFilePath = path.resolve(this.#flowConfig.configPath!, test.uri!.fsPath)
+        const testFilePath = path.resolve(this.#flowConfig.configPath!, resolvedTest.uri!.fsPath)
         const rawTestResults = await this.executeTests(testFilePath, null, run, cancellationToken);
 
         // Flatten and the test results to a map of testId -> testResult
         const individualTestResults: { [testId: string]: string | undefined } = Object.entries(rawTestResults).reduce((acc, [filename, tests]) => {
             Object.entries(tests).forEach(([testName, result]) => {
                 const resolvedPath = path.resolve(this.#flowConfig.configPath!, filename);
-                const testId = `${vscode.Uri.file(resolvedPath).toString()}/${testName}`;
+                const testId = path.join(resolvedPath, testName);
                 acc[testId] = result;
             });
             return acc;
         }, {} as { [testId: string]: string | undefined });
 
         // Notify the results of all tests contained within the uri
-        test.children.forEach((testItem) => {
+        resolvedTest.children.forEach((testItem) => {
             const testId = testItem.id;
             const result = individualTestResults[testId] ?? "ERROR - Test not found"
 
@@ -118,7 +136,7 @@ export class TestRunner {
             return {};
         }
         const args = ["test", `'${globPattern}'`, "--output=json", "-f", `${this.#flowConfig.configPath!}`];
-        const {stdout} = await execDefault(this.#settings.flowCommand, args, {shell: true}, cancellationToken);
+        const {stdout} = await execDefault(this.#settings.flowCommand, args, {shell: true, cwd: path.dirname(this.#flowConfig.configPath!)}, cancellationToken);
         const testResults = JSON.parse(stdout) as TestResult;
         return testResults;
     }

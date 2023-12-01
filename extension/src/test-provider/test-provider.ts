@@ -3,24 +3,23 @@ import { TestResolver } from './test-resolver';
 import { TestRunner } from './test-runner';
 import { Settings } from '../settings/settings';
 import { FlowConfig } from '../server/flow-config';
-import { StateCache } from '../utils/state-cache';
+import { QueuedMutator, TestTrie } from './test-trie';
 
 const testControllerId = 'cadence-test-controller';
 const testControllerLabel = 'Cadence Tests';
-const CADENCE_TEST_COMMAND = 'flow test'
 
 export class TestProvider {
-  #controller: vscode.TestController;
-  #testResolver: TestResolver
-  #testRunner: TestRunner
-  #testTree: StateCache<void>;
-
   constructor(parserBinaryOrLocation: string | Buffer, settings: Settings, flowConfig: FlowConfig) {
-    this.#controller = vscode.tests.createTestController(testControllerId, testControllerLabel);
-    this.#testResolver = new TestResolver(parserBinaryOrLocation, this.#controller);
-    this.#testTree = this.#testResolver.testTree;
+    const controller = vscode.tests.createTestController(testControllerId, testControllerLabel);
+    const testTrie = new QueuedMutator(new TestTrie(controller), recoverTrieError);
+    const testResolver = new TestResolver(parserBinaryOrLocation, controller, testTrie)
+    const testRunner = new TestRunner(controller, testTrie, settings, flowConfig, testResolver);
 
-    this.#testRunner = new TestRunner(this.#controller, this.#testTree, settings, flowConfig);
+    // Recover from trie errors by rebuilding the test tree
+    function recoverTrieError() {
+      testTrie.cancelMutations();
+      testResolver.loadAllTests();
+    }
   }
 
   async activate() {
