@@ -4,6 +4,8 @@ import { execDefault } from '../utils/shell/exec';
 import path = require('path');
 import { Settings } from '../settings/settings';
 import { FlowConfig } from '../server/flow-config';
+import { StateCache } from '../utils/state-cache';
+import { firstValueFrom, skip } from 'rxjs';
 
 const TEST_RESULT_PASS = "PASS";
 
@@ -15,11 +17,13 @@ type TestResult = {
 
 export class TestRunner {
     #controller: vscode.TestController;
+    #testTree: StateCache<void>;
     #settings: Settings;
     #flowConfig: FlowConfig
 
-    constructor(controller: vscode.TestController, settings: Settings, flowConfig: FlowConfig) {
+    constructor(controller: vscode.TestController, testTree: StateCache<void>, settings: Settings, flowConfig: FlowConfig) {
         this.#controller = controller;
+        this.#testTree = testTree;
         this.#settings = settings;
         this.#flowConfig = flowConfig;
         this.#controller.createRunProfile('All Tests', vscode.TestRunProfileKind.Run, this.runTests.bind(this), true, CADENCE_TEST_TAG);
@@ -67,24 +71,34 @@ export class TestRunner {
             run.started(testItem);
         })
 
+        // Save the file if it is dirty & wait for the test tree to update
+        if(vscode.window.activeTextEditor?.document.uri.toString() === test.uri?.toString() && vscode.window.activeTextEditor?.document.isDirty) {
+            await vscode.window.activeTextEditor?.document.save();
+            await firstValueFrom(this.#testTree)
+            test.children.forEach((testItem) => {
+                run.started(testItem);
+            })
+        }
+
         // Execute the tests
         const testFilePath = path.resolve(this.#flowConfig.configPath!, test.uri!.fsPath)
         const rawTestResults = await this.executeTests(testFilePath, null, run, cancellationToken);
 
         // Flatten and the test results to a map of testId -> testResult
-        const individualTestResults: { [testId: string]: string } = Object.entries(rawTestResults).reduce((acc, [filename, tests]) => {
+        const individualTestResults: { [testId: string]: string | undefined } = Object.entries(rawTestResults).reduce((acc, [filename, tests]) => {
             Object.entries(tests).forEach(([testName, result]) => {
                 const resolvedPath = path.resolve(this.#flowConfig.configPath!, filename);
                 const testId = `${vscode.Uri.file(resolvedPath).toString()}/${testName}`;
                 acc[testId] = result;
             });
             return acc;
-        }, {} as { [testId: string]: string });
+        }, {} as { [testId: string]: string | undefined });
 
         // Notify the results of all tests contained within the uri
         test.children.forEach((testItem) => {
             const testId = testItem.id;
-            const result = individualTestResults[testId] ?? "FAIL - Test not found";
+            const result = individualTestResults[testId] ?? "ERROR - Test not found"
+
             if (result === TEST_RESULT_PASS) {
                 run.passed(testItem);
             } else {
