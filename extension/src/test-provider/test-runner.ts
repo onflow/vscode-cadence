@@ -63,9 +63,7 @@ export class TestRunner {
     }
 
     async runTests (request: vscode.TestRunRequest, cancellationToken: vscode.CancellationToken): Promise<void> {
-        console.log("flushing")
         await this.#testTrie.flush();
-        console.log("flushed")
 
         const run = this.#controller!.createTestRun(request);
         await Promise.all(request.include?.map(async (test) => {
