@@ -13,7 +13,7 @@ export class TestProvider {
     const controller = vscode.tests.createTestController(testControllerId, testControllerLabel);
     const testTrie = new QueuedMutator(new TestTrie(controller), recoverTrieError);
     const testResolver = new TestResolver(parserBinaryOrLocation, controller, testTrie)
-    const testRunner = new TestRunner(controller, testTrie, settings, flowConfig, testResolver);
+    new TestRunner(controller, testTrie, settings, flowConfig, testResolver);
 
     // Recover from trie errors by rebuilding the test tree
     function recoverTrieError() {

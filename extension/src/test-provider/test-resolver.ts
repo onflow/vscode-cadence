@@ -4,6 +4,7 @@ import * as path from 'path';
 import { CADENCE_TEST_TAG } from './constants';
 import { StateCache } from '../utils/state-cache';
 import { QueuedMutator, TestTrie } from './test-trie';
+import { encodeTestId } from './utils';
 
 interface Ast {
   program: {
@@ -44,39 +45,37 @@ export class TestResolver {
   }
 
   async watchFiles(): Promise<void> {
+    const isDirectory = async (uri: vscode.Uri) => (await (vscode.workspace.fs.stat(uri) as Promise<vscode.FileStat>).catch(() => null))?.type === vscode.FileType.Directory;
+
     vscode.workspace.onDidChangeWorkspaceFolders(() => {
       this.loadAllTests();
     });
 
-    this.#fileWatcher = vscode.workspace.createFileSystemWatcher('**/*.cdc')
-    this.#fileWatcher.onDidChange((uri: vscode.Uri) => {
-      void this.#testTrie.mutate(async (trie) => {
-        trie.remove(uri.fsPath);
-      })
-      this.addTestsFromFile(uri.fsPath);
-    });
-    this.#fileWatcher.onDidCreate((uri: vscode.Uri) => {
-      this.addTestsFromFile(uri.fsPath);
-    });
-    this.#fileWatcher.onDidDelete((uri: vscode.Uri) => {
-      this.#testTrie.mutate(async (trie) => {
-        trie.remove(uri.fsPath);
-      })
-    });
-
-    this.#fileWatcher = vscode.workspace.createFileSystemWatcher("**");
+    this.#fileWatcher = vscode.workspace.createFileSystemWatcher('**')
 
     this.#fileWatcher.onDidCreate(async (uri) => {
       this.#testTrie.mutate(async (trie) => {
-        const files = await vscode.workspace.findFiles(new vscode.RelativePattern(uri.fsPath, '**/*.cdc'));
-        for (const file of files) {
-          void this.addTestsFromFile(file.fsPath);
+        if (await isDirectory(uri)) {
+          const files = await vscode.workspace.findFiles(new vscode.RelativePattern(uri.fsPath, '**/*.cdc'));
+          await Promise.all(files.map(async (file) => {
+            await this.addTestsFromFile(file.fsPath, trie);
+          }));
+        } else if (uri.fsPath.endsWith('.cdc')) {
+          await this.addTestsFromFile(uri.fsPath, trie);
         }
       })
     });
     this.#fileWatcher.onDidDelete((uri: vscode.Uri) => {
       this.#testTrie.mutate(async (trie) => {
-        trie.remove(uri.fsPath);
+          trie.remove(uri.fsPath);
+      })
+    });
+    this.#fileWatcher.onDidChange((uri: vscode.Uri) => {
+      void this.#testTrie.mutate(async (trie) => {
+        if(!(await isDirectory(uri))) {
+          trie.remove(uri.fsPath);
+          await this.addTestsFromFile(uri.fsPath, trie);
+        }
       })
     });
   }
@@ -113,19 +112,16 @@ export class TestResolver {
     });
   }
 
-  addTestsFromFile(filepath: string): void {
-    void this.#testTrie.mutate(async (trie) => {
-      const parser = await this.#parser;
-      
-      const uri = vscode.Uri.file(filepath);
-      const fileContents = await vscode.workspace.fs.readFile(uri);
-      const ast = await parser.parse(fileContents.toString());
-      const tests = this.findTestsFromAst(uri, ast);
-      if(tests.length > 0) {
-        trie.remove(filepath);
-        trie.add(filepath, tests);
-      }
-    })
+  async addTestsFromFile(filepath: string, trie: TestTrie): Promise<void> {
+    const uri = vscode.Uri.file(filepath);
+    const parser = await this.#parser;
+    const fileContents = await vscode.workspace.fs.readFile(uri);
+    const ast = await parser.parse(fileContents.toString());
+    const tests = this.findTestsFromAst(uri, ast);
+    if(tests.length > 0) {
+      trie.remove(filepath);
+      trie.add(filepath, tests);
+    }
   }
 
   findTestsFromAst(uri: vscode.Uri, ast: Ast): vscode.TestItem[] {
@@ -154,7 +150,7 @@ export class TestResolver {
     try {
       const {Identifier} = declaration;
       const testId = Identifier.Identifier;
-      const testItem = this.#controller!.createTestItem(path.join(uri.fsPath, testId), testId, uri);
+      const testItem = this.#controller!.createTestItem(encodeTestId(uri.fsPath, testId), testId, uri);
 
       testItem.range = new vscode.Range(declaration.StartPos.Line - 1, declaration.StartPos.Column, declaration.EndPos.Line, declaration.EndPos.Column);
       testItem.tags = [CADENCE_TEST_TAG];

@@ -132,6 +132,12 @@
 					"default": "",
 					"description": "Enter a custom flow.json path, or leave empty for the default config search.",
 					"scope": "resource"
+				},
+				"cadence.maxTestConcurrency": {
+					"type": "number",
+					"default": "5",
+					"description": "The maximum number of test files that can be run concurrently.",
+					"scope": "resource"
 				}
 			}
 		},

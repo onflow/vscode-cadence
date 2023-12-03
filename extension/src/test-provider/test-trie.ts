@@ -140,7 +140,10 @@ export class QueuedMutator<T> {
 
   async mutate (task: (subject: T) => Promise<void>): Promise<void> {
     const mutationPromise = this.#queue.then(() => task(this.#subject))
+    const stack = new Error().stack
     this.#queue = mutationPromise.catch(async (error) => {
+      console.log("Error in queued mutation", error)
+      console.log(stack)
       await this.#recoverError(error)
     })
     await mutationPromise
