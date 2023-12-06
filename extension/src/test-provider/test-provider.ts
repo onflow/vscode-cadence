@@ -20,9 +20,11 @@ export class TestProvider implements vscode.Disposable {
     this.#testResolver = new TestResolver(parserLocation, this.#controller, this.#testTrie)
     this.#testRunner = new TestRunner(this.#controller, this.#testTrie, settings, flowConfig, this.#testResolver);
 
-    // Recover from trie errors by rebuilding the test tree
-    function recoverTrieError(this: TestProvider, error: Error) {
-      this.#testTrie.cancelMutations();
+    // Recover from trie errors by rebuilding the test tree from scratch
+    // It shouldn't happen, but if it does, this should catch tricky bugs
+    // And leave the user with a seemingly normal experience
+    function recoverTrieError(this: TestProvider, _: Error, abortMutations: () => void) {
+      abortMutations();
       this.#testResolver.loadAllTests();
     }
   }
@@ -34,16 +36,14 @@ export class TestProvider implements vscode.Disposable {
   }
 
   async runAllTests(cancellationToken?: vscode.CancellationToken, hookTestRun?: (testRun: vscode.TestRun) => vscode.TestRun): Promise<void> {
-    await this.#testTrie.flush();
+    const trie = await this.#testTrie.getState()
 
-    const request = new vscode.TestRunRequest(this.#testTrie.state.rootNodes)
+    const request = new vscode.TestRunRequest(trie.rootNodes)
     return this.#testRunner.runTests(request, cancellationToken, hookTestRun);
   }
 
   async runIndividualTest(testPath: string, cancellationToken?: vscode.CancellationToken, hookTestRun?: (testRun: vscode.TestRun) => vscode.TestRun): Promise<void> {
-    await this.#testTrie.flush();
-
-    const test = this.#testTrie.state.get(testPath)
+    const test = (await this.#testTrie.getState()).get(testPath)
     if (test == null) {
       return;
     }

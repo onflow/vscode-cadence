@@ -60,8 +60,10 @@ suite('test provider tests', () => {
       })
     })
 
-    const passedTests = runSpy?.passed.getCalls().map(call => ({filepath: call.args[0].uri!.fsPath, id: call.args[0].id}))!
-    const failedTests = runSpy?.failed.getCalls().map(call => ({filepath: call.args[0].uri!.fsPath, id: call.args[0].id, message: (call.args[1] as any).message}))!
+    if (runSpy == null) throw new Error('runSpy is null')
+
+    const passedTests = runSpy.passed.getCalls().map(call => ({filepath: call.args[0].uri!.fsPath, id: call.args[0].id}))
+    const failedTests = runSpy.failed.getCalls().map(call => ({filepath: call.args[0].uri!.fsPath, id: call.args[0].id, message: (call.args[1] as any).message}))
 
     passedTests.sort((a, b) => a.filepath.localeCompare(b.filepath))
     failedTests.sort((a, b) => a.filepath.localeCompare(b.filepath))
@@ -94,8 +96,10 @@ suite('test provider tests', () => {
       })
     })
 
-    const passedTests = runSpy?.passed.getCalls().map(call => ({filepath: call.args[0].uri!.fsPath, id: call.args[0].id}))!
-    const failedTests = runSpy?.failed.getCalls().map(call => ({filepath: call.args[0].uri!.fsPath, id: call.args[0].id, message: (call.args[1] as any).message}))!
+    if (runSpy == null) throw new Error('runSpy is null')
+
+    const passedTests = runSpy.passed.getCalls().map(call => ({filepath: call.args[0].uri!.fsPath, id: call.args[0].id}))
+    const failedTests = runSpy.failed.getCalls().map(call => ({filepath: call.args[0].uri!.fsPath, id: call.args[0].id, message: (call.args[1] as any).message}))
 
     passedTests.sort((a, b) => a.filepath.localeCompare(b.filepath))
     failedTests.sort((a, b) => a.filepath.localeCompare(b.filepath))

@@ -1,5 +1,4 @@
 import { TEST_FUNCTION_PREFIX } from "./constants";
-import * as vscode from "vscode"
 
 export function encodeTestFunctionId (testName?: string): string {
   return `${TEST_FUNCTION_PREFIX}${testName}`

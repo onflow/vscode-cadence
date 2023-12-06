@@ -68,7 +68,8 @@ export class TestRunner implements vscode.Disposable {
     }
 
     async runTests (request: vscode.TestRunRequest, cancellationToken?: vscode.CancellationToken, hookTestRun: (testRun: vscode.TestRun) => vscode.TestRun = run => run): Promise<void> {
-        await this.#testTrie.flush();
+        // Flush the test trie to make sure that all tests are up to date
+        await this.#testTrie.getState();
 
         // Allow the test run creation to be hooked into for testing purposes
         const run = hookTestRun(this.#controller.createTestRun(request));
@@ -122,10 +123,9 @@ export class TestRunner implements vscode.Disposable {
             await this.#testTrie.mutate(async (trie) => {
                 await this.#testResolver.addTestsFromFile(test.uri!.fsPath, trie)
             })
-            await this.#testTrie.flush()
 
-            const currentTrie = this.#testTrie.state;
-            resolvedTest = currentTrie.get(test.uri!.fsPath)
+            const trie = await this.#testTrie.getState();
+            resolvedTest = trie.get(test.uri!.fsPath)
 
             if (resolvedTest == null) {
                 throw new Error(`Failed to find test item for ${test.uri!.fsPath} in test trie`)

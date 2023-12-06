@@ -134,12 +134,15 @@ export class TestTrie {
   }
 }
 
+/**
+ * A class that allows mutations to be queued and executed sequentially
+ */
 export class QueuedMutator<T> {
   #queue: Promise<void> = Promise.resolve()
   #subject: T
-  #recoverError: (error: Error) => Promise<void> | void
+  #recoverError: (error: Error, abortMutations: () => void) => Promise<void> | void
 
-  constructor (subject: T, recoverError: (error: Error) => Promise<void> | void) {
+  constructor (subject: T, recoverError: (error: Error, abortMutations: () => void) => Promise<void> | void) {
     this.#subject = subject
     this.#recoverError = recoverError
   }
@@ -147,24 +150,19 @@ export class QueuedMutator<T> {
   async mutate (task: (subject: T) => Promise<void>): Promise<void> {
     const mutationPromise = this.#queue.then(() => task(this.#subject))
     this.#queue = mutationPromise.catch(async (error) => {
-      await this.#recoverError(error)
+      await this.#recoverError(error, () => {
+        this.#queue = Promise.resolve()
+      })
     })
     await mutationPromise
   }
 
-  async flush (): Promise<void> {
+  async getState (): Promise<T> {
     let previousTask: Promise<void> | null = null
     while (this.#queue !== previousTask) {
       await this.#queue
       previousTask = this.#queue
     }
-  }
-
-  get state (): T {
     return this.#subject
-  }
-
-  async cancelMutations (): Promise<void> {
-    this.#queue = Promise.resolve()
   }
 }
