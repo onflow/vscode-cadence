@@ -8,8 +8,7 @@ import { flowVersion } from './utils/flow-version'
 import { LanguageServerAPI } from './server/language-server'
 import { FlowConfig } from './server/flow-config'
 import { TestProvider } from './test-provider/test-provider'
-import * as vscode from 'vscode'
-import path = require('path')
+import * as path from 'path'
 
 import './crypto-polyfill'
 
@@ -62,17 +61,14 @@ export class Extension {
 
     // Initialize TestProvider
     const extensionPath = ctx?.extensionPath ?? ''
-    const parserBinaryOrLocation = path.resolve(extensionPath, "node_modules/@onflow/cadence-parser/dist/cadence-parser.wasm")
-    const parserBinaryOrLocationBuffer = vscode.workspace.fs.readFile(vscode.Uri.file(parserBinaryOrLocation))
-    parserBinaryOrLocationBuffer.then((buffer) => {
-      this.#testProvider = new TestProvider(Buffer.from(buffer), settings, flowConfig)
-      this.#testProvider.activate()
-    })
+    const parserLocation = path.resolve(extensionPath, "node_modules/@onflow/cadence-parser/dist/cadence-parser.wasm")
+    this.#testProvider = new TestProvider(parserLocation, settings, flowConfig)
   }
 
   // Called on exit
   async deactivate (): Promise<void> {
     await this.languageServer.deactivate()
+    this.#testProvider?.dispose()
   }
 
   async executeCommand (command: string): Promise<boolean> {

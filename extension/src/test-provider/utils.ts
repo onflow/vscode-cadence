@@ -1,10 +1,10 @@
-import { FILE_TEST_SEPARATOR } from "./constants";
+import { TEST_FUNCTION_PREFIX } from "./constants";
+import * as vscode from "vscode"
 
-export function encodeTestId (file: string, testName?: string): string {
-  return `${file}${FILE_TEST_SEPARATOR}${testName}`
+export function encodeTestFunctionId (testName?: string): string {
+  return `${TEST_FUNCTION_PREFIX}${testName}`
 }
 
-export function decodeTestId (id: string): { file: string, testName?: string } {
-  const [file, testName] = id.split(FILE_TEST_SEPARATOR)
-  return { file, testName }
+export function decodeTestFunctionId (id: string): string | null {
+  return id.startsWith(TEST_FUNCTION_PREFIX) ? id.slice(TEST_FUNCTION_PREFIX.length) : null
 }

@@ -6,7 +6,7 @@ import { Settings } from '../settings/settings';
 import { FlowConfig } from '../server/flow-config';
 import { QueuedMutator, TestTrie } from './test-trie';
 import { TestResolver } from './test-resolver';
-import { decodeTestId, encodeTestId } from './utils';
+import { decodeTestFunctionId } from './utils';
 
 const TEST_RESULT_PASS = "PASS";
 
@@ -43,13 +43,14 @@ function semaphore (concurrency: number) {
     };
 }
 
-export class TestRunner {
+export class TestRunner implements vscode.Disposable {
     #controller: vscode.TestController;
     #testTrie: QueuedMutator<TestTrie>;
     #settings: Settings;
     #flowConfig: FlowConfig
     #testResolver: TestResolver
     #acquireLock: <T>(fn: () => Promise<T>) => Promise<T>;
+    #disposibles: vscode.Disposable[] = [];
 
     constructor(controller: vscode.TestController, testTrie: QueuedMutator<TestTrie>, settings: Settings, flowConfig: FlowConfig, testResolver: TestResolver) {
         this.#controller = controller;
@@ -59,13 +60,19 @@ export class TestRunner {
         this.#testResolver = testResolver;
         this.#acquireLock = semaphore(settings.maxTestConcurrency);
 
-        this.#controller.createRunProfile('All Tests', vscode.TestRunProfileKind.Run, this.runTests.bind(this), true, CADENCE_TEST_TAG);
+        this.#disposibles.push(this.#controller.createRunProfile('Cadence Tests', vscode.TestRunProfileKind.Run, this.runTests.bind(this), true, CADENCE_TEST_TAG))
     }
 
-    async runTests (request: vscode.TestRunRequest, cancellationToken: vscode.CancellationToken): Promise<void> {
+    dispose(): void {
+        this.#disposibles.forEach((disposable) => disposable.dispose());
+    }
+
+    async runTests (request: vscode.TestRunRequest, cancellationToken?: vscode.CancellationToken, hookTestRun: (testRun: vscode.TestRun) => vscode.TestRun = run => run): Promise<void> {
         await this.#testTrie.flush();
 
-        const run = this.#controller!.createTestRun(request);
+        // Allow the test run creation to be hooked into for testing purposes
+        const run = hookTestRun(this.#controller.createTestRun(request));
+
         await Promise.all(request.include?.map(async (test) => {
             await this.runTestItem(test, run, cancellationToken);
         }) ?? [])
@@ -73,14 +80,14 @@ export class TestRunner {
         run.end();
     }
 
-    private async runTestItem (test: vscode.TestItem, run: vscode.TestRun, cancellationToken: vscode.CancellationToken): Promise<void> {
-        if (cancellationToken.isCancellationRequested) {
+    private async runTestItem (test: vscode.TestItem, run: vscode.TestRun, cancellationToken?: vscode.CancellationToken): Promise<void> {
+        if (cancellationToken?.isCancellationRequested) {
             return;
         }
 
-        const {testName} = decodeTestId(test.id);
+        const testFunctionName = decodeTestFunctionId(test.id);
 
-        if (testName != null) {    
+        if (testFunctionName != null) {    
             await this.runIndividualTest(test, run, cancellationToken);
         } else {
             const fsStat = await vscode.workspace.fs.stat(test.uri!);
@@ -92,7 +99,7 @@ export class TestRunner {
         }
     }
 
-    async runTestFolder (test: vscode.TestItem, run: vscode.TestRun, cancellationToken: vscode.CancellationToken): Promise<void> {
+    async runTestFolder (test: vscode.TestItem, run: vscode.TestRun, cancellationToken?: vscode.CancellationToken): Promise<void> {
         const promises: Promise<void>[] = [];
         test.children.forEach((child) => {
             promises.push(this.runTestItem(child, run, cancellationToken))
@@ -100,7 +107,7 @@ export class TestRunner {
         await Promise.all(promises);
     }
 
-    async runTestFile (test: vscode.TestItem, run: vscode.TestRun, cancellationToken: vscode.CancellationToken): Promise<void> {
+    async runTestFile (test: vscode.TestItem, run: vscode.TestRun, cancellationToken?: vscode.CancellationToken): Promise<void> {
         // Notify that all tests contained within the uri have started
         test.children.forEach((testItem) => {
             run.started(testItem);
@@ -132,49 +139,39 @@ export class TestRunner {
 
         // Execute the tests
         const testFilePath = path.resolve(this.#flowConfig.configPath!, resolvedTest.uri!.fsPath)
-        let rawTestResults: TestResult = {};
+        let testResults: TestResult = {};
         try {
-            rawTestResults = await this.executeTests(testFilePath, null, run, cancellationToken);
+            testResults = await this.executeTests(testFilePath, null, run, cancellationToken);
         } catch (error: any) {
             resolvedTest.children.forEach((testItem) => {
-                run.errored(testItem, error);
+                run.errored(testItem, new vscode.TestMessage(error.message + "\n" + error.stack));
             })
             return;
         }
 
-        // Flatten and the test results to a map of testId -> testResult
-        const individualTestResults: { [testId: string]: string | undefined } = Object.entries(rawTestResults).reduce((acc, [filename, tests]) => {
-            Object.entries(tests).forEach(([testName, result]) => {
-                const resolvedPath = path.resolve(this.#flowConfig.configPath!, filename);
-                const testId = encodeTestId(resolvedPath, testName);
-                acc[testId] = result;
-            });
-            return acc;
-        }, {} as { [testId: string]: string | undefined });
-
         // Notify the results of all tests contained within the uri
         resolvedTest.children.forEach((testItem) => {
-            const testId = testItem.id;
-            const result = individualTestResults[testId] ?? "ERROR - Test not found"
+            const testId = decodeTestFunctionId(testItem.id);
+            const result = (testId && testResults[testFilePath]?.[testId]) ?? "ERROR - Test not found"
 
             if (result === TEST_RESULT_PASS) {
                 run.passed(testItem);
             } else {
                 run.failed(testItem, {
-                    message: result
+                    message: result,
                 });
             }
         })
     }
 
-    async runIndividualTest (test: vscode.TestItem, run: vscode.TestRun, cancellationToken: vscode.CancellationToken): Promise<void> {
+    async runIndividualTest (test: vscode.TestItem, run: vscode.TestRun, cancellationToken?: vscode.CancellationToken): Promise<void> {
         // Run parent test item to run the individual test
         // In the future we may want to run the individual test directly
         await this.runTestItem(test.parent!, run, cancellationToken);
     }
 
-    private async executeTests (globPattern: string, testName: string | null, run: vscode.TestRun, cancellationToken: vscode.CancellationToken): Promise<TestResult> {
-        if (cancellationToken.isCancellationRequested) {
+    private async executeTests (globPattern: string, testName: string | null, run: vscode.TestRun, cancellationToken?: vscode.CancellationToken): Promise<TestResult> {
+        if (cancellationToken?.isCancellationRequested) {
             return {};
         }
         return await this.#acquireLock(async () => {

@@ -1,6 +1,11 @@
 import * as vscode from "vscode"
 import * as path from "path"
-import { CADENCE_TEST_TAG } from "./constants"
+import { CADENCE_TEST_TAG, TEST_FUNCTION_PREFIX } from "./constants"
+
+export interface TestFunction {
+  name: string
+  range: vscode.Range
+}
 
 export class TestTrie {
   #items: vscode.TestItemCollection
@@ -17,18 +22,18 @@ export class TestTrie {
    * @param filePath Path to the file
    * @param tests List of test functions in the file
    */
-  add (filePath: string, testItems: vscode.TestItem[]): void {
+  add (filePath: string, testFunctions: TestFunction[]): void {
     const workspaceNode: vscode.TestItem & { uri: vscode.Uri } | null = this.#getWorkspaceNode(filePath)
     if (workspaceNode == null) return
     let node: vscode.TestItem = workspaceNode
 
     const relativePath = path.relative(workspaceNode.uri.fsPath, filePath)
     const segments = path.normalize(relativePath).split(path.sep)
-    for (const [index, segment] of Object.entries(segments)) {
-      const segmentPath = path.join(node.id, segment)
-      let child = node.children.get(segmentPath)
+    for (const segment of segments) {
+      const segmentPath = path.join(node.uri!.fsPath, segment)
+      let child = node.children.get(segment)
       if (child == null) {
-        child = this.#createNode(segmentPath, Number(index) === segments.length - 1)
+        child = this.#createNode(segmentPath, false, true)
         node.children.add(child)
       } 
 
@@ -36,7 +41,10 @@ export class TestTrie {
     }
 
     // Add all test functions for the file to the leaf node
-    testItems.forEach((testItem) => {
+    testFunctions.forEach((testFunction) => {
+      const testItem = this.#controller.createTestItem(`${TEST_FUNCTION_PREFIX}${testFunction.name}`, testFunction.name, vscode.Uri.file(filePath))
+      testItem.range = testFunction.range
+      testItem.tags = [CADENCE_TEST_TAG];
       node.children.add(testItem)
     })
   }
@@ -46,22 +54,10 @@ export class TestTrie {
    * @param fsPath Path to the file or folder
    */
   remove (fsPath: string): void {
-    const workspaceNode: vscode.TestItem & { uri: vscode.Uri } | null = this.#getWorkspaceNode(fsPath)
-    if (workspaceNode == null) return
-    let node: vscode.TestItem = workspaceNode
+    const node = this.get(fsPath)
+    if (node == null) return
 
-    const relativePath = path.relative(workspaceNode.uri.fsPath, fsPath)
-    const segments = path.normalize(relativePath).split(path.sep)
-    for (const segment of segments) {
-      const segmentPath = path.join(node.id, segment)
-      let child = node.children.get(segmentPath)
-      if (child == null) {
-        return
-      } 
-
-      node = child
-    }
-
+    // Remove node from parent
     node.parent!.children.delete(node.id)
 
     // Remove any empty parent nodes
@@ -83,8 +79,7 @@ export class TestTrie {
     const relativePath = path.relative(workspaceNode.uri.fsPath, fsPath)
     const segments = path.normalize(relativePath).split(path.sep)
     for (const segment of segments) {
-      const segmentPath = path.join(node.id, segment)
-      let child = node.children.get(segmentPath)
+      let child = node.children.get(segment)
       if (child == null) {
         return null
       } 
@@ -104,10 +99,21 @@ export class TestTrie {
     })
   }
 
-  #createNode (filePath: string, canResolveChildren: boolean = false): vscode.TestItem {
-    const node = this.#controller.createTestItem(filePath, path.basename(filePath), vscode.Uri.file(filePath))
+  get rootNodes (): vscode.TestItem[] {
+    const nodes: vscode.TestItem[] = []
+    this.#items.forEach((item) => {
+      if (item.parent == null) {
+        nodes.push(item)
+      }
+    })
+    return nodes
+  }
+
+  #createNode (filePath: string, isRoot: boolean = false, canResolveChildren: boolean = false): vscode.TestItem {
+    const id = isRoot ? filePath : path.basename(filePath)
+    const node = this.#controller.createTestItem(id, path.basename(filePath), vscode.Uri.file(filePath))
     node.tags = [CADENCE_TEST_TAG];
-    node.canResolveChildren = !canResolveChildren
+    node.canResolveChildren = canResolveChildren
     return node
   }
 
@@ -122,7 +128,7 @@ export class TestTrie {
     }
     if (containingFolder == null) return null
 
-    let node: vscode.TestItem = this.#items.get(containingFolder.uri.fsPath) ?? this.#createNode(containingFolder.uri.fsPath)
+    let node: vscode.TestItem = this.#items.get(containingFolder.uri.fsPath) ?? this.#createNode(containingFolder.uri.fsPath, true, true)
     this.#items.add(node)
     return node as vscode.TestItem & { uri: vscode.Uri }
   }
@@ -140,10 +146,7 @@ export class QueuedMutator<T> {
 
   async mutate (task: (subject: T) => Promise<void>): Promise<void> {
     const mutationPromise = this.#queue.then(() => task(this.#subject))
-    const stack = new Error().stack
     this.#queue = mutationPromise.catch(async (error) => {
-      console.log("Error in queued mutation", error)
-      console.log(stack)
       await this.#recoverError(error)
     })
     await mutationPromise
