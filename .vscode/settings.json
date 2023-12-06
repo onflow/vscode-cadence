@@ -1,4 +1,3 @@
 {
-  "editor.formatOnSave": false,
-  "testing.openTesting": "openExplorerOnTestStart"
+  "editor.formatOnSave": false
 }
