@@ -127,7 +127,7 @@ export class TestResolver implements vscode.Disposable {
       const parser = await this.#parser;
       const uri = vscode.Uri.file(filepath);
       const fileContents = await vscode.workspace.fs.readFile(uri);
-      const ast = await parser.parse(fileContents.toString());
+      const ast: Ast = await parser.parse(fileContents.toString());
       const {program} = ast;
       const {Declarations} = program;
       const tests = Declarations.filter((declaration: any) => {
