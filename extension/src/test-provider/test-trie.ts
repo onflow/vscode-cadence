@@ -1,6 +1,6 @@
-import * as vscode from "vscode"
-import * as path from "path"
-import { CADENCE_TEST_TAG, TEST_FUNCTION_PREFIX } from "./constants"
+import * as vscode from 'vscode'
+import * as path from 'path'
+import { CADENCE_TEST_TAG, TEST_FUNCTION_PREFIX } from './constants'
 
 export interface TestFunction {
   name: string
@@ -30,12 +30,13 @@ export class TestTrie {
     const relativePath = path.relative(workspaceNode.uri.fsPath, filePath)
     const segments = path.normalize(relativePath).split(path.sep)
     for (const segment of segments) {
-      const segmentPath = path.join(node.uri!.fsPath, segment)
+      if (node.uri == null) throw new Error('Node does not have a uri')
+      const segmentPath = path.join(node.uri.fsPath, segment)
       let child = node.children.get(segment)
       if (child == null) {
         child = this.#createNode(segmentPath, false, true)
         node.children.add(child)
-      } 
+      }
 
       node = child
     }
@@ -44,7 +45,7 @@ export class TestTrie {
     testFunctions.forEach((testFunction) => {
       const testItem = this.#controller.createTestItem(`${TEST_FUNCTION_PREFIX}${testFunction.name}`, testFunction.name, vscode.Uri.file(filePath))
       testItem.range = testFunction.range
-      testItem.tags = [CADENCE_TEST_TAG];
+      testItem.tags = [CADENCE_TEST_TAG]
       node.children.add(testItem)
     })
   }
@@ -58,11 +59,12 @@ export class TestTrie {
     if (node == null) return
 
     // Remove node from parent
-    node.parent!.children.delete(node.id)
+    if (node.parent == null) return
+    node.parent.children.delete(node.id)
 
     // Remove any empty parent nodes
     let parent = node.parent
-    while (parent != null && parent.parent != null && parent.children.size === 0) {
+    while (parent?.parent != null && parent.children.size === 0) {
       parent.parent.children.delete(parent.id)
       parent = parent.parent
     }
@@ -79,10 +81,10 @@ export class TestTrie {
     const relativePath = path.relative(workspaceNode.uri.fsPath, fsPath)
     const segments = path.normalize(relativePath).split(path.sep)
     for (const segment of segments) {
-      let child = node.children.get(segment)
+      const child = node.children.get(segment)
       if (child == null) {
         return null
-      } 
+      }
 
       node = child
     }
@@ -112,7 +114,7 @@ export class TestTrie {
   #createNode (filePath: string, isRoot: boolean = false, canResolveChildren: boolean = false): vscode.TestItem {
     const id = isRoot ? filePath : path.basename(filePath)
     const node = this.#controller.createTestItem(id, path.basename(filePath), vscode.Uri.file(filePath))
-    node.tags = [CADENCE_TEST_TAG];
+    node.tags = [CADENCE_TEST_TAG]
     node.canResolveChildren = canResolveChildren
     return node
   }
@@ -128,7 +130,7 @@ export class TestTrie {
     }
     if (containingFolder == null) return null
 
-    let node: vscode.TestItem = this.#items.get(containingFolder.uri.fsPath) ?? this.#createNode(containingFolder.uri.fsPath, true, true)
+    const node: vscode.TestItem = this.#items.get(containingFolder.uri.fsPath) ?? this.#createNode(containingFolder.uri.fsPath, true, true)
     this.#items.add(node)
     return node as vscode.TestItem & { uri: vscode.Uri }
   }
@@ -148,7 +150,7 @@ export class QueuedMutator<T> {
   }
 
   async mutate (task: (subject: T) => Promise<void>): Promise<void> {
-    const mutationPromise = this.#queue.then(() => task(this.#subject))
+    const mutationPromise = this.#queue.then(async () => await task(this.#subject))
     this.#queue = mutationPromise.catch(async (error) => {
       await this.#recoverError(error, () => {
         this.#queue = Promise.resolve()

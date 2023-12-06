@@ -1,9 +1,9 @@
-import { ExecOptions, SpawnOptionsWithoutStdio, exec, spawn } from 'child_process'
+import { SpawnOptionsWithoutStdio, spawn } from 'child_process'
 import { envVars } from './env-vars'
 import * as vscode from 'vscode'
 import { getDefaultShell } from './default-shell'
 
-type ExecResult = {
+interface ExecResult {
   stdout: string
   stderr: string
   code: number | null
@@ -31,31 +31,31 @@ export async function execUnixDefault (cmd: string, args?: readonly string[] | u
   return await abortableExec(cmd, args, { env, shell: getDefaultShell(), ...options }, cancellationToken)
 }
 
-async function abortableExec(cmd: string, args?: readonly string[] | undefined, options?: SpawnOptionsWithoutStdio | undefined, cancellationToken?: vscode.CancellationToken): Promise<ExecResult> {
+async function abortableExec (cmd: string, args?: readonly string[] | undefined, options?: SpawnOptionsWithoutStdio | undefined, cancellationToken?: vscode.CancellationToken): Promise<ExecResult> {
   let cancellationHandler: vscode.Disposable | undefined
   return await new Promise<ExecResult>((resolve, reject) => {
     cancellationHandler = cancellationToken?.onCancellationRequested(() => {
-      child_process.kill()
+      childProcess.kill()
       reject(new Error('Command execution cancelled'))
     })
 
-    const child_process = spawn(cmd, args, { ...options })
+    const childProcess = spawn(cmd, args, { ...options })
     let stdout = ''
     let stderr = ''
 
-    child_process.stdout.on('data', (data) => {
-      stdout += data
+    childProcess.stdout.on('data', (data) => {
+      stdout += String(data)
     })
 
-    child_process.stderr.on('data', (data) => {
-      stderr += data
+    childProcess.stderr.on('data', (data) => {
+      stderr += String(data)
     })
 
-    child_process.on('error', (err) => {
+    childProcess.on('error', (err) => {
       reject(err)
     })
 
-    child_process.on('close', (code) => {
+    childProcess.on('close', (code) => {
       resolve({ stdout, stderr, code })
     })
   }).finally(() => {

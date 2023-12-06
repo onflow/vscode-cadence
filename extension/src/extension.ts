@@ -55,13 +55,13 @@ export class Extension {
         void this.languageServer.deactivate()
       }
     })
-    
+
     // Initialize ExtensionCommands
     this.#commands = new CommandController(this.#dependencyInstaller)
 
     // Initialize TestProvider
     const extensionPath = ctx?.extensionPath ?? ''
-    const parserLocation = path.resolve(extensionPath, "node_modules/@onflow/cadence-parser/dist/cadence-parser.wasm")
+    const parserLocation = path.resolve(extensionPath, 'node_modules/@onflow/cadence-parser/dist/cadence-parser.wasm')
     this.#testProvider = new TestProvider(parserLocation, settings, flowConfig)
   }
 
