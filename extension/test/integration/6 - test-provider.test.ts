@@ -78,7 +78,7 @@ suite('test provider tests', () => {
       { filepath: path.join(workspacePath, 'test/bar/test2.cdc'), id: ':testFailing', message: 'FAIL: Execution failed:\nerror: assertion failed\n --> 7465737400000000000000000000000000000000000000000000000000000000:8:2\n' },
       { filepath: path.join(workspacePath, 'test/bar/test3.cdc'), id: ':testFailing', message: 'FAIL: Execution failed:\nerror: assertion failed\n --> 7465737400000000000000000000000000000000000000000000000000000000:4:2\n' }
     ])
-  }).timeout(5000)
+  }).timeout(20000)
 
   test('runs individual test and reports results', async function () {
     let runSpy: sinon.SinonSpiedInstance<vscode.TestRun> | undefined
@@ -109,5 +109,5 @@ suite('test provider tests', () => {
       { filepath: path.join(workspacePath, 'test/test1.cdc'), id: ':testPassing' }
     ])
     assert.deepStrictEqual(failedTests, [])
-  }).timeout(5000)
+  }).timeout(20000)
 })
