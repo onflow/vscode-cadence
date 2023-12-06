@@ -12,7 +12,6 @@ export class TestTrie {
   #controller: vscode.TestController
 
   constructor (controller: vscode.TestController) {
-    // root is a dummy node
     this.#items = controller.items
     this.#controller = controller
   }
