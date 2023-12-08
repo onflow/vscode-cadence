@@ -205,7 +205,7 @@ suite('test provider tests', () => {
       { filepath: path.join(workspacePath, 'test/test1.cdc'), id: ':testPassing' }
     ])
     assert.deepStrictEqual(failedTests, [
-      { filepath: path.join(workspacePath, 'test/bar/test2.cdc'), id: ':testFailing', message: 'FAIL: Execution failed:\nerror: assertion failed\n --> 7465737400000000000000000000000000000000000000000000000000000000:8:2\n' },
+      { filepath: path.join(workspacePath, 'test/bar/test2.cdc'), id: ':testFailing', message: 'FAIL: Execution failed:\nerror: assertion failed\n --> 7465737400000000000000000000000000000000000000000000000000000000:8:2\n' }
     ])
   }).timeout(20000)
 })
