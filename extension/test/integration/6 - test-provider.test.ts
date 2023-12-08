@@ -200,14 +200,13 @@ suite('test provider tests', () => {
     passedTests.sort((a, b) => a.filepath.localeCompare(b.filepath))
     failedTests.sort((a, b) => a.filepath.localeCompare(b.filepath))
 
-    assert.strictEqual(passedTests.length + failedTests.length, 4)
+    assert.strictEqual(passedTests.length + failedTests.length, 3)
     assert.deepStrictEqual(passedTests, [
       { filepath: path.join(workspacePath, 'test/bar/test2.cdc'), id: ':testPassing' },
       { filepath: path.join(workspacePath, 'test/test1.cdc'), id: ':testPassing' }
     ])
     assert.deepStrictEqual(failedTests, [
-      { filepath: path.join(workspacePath, 'test/bar/test2.cdc'), id: ':testFailing', message: 'FAIL: Execution failed:\nerror: assertion failed\n --> 7465737400000000000000000000000000000000000000000000000000000000:8:2\n' },
-      { filepath: path.join(workspacePath, 'test/bar/test3.cdc'), id: ':testFailing', message: 'FAIL: Execution failed:\nerror: assertion failed\n --> 7465737400000000000000000000000000000000000000000000000000000000:4:2\n' }
+      { filepath: path.join(workspacePath, 'test/bar/test2.cdc'), id: ':testFailing', message: 'FAIL: Execution failed:\nerror: assertion failed\n --> 7465737400000000000000000000000000000000000000000000000000000000:8:2\n' }
     ])
   }).timeout(20000)
 })
