@@ -15,7 +15,7 @@ suite('test provider tests', () => {
   let mockSettings: Settings
   let mockConfig: FlowConfig
   let testProvider: TestProvider
-  let cleanupFunctions: (() => void | Promise<void>)[] = []
+  let cleanupFunctions: Array<() => void | Promise<void>> = []
 
   beforeEach(async function () {
     this.timeout(5000)
@@ -144,7 +144,7 @@ suite('test provider tests', () => {
 
         runSpy = sinon.spy(testRun)
         return runSpy
-      }) 
+      })
     })
     if (runSpy == null) throw new Error('runSpy is null')
 
@@ -174,7 +174,7 @@ suite('test provider tests', () => {
     const testFilePath = path.join(workspacePath, 'test/bar/test3.cdc')
     const originalContents = fs.readFileSync(testFilePath)
     fs.rmSync(testFilePath)
-    
+
     cleanupFunctions.push(async () => {
       fs.writeFileSync(testFilePath, originalContents)
     })
@@ -192,7 +192,7 @@ suite('test provider tests', () => {
 
         runSpy = sinon.spy(testRun)
         return runSpy
-      }) 
+      })
     })
     if (runSpy == null) throw new Error('runSpy is null')
 
