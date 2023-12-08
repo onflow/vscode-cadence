@@ -165,11 +165,9 @@ suite('test provider tests', () => {
       { filepath: path.join(workspacePath, 'test/bar/test2.cdc'), id: ':testFailing', message: 'FAIL: Execution failed:\nerror: assertion failed\n --> 7465737400000000000000000000000000000000000000000000000000000000:8:2\n' },
       { filepath: path.join(workspacePath, 'test/bar/test3.cdc'), id: ':testFailing', message: 'FAIL: Execution failed:\nerror: assertion failed\n --> 7465737400000000000000000000000000000000000000000000000000000000:4:2\n' }
     ])
-
-    vscode.workspace.updateWorkspaceFolders(0, 1)
   }).timeout(20000)
 
-  test('runs tests including newly created file', async function () {
+  test('runs tests including newly deleted file', async function () {
     // Delete test file
     const testFilePath = path.join(workspacePath, 'test/bar/test3.cdc')
     const originalContents = fs.readFileSync(testFilePath)
@@ -211,7 +209,5 @@ suite('test provider tests', () => {
       { filepath: path.join(workspacePath, 'test/bar/test2.cdc'), id: ':testFailing', message: 'FAIL: Execution failed:\nerror: assertion failed\n --> 7465737400000000000000000000000000000000000000000000000000000000:8:2\n' },
       { filepath: path.join(workspacePath, 'test/bar/test3.cdc'), id: ':testFailing', message: 'FAIL: Execution failed:\nerror: assertion failed\n --> 7465737400000000000000000000000000000000000000000000000000000000:4:2\n' }
     ])
-
-    vscode.workspace.updateWorkspaceFolders(0, 1)
   }).timeout(20000)
 })
