@@ -174,8 +174,8 @@ export class TestRunner implements vscode.Disposable {
       if (this.#flowConfig.configPath == null) {
         throw new Error('Flow config path is null')
       }
-      const args = ['test', `'${globPattern}'`, '--output=json', '-f', `${this.#flowConfig.configPath}`]
-      const { stdout, stderr } = await execDefault(this.#settings.flowCommand, args, { shell: true, cwd: path.dirname(this.#flowConfig.configPath) }, cancellationToken)
+      const args = ['test', `'${globPattern}'`, '--output=json', '-f', `'${this.#flowConfig.configPath}'`]
+      const { stdout, stderr } = await execDefault(this.#settings.flowCommand, args, { cwd: path.dirname(this.#flowConfig.configPath) }, cancellationToken)
 
       if (stderr.length > 0) {
         throw new Error(stderr)
