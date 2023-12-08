@@ -7,6 +7,7 @@ import * as path from 'path'
 import * as vscode from 'vscode'
 import * as sinon from 'sinon'
 import * as assert from 'assert'
+import * as fs from 'fs'
 
 const workspacePath = path.resolve(__dirname, './fixtures/workspace')
 
@@ -125,9 +126,9 @@ suite('test provider tests', () => {
         Test.assert(true)
       }
     `
-    await vscode.workspace.fs.writeFile(vscode.Uri.file(testFilePath), Buffer.from(testFileContents))
+    fs.writeFileSync(testFilePath, testFileContents)
     cleanupFunctions.push(async () => {
-      await vscode.workspace.fs.delete(vscode.Uri.file(testFilePath))
+      fs.rmSync(testFilePath)
     })
     await new Promise<void>(resolve => setTimeout(resolve, 1000))
 
@@ -171,9 +172,11 @@ suite('test provider tests', () => {
   test('runs tests including newly created file', async function () {
     // Delete test file
     const testFilePath = path.join(workspacePath, 'test/bar/test3.cdc')
-    const originalContents = await vscode.workspace.fs.readFile(vscode.Uri.file(testFilePath))
+    const originalContents = fs.readFileSync(testFilePath)
+    fs.rmSync(testFilePath)
+    
     cleanupFunctions.push(async () => {
-      await vscode.workspace.fs.writeFile(vscode.Uri.file(testFilePath), originalContents)
+      fs.writeFileSync(testFilePath, originalContents)
     })
     await new Promise<void>(resolve => setTimeout(resolve, 1000))
 
