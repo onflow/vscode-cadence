@@ -132,6 +132,12 @@
 					"default": "",
 					"description": "Enter a custom flow.json path, or leave empty for the default config search.",
 					"scope": "resource"
+				},
+				"cadence.maxTestConcurrency": {
+					"type": "number",
+					"default": "5",
+					"description": "The maximum number of test files that can be run concurrently.",
+					"scope": "resource"
 				}
 			}
 		},
@@ -199,11 +205,13 @@
 		"typescript": "~5.1.6"
 	},
 	"dependencies": {
+		"@onflow/cadence-parser": "^0.42.1",
 		"@onflow/decode": "0.0.11",
 		"@sentry/node": "^7.80.0",
 		"@vscode/vsce": "^2.22.0",
 		"ansi-regex": "^6.0.1",
 		"async-lock": "^1.4.0",
+		"crypto": "^1.0.1",
 		"elliptic": "^6.5.4",
 		"mixpanel": "^0.18.0",
 		"node-fetch": "^2.6.1",

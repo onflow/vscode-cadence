@@ -1,6 +1,7 @@
 import { existsSync } from 'fs'
 import * as path from 'path'
 import { workspace } from 'vscode'
+import * as vscode from 'vscode'
 
 export const FILE_PATH_EMPTY = ''
 
@@ -28,4 +29,12 @@ export function findFilesInAnyWorkspace (filepath: string): string[] {
     },
     []
   )) ?? []
+}
+
+export async function isDirectory (uri: vscode.Uri): Promise<boolean> {
+  try {
+    return (await vscode.workspace.fs.stat(uri)).type === vscode.FileType.Directory
+  } catch {
+    return false
+  }
 }

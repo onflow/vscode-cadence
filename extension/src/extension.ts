@@ -7,6 +7,10 @@ import { JSONSchemaProvider } from './json-schema-provider'
 import { flowVersion } from './utils/flow-version'
 import { LanguageServerAPI } from './server/language-server'
 import { FlowConfig } from './server/flow-config'
+import { TestProvider } from './test-provider/test-provider'
+import * as path from 'path'
+
+import './crypto-polyfill'
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -24,6 +28,7 @@ export class Extension {
   languageServer: LanguageServerAPI
   #dependencyInstaller: DependencyInstaller
   #commands: CommandController
+  #testProvider?: TestProvider
 
   private constructor (settings: Settings, ctx: ExtensionContext | undefined) {
     this.ctx = ctx
@@ -53,10 +58,18 @@ export class Extension {
 
     // Initialize ExtensionCommands
     this.#commands = new CommandController(this.#dependencyInstaller)
+
+    // Initialize TestProvider
+    const extensionPath = ctx?.extensionPath ?? ''
+    const parserLocation = path.resolve(extensionPath, 'node_modules/@onflow/cadence-parser/dist/cadence-parser.wasm')
+    this.#testProvider = new TestProvider(parserLocation, settings, flowConfig)
   }
 
   // Called on exit
-  async deactivate (): Promise<void> {}
+  async deactivate (): Promise<void> {
+    await this.languageServer.deactivate()
+    this.#testProvider?.dispose()
+  }
 
   async executeCommand (command: string): Promise<boolean> {
     return await this.#commands.executeCommand(command)

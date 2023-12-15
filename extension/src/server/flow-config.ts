@@ -161,7 +161,7 @@ export class FlowConfig implements Disposable {
       return
     }
 
-    const didInit = await tryExecDefault('flow init', { cwd: rootPath })
+    const didInit = await tryExecDefault('flow', ['init'], { cwd: rootPath })
 
     if (!didInit) {
       void window.showErrorMessage('Failed to initialize Flow CLI configuration.')

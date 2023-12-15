@@ -1,46 +1,78 @@
-import { ExecOptions, exec } from 'child_process'
-import { promisify } from 'util'
+import { SpawnOptionsWithoutStdio, spawn } from 'child_process'
 import { envVars } from './env-vars'
 import * as vscode from 'vscode'
 import { getDefaultShell } from './default-shell'
 
-type ExecResult = Promise<{
+interface ExecResult {
   stdout: string
   stderr: string
-}>
+  code: number | null
+}
 
 // Execute a command in default shell
-export async function execDefault (cmd: string, options: ExecOptions = {}): ExecResult {
+export async function execDefault (cmd: string, args?: readonly string[] | undefined, options?: SpawnOptionsWithoutStdio | undefined, cancellationToken?: vscode.CancellationToken): Promise<ExecResult> {
   const OS_TYPE = process.platform
   if (OS_TYPE === 'win32') {
-    return await execPowerShell(cmd, options)
+    return await execPowerShell(cmd, args, options, cancellationToken)
   } else {
-    return await execUnixDefault(cmd, options)
+    return await execUnixDefault(cmd, args, options, cancellationToken)
   }
 }
 
 // Execute a command in powershell
-export async function execPowerShell (cmd: string, options: ExecOptions = {}): ExecResult {
+export async function execPowerShell (cmd: string, args?: readonly string[] | undefined, options?: SpawnOptionsWithoutStdio | undefined, cancellationToken?: vscode.CancellationToken): Promise<ExecResult> {
   const env = await envVars.getValue()
-  return await promisify(exec)(cmd, { env, shell: 'powershell.exe', ...options })
+  return await abortableExec(cmd, args, { env, shell: 'powershell.exe', ...options }, cancellationToken)
 }
 
 // Execute command in default shell
-export async function execUnixDefault (cmd: string, options: ExecOptions = {}): ExecResult {
+export async function execUnixDefault (cmd: string, args?: readonly string[] | undefined, options?: SpawnOptionsWithoutStdio | undefined, cancellationToken?: vscode.CancellationToken): Promise<ExecResult> {
   const env = await envVars.getValue()
-  return await promisify(exec)(cmd, { env, shell: getDefaultShell(), ...options })
+  return await abortableExec(cmd, args, { env, shell: getDefaultShell(), ...options }, cancellationToken)
 }
 
-export async function tryExecDefault (cmd: string, options: ExecOptions = {}): Promise<boolean> {
-  return await execDefault(cmd, options).then(() => true).catch(() => false)
+async function abortableExec (cmd: string, args?: readonly string[] | undefined, options?: SpawnOptionsWithoutStdio | undefined, cancellationToken?: vscode.CancellationToken): Promise<ExecResult> {
+  let cancellationHandler: vscode.Disposable | undefined
+  return await new Promise<ExecResult>((resolve, reject) => {
+    cancellationHandler = cancellationToken?.onCancellationRequested(() => {
+      childProcess.kill()
+      reject(new Error('Command execution cancelled'))
+    })
+
+    const childProcess = spawn(cmd, args, { ...options })
+    let stdout = ''
+    let stderr = ''
+
+    childProcess.stdout.on('data', (data) => {
+      stdout += String(data)
+    })
+
+    childProcess.stderr.on('data', (data) => {
+      stderr += String(data)
+    })
+
+    childProcess.on('error', (err) => {
+      reject(err)
+    })
+
+    childProcess.on('close', (code) => {
+      resolve({ stdout, stderr, code })
+    })
+  }).finally(() => {
+    cancellationHandler?.dispose()
+  })
 }
 
-export async function tryExecPowerShell (cmd: string, options: ExecOptions = {}): Promise<boolean> {
-  return await execPowerShell(cmd, options).then(() => true).catch(() => false)
+export async function tryExecDefault (cmd: string, args?: readonly string[] | undefined, options?: SpawnOptionsWithoutStdio | undefined, cancellationToken?: vscode.CancellationToken): Promise<boolean> {
+  return await execDefault(cmd, args, options, cancellationToken).then(({ code }) => code === 0).catch(() => false)
 }
 
-export async function tryExecUnixDefault (cmd: string, options: ExecOptions = {}): Promise<boolean> {
-  return await execUnixDefault(cmd, options).then(() => true).catch(() => false)
+export async function tryExecPowerShell (cmd: string, args?: readonly string[] | undefined, options?: SpawnOptionsWithoutStdio | undefined, cancellationToken?: vscode.CancellationToken): Promise<boolean> {
+  return await execPowerShell(cmd, args, options, cancellationToken).then(({ code }) => code === 0).catch(() => false)
+}
+
+export async function tryExecUnixDefault (cmd: string, args?: readonly string[] | undefined, options?: SpawnOptionsWithoutStdio | undefined, cancellationToken?: vscode.CancellationToken): Promise<boolean> {
+  return await execUnixDefault(cmd, args, options, cancellationToken).then(({ code }) => code === 0).catch(() => false)
 }
 
 // Execute a command in vscode terminal

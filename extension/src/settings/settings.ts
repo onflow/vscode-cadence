@@ -15,6 +15,7 @@ export class Settings {
   flowCommand!: string // The name of the Flow CLI executable.
   accessCheckMode!: string
   customConfigPath!: string // If empty then search the workspace for flow.json
+  maxTestConcurrency!: number
 
   #didChange: Subject<void> = new Subject()
   get didChange$ (): Observable<void> {
@@ -83,5 +84,13 @@ export class Settings {
       )
     }
     this.customConfigPath = customConfigPath
+
+    let maxTestConcurrency: number | undefined = cadenceConfig.get(
+      'maxTestConcurrency'
+    )
+    if (maxTestConcurrency === undefined) {
+      maxTestConcurrency = 5
+    }
+    this.maxTestConcurrency = maxTestConcurrency
   }
 }
