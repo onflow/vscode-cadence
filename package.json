@@ -10,7 +10,7 @@
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run -S esbuild-base -- --minify",
-		"esbuild-base": "esbuild ./extension/src/main.ts --bundle --outfile=out/extension/src/main.js --external:vscode --format=cjs --platform=node",
+		"esbuild-base": "mkdirp ./out/extension && cp ./node_modules/@onflow/cadence-parser/dist/cadence-parser.wasm ./out/extension && esbuild ./extension/src/main.ts --bundle --outfile=out/extension/src/main.js --external:vscode --format=cjs --platform=node",
 		"esbuild": "npm run -S esbuild-base -- --sourcemap",
 		"esbuild-watch": "npm run -S esbuild-base -- --sourcemap --watch",
 		"check": "tsc extension/src/main.ts",
@@ -194,6 +194,7 @@
 		"chai": "^4.3.10",
 		"esbuild": "^0.19.9",
 		"glob": "^10.3.10",
+		"mkdirp": "^3.0.1",
 		"mocha": "^10.2.0",
 		"nyc": "^15.1.0",
 		"ovsx": "^0.8.3",
