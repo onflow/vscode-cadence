@@ -24,7 +24,7 @@
 		"lint-fix": "ts-standard --fix"
 	},
 	"engines": {
-		"vscode": "^1.65.0"
+		"vscode": "^1.82.0"
 	},
 	"categories": [
 		"Programming Languages"
@@ -189,7 +189,7 @@
 		"@types/semver": "^7.5.6",
 		"@types/sinon": "^17.0.1",
 		"@types/uuid": "^9.0.7",
-		"@types/vscode": "^1.65.0",
+		"@types/vscode": "^1.82.0",
 		"@vscode/test-electron": "^2.3.8",
 		"chai": "^4.3.10",
 		"esbuild": "^0.19.9",
@@ -222,7 +222,7 @@
 		"semver": "^7.5.4",
 		"sleep-synchronously": "^2.0.0",
 		"uuid": "^9.0.1",
-		"vscode-languageclient": "^8.1.0"
+		"vscode-languageclient": "^9.0.1"
 	},
 	"__metadata": {
 		"id": "94920651-05f7-4ba0-bf76-379f4fef81ac",
