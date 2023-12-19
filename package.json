@@ -3,14 +3,14 @@
 	"displayName": "Cadence",
 	"publisher": "onflow",
 	"description": "This extension integrates Cadence, the resource-oriented smart contract programming language of Flow, into Visual Studio Code.",
-	"version": "1.4.2",
+	"version": "2.1.1",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/onflow/vscode-cadence.git"
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run -S esbuild-base -- --minify",
-		"esbuild-base": "esbuild ./extension/src/main.ts --bundle --outfile=out/extension/src/main.js --external:vscode --format=cjs --platform=node",
+		"esbuild-base": "mkdirp ./out/extension && cp ./node_modules/@onflow/cadence-parser/dist/cadence-parser.wasm ./out/extension && esbuild ./extension/src/main.ts --bundle --outfile=out/extension/src/main.js --external:vscode --format=cjs --platform=node",
 		"esbuild": "npm run -S esbuild-base -- --sourcemap",
 		"esbuild-watch": "npm run -S esbuild-base -- --sourcemap --watch",
 		"check": "tsc extension/src/main.ts",
@@ -95,21 +95,6 @@
 				"title": "Restart language server"
 			},
 			{
-				"command": "cadence.createAccount",
-				"category": "Cadence",
-				"title": "Create account"
-			},
-			{
-				"command": "cadence.switchActiveAccount",
-				"category": "Cadence",
-				"title": "Switch account"
-			},
-			{
-				"command": "cadence.copyActiveAccount",
-				"category": "Cadence",
-				"title": "Copy active account to clipboard"
-			},
-			{
 				"command": "cadence.checkDepencencies",
 				"category": "Cadence",
 				"title": "Check Dependencies"
@@ -122,12 +107,6 @@
 					"type": "string",
 					"default": "flow",
 					"description": "The command to invoke the Flow CLI.",
-					"scope": "resource"
-				},
-				"cadence.numAccounts": {
-					"type": "number",
-					"default": 3,
-					"description": "The number of default accounts to create.",
 					"scope": "resource"
 				},
 				"cadence.accessCheckMode": {
@@ -148,21 +127,16 @@
 					"description": "Configures if access modifiers are required and how they are are enforced.",
 					"scope": "resource"
 				},
-				"cadence.trace.server": {
-					"scope": "window",
-					"type": "string",
-					"enum": [
-						"off",
-						"messages",
-						"verbose"
-					],
-					"default": "off",
-					"description": "Traces the communication between VS Code and the Cadence language server."
-				},
 				"cadence.customConfigPath": {
 					"type": "string",
 					"default": "",
 					"description": "Enter a custom flow.json path, or leave empty for the default config search.",
+					"scope": "resource"
+				},
+				"cadence.maxTestConcurrency": {
+					"type": "number",
+					"default": "5",
+					"description": "The maximum number of test files that can be run concurrently.",
 					"scope": "resource"
 				}
 			}
@@ -205,35 +179,40 @@
 		]
 	},
 	"devDependencies": {
-		"@types/chai": "^4.3.10",
+		"@types/chai": "^4.3.11",
 		"@types/expect": "^24.3.0",
 		"@types/glob": "^8.0.1",
-		"@types/mixpanel": "^2.14.7",
+		"@types/mixpanel": "^2.14.8",
 		"@types/mocha": "^10.0.1",
-		"@types/node": "^20.8.10",
+		"@types/node": "^20.10.5",
 		"@types/object-hash": "^3.0.5",
-		"@types/semver": "^7.5.1",
+		"@types/semver": "^7.5.6",
+		"@types/sinon": "^17.0.1",
 		"@types/uuid": "^9.0.7",
 		"@types/vscode": "^1.65.0",
-		"@vscode/test-electron": "^2.3.4",
+		"@vscode/test-electron": "^2.3.8",
 		"chai": "^4.3.10",
-		"esbuild": "^0.19.5",
-		"glob": "^10.3.4",
+		"esbuild": "^0.19.9",
+		"glob": "^10.3.10",
+		"mkdirp": "^3.0.1",
 		"mocha": "^10.2.0",
 		"nyc": "^15.1.0",
 		"ovsx": "^0.8.3",
 		"rimraf": "^5.0.1",
+		"sinon": "^17.0.1",
 		"ts-mocha": "^10.0.0",
 		"ts-node": "^10.9.1",
 		"ts-standard": "^12.0.2",
 		"typescript": "~5.1.6"
 	},
 	"dependencies": {
+		"@onflow/cadence-parser": "^0.42.1",
 		"@onflow/decode": "0.0.11",
 		"@sentry/node": "^7.80.0",
 		"@vscode/vsce": "^2.22.0",
 		"ansi-regex": "^6.0.1",
 		"async-lock": "^1.4.0",
+		"crypto": "^1.0.1",
 		"elliptic": "^6.5.4",
 		"mixpanel": "^0.18.0",
 		"node-fetch": "^2.6.1",

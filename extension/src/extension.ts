@@ -1,15 +1,16 @@
 /* The extension */
-import { EmulatorController } from './emulator/emulator-controller'
 import { CommandController } from './commands/command-controller'
-import { Account } from './emulator/account'
-import { UIController } from './ui/ui-controller'
 import { ExtensionContext } from 'vscode'
-import { DEBUG_LOG } from './utils/debug'
 import { DependencyInstaller } from './dependency-installer/dependency-installer'
 import { Settings } from './settings/settings'
-import { EmulatorState } from './emulator/server/language-server'
 import { JSONSchemaProvider } from './json-schema-provider'
 import { flowVersion } from './utils/flow-version'
+import { LanguageServerAPI } from './server/language-server'
+import { FlowConfig } from './server/flow-config'
+import { TestProvider } from './test-provider/test-provider'
+import * as path from 'path'
+
+import './crypto-polyfill'
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -24,10 +25,10 @@ export class Extension {
   }
 
   ctx: ExtensionContext | undefined
+  languageServer: LanguageServerAPI
   #dependencyInstaller: DependencyInstaller
-  #uiCtrl: UIController
   #commands: CommandController
-  emulatorCtrl: EmulatorController
+  #testProvider?: TestProvider
 
   private constructor (settings: Settings, ctx: ExtensionContext | undefined) {
     this.ctx = ctx
@@ -35,60 +36,39 @@ export class Extension {
     // Register JSON schema provider
     if (ctx != null) JSONSchemaProvider.register(ctx, flowVersion)
 
-    // Initialize UI
-    this.#uiCtrl = new UIController()
+    // Initialize Flow Config
+    const flowConfig = new FlowConfig(settings)
+    void flowConfig.activate()
 
-    // Initialize Emulator
-    this.emulatorCtrl = new EmulatorController(settings)
-    this.emulatorCtrl.api.emulatorState$.subscribe(() => {
-      void this.emulatorStateChanged()
-    })
+    // Initialize Language Server
+    this.languageServer = new LanguageServerAPI(settings, flowConfig)
 
     // Check for any missing dependencies
     // The language server will start if all dependencies are installed
     // Otherwise, the language server will not start and will start after
     // the user installs the missing dependencies
-    this.#dependencyInstaller = new DependencyInstaller()
-    this.#dependencyInstaller.missingDependencies.subscribe((deps) => {
-      if (deps.length === 0) void this.emulatorCtrl.activate()
-      else void this.emulatorCtrl.deactivate()
+    this.#dependencyInstaller = new DependencyInstaller(this.languageServer)
+    this.#dependencyInstaller.missingDependencies.subscribe((missing) => {
+      if (missing.length === 0) {
+        void this.languageServer.activate()
+      } else {
+        void this.languageServer.deactivate()
+      }
     })
 
     // Initialize ExtensionCommands
-    this.#commands = new CommandController()
+    this.#commands = new CommandController(this.#dependencyInstaller)
+
+    // Initialize TestProvider
+    const extensionPath = ctx?.extensionPath ?? ''
+    const parserLocation = path.resolve(extensionPath, 'out/extension/cadence-parser.wasm')
+    this.#testProvider = new TestProvider(parserLocation, settings, flowConfig)
   }
 
   // Called on exit
   async deactivate (): Promise<void> {
-    try {
-      await this.emulatorCtrl.deactivate()
-    } catch (err) {
-      if (err instanceof Error) {
-        DEBUG_LOG('Extension deactivate error: ' + err.message)
-      }
-      DEBUG_LOG('Extension deactivate error: unknown')
-    }
-  }
-
-  getEmulatorState (): EmulatorState {
-    return this.emulatorCtrl.getState()
-  }
-
-  async getActiveAccount (): Promise<Account | null> {
-    return await this.emulatorCtrl.getActiveAccount()
-  }
-
-  async emulatorStateChanged (): Promise<void> {
-    // Update UI
-    await this.#uiCtrl.emulatorStateChanged()
-  }
-
-  async checkDependencies (): Promise<void> {
-    await this.#dependencyInstaller.checkDependencies()
-  }
-
-  async installMissingDependencies (): Promise<void> {
-    await this.#dependencyInstaller.installMissing()
+    await this.languageServer.deactivate()
+    this.#testProvider?.dispose()
   }
 
   async executeCommand (command: string): Promise<boolean> {

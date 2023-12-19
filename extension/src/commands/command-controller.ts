@@ -1,14 +1,18 @@
 /* CommandController is responsible for registering possible commands */
-import { commands, Disposable } from 'vscode'
+import { commands, Disposable, window } from 'vscode'
 import { ext } from '../main'
 import * as commandID from './command-constants'
 import * as Telemetry from '../telemetry/telemetry'
+import { DependencyInstaller } from '../dependency-installer/dependency-installer'
 
 export class CommandController {
   #cmds: Disposable[] // Hold onto commands
   #mappings = new Map<string, () => void | Promise<void>>()
 
-  constructor () {
+  #dependencyInstaller: DependencyInstaller
+
+  constructor (dependencyInstaller: DependencyInstaller) {
+    this.#dependencyInstaller = dependencyInstaller
     this.#cmds = []
     Telemetry.withTelemetry(this.#registerCommands.bind(this))
   }
@@ -34,29 +38,20 @@ export class CommandController {
   // those handled by the Language Server).
   #registerCommands (): void {
     this.#registerCommand(commandID.RESTART_SERVER, this.#restartServer.bind(this))
-    this.#registerCommand(commandID.CREATE_ACCOUNT, this.#createAccount.bind(this))
-    this.#registerCommand(commandID.SWITCH_ACCOUNT, this.#switchActiveAccount.bind(this))
     this.#registerCommand(commandID.CHECK_DEPENDENCIES, this.#checkDependencies.bind(this))
-    this.#registerCommand(commandID.COPY_ACTIVE_ACCOUNT, this.#copyActiveAccount.bind(this))
   }
 
   async #restartServer (): Promise<void> {
-    await ext?.emulatorCtrl.restartServer()
-  }
-
-  async #createAccount (): Promise<void> {
-    await ext?.emulatorCtrl.createNewAccount()
-  }
-
-  async #switchActiveAccount (): Promise<void> {
-    await ext?.emulatorCtrl.switchActiveAccount()
-  }
-
-  async #copyActiveAccount (): Promise<void> {
-    await ext?.emulatorCtrl.copyActiveAccount()
+    await ext?.languageServer.restart()
   }
 
   async #checkDependencies (): Promise<void> {
-    await ext?.checkDependencies()
+    await this.#dependencyInstaller.checkDependencies()
+
+    // Show message if all dependencies are already installed
+    const missingDependencies = await this.#dependencyInstaller.missingDependencies.getValue()
+    if (missingDependencies.length === 0) {
+      void window.showInformationMessage('All dependencies are already installed')
+    }
   }
 }

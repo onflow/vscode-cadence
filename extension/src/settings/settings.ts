@@ -1,10 +1,11 @@
 /* Workspace Settings */
+import { homedir } from 'os'
+import * as path from 'path'
 import { Observable, Subject } from 'rxjs'
 import { workspace, window } from 'vscode'
 
 export class Settings {
   static CONFIG_FLOW_COMMAND = 'flowCommand'
-  static CONFIG_NUM_ACCOUNTS = 'numAccounts'
   static CONFIG_ACCESS_CHECK_MODE = 'accessCheckMode'
   static CONFIG_CUSTOM_CONFIG_PATH = 'customConfigPath'
 
@@ -12,9 +13,9 @@ export class Settings {
   static #instance: Settings | undefined
 
   flowCommand!: string // The name of the Flow CLI executable.
-  numAccounts!: number
   accessCheckMode!: string
   customConfigPath!: string // If empty then search the workspace for flow.json
+  maxTestConcurrency!: number
 
   #didChange: Subject<void> = new Subject()
   get didChange$ (): Observable<void> {
@@ -62,14 +63,6 @@ export class Settings {
     }
     this.flowCommand = flowCommand
 
-    let numAccounts: number | undefined = cadenceConfig.get(
-      Settings.CONFIG_NUM_ACCOUNTS
-    )
-    if (numAccounts === undefined || numAccounts <= 0) {
-      numAccounts = 3
-    }
-    this.numAccounts = numAccounts
-
     let accessCheckMode: string | undefined = cadenceConfig.get(
       Settings.CONFIG_ACCESS_CHECK_MODE
     )
@@ -84,6 +77,20 @@ export class Settings {
     if (customConfigPath === undefined) {
       customConfigPath = ''
     }
+    if (customConfigPath[0] === '~') {
+      customConfigPath = path.join(
+        homedir(),
+        customConfigPath.slice(1)
+      )
+    }
     this.customConfigPath = customConfigPath
+
+    let maxTestConcurrency: number | undefined = cadenceConfig.get(
+      'maxTestConcurrency'
+    )
+    if (maxTestConcurrency === undefined) {
+      maxTestConcurrency = 5
+    }
+    this.maxTestConcurrency = maxTestConcurrency
   }
 }
