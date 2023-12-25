@@ -211,7 +211,7 @@
 		"@sentry/node": "^7.80.0",
 		"@vscode/vsce": "^2.22.0",
 		"ansi-regex": "^6.0.1",
-		"async-lock": "^1.4.0",
+		"async-lock": "^1.4.1",
 		"crypto": "^1.0.1",
 		"elliptic": "^6.5.4",
 		"mixpanel": "^0.18.0",
