@@ -32,7 +32,7 @@ export class TestRunner implements vscode.Disposable {
     this.#settings = settings
     this.#flowConfig = flowConfig
     this.#testResolver = testResolver
-    this.#acquireLock = semaphore(settings.maxTestConcurrency)
+    this.#acquireLock = semaphore(settings.getSettings().test.maxConcurrency)
 
     this.#disposibles.push(this.#controller.createRunProfile('Cadence Tests', vscode.TestRunProfileKind.Run, this.runTests.bind(this), true, CADENCE_TEST_TAG))
   }
@@ -170,12 +170,13 @@ export class TestRunner implements vscode.Disposable {
     if (cancellationToken?.isCancellationRequested === true) {
       return {}
     }
+
     return await this.#acquireLock(async () => {
       if (this.#flowConfig.configPath == null) {
         throw new Error('Flow config path is null')
       }
       const args = ['test', `'${globPattern}'`, '--output=json', '-f', `'${this.#flowConfig.configPath}'`]
-      const { stdout, stderr } = await execDefault(this.#settings.flowCommand, args, { cwd: path.dirname(this.#flowConfig.configPath) }, cancellationToken)
+      const { stdout, stderr } = await execDefault(this.#settings.getSettings().flowCommand, args, { cwd: path.dirname(this.#flowConfig.configPath) }, cancellationToken)
 
       if (stderr.length > 0) {
         throw new Error(stderr)

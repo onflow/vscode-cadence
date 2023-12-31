@@ -1,96 +1,64 @@
 /* Workspace Settings */
-import { homedir } from 'os'
-import * as path from 'path'
-import { Observable, Subject } from 'rxjs'
-import { workspace, window } from 'vscode'
+import { BehaviorSubject, Observable, distinctUntilChanged, map, skip } from 'rxjs'
+import { workspace, Disposable } from 'vscode'
+import { isEqual } from 'lodash'
 
-export class Settings {
-  static CONFIG_FLOW_COMMAND = 'flowCommand'
-  static CONFIG_ACCESS_CHECK_MODE = 'accessCheckMode'
-  static CONFIG_CUSTOM_CONFIG_PATH = 'customConfigPath'
-
-  // Workspace settings singleton
-  static #instance: Settings | undefined
-
-  flowCommand!: string // The name of the Flow CLI executable.
-  accessCheckMode!: string
-  customConfigPath!: string // If empty then search the workspace for flow.json
-  maxTestConcurrency!: number
-
-  #didChange: Subject<void> = new Subject()
-  get didChange$ (): Observable<void> {
-    return this.#didChange.asObservable()
+// Schema for the cadence configuration
+export interface CadenceConfiguration {
+  flowCommand: string
+  accessCheckMode: string
+  customConfigPath: string
+  test: {
+    maxConcurrency: number
   }
+}
 
-  static getWorkspaceSettings (): Settings {
-    if (Settings.#instance === undefined) {
-      try {
-        Settings.#instance = new Settings()
-      } catch (err) {
-        window.showErrorMessage(`Failed to activate extension: ${String(err)}`)
-          .then(() => {}, () => {})
-        throw (Error('Could not retrieve workspace settings'))
-      }
-    }
-    return Settings.#instance
-  }
+export class Settings implements Disposable {
+  #configuration$: BehaviorSubject<CadenceConfiguration> = new BehaviorSubject<CadenceConfiguration>(this.#getConfiguration())
+  #disposables: Disposable[] = []
 
-  constructor (skipInitialization?: boolean) {
-    if (skipInitialization !== undefined && skipInitialization) {
-      return
-    }
-
-    // Watch for workspace settings changes
-    workspace.onDidChangeConfiguration((e) => {
+  constructor () {
+    // Watch for configuration changes
+    this.#disposables.push(workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration('cadence')) {
-        this.#loadSettings()
-        this.#didChange.next()
+        this.#configuration$.next(this.#getConfiguration())
       }
-    })
-
-    this.#loadSettings()
+    }))
   }
 
-  #loadSettings (): void {
-    // Retrieve workspace settings
-    const cadenceConfig = workspace.getConfiguration('cadence')
-
-    const flowCommand: string | undefined = cadenceConfig.get(
-      Settings.CONFIG_FLOW_COMMAND
+  /**
+   * Returns an observable that emits whenever the configuration changes.  If a selector is provided, the observable
+   * will only emit when the selected value changes.
+   *
+   * @param selector A function that selects a value from the configuration
+   * @returns An observable that emits whenever the configuration changes
+   * @template T The type of the selected value
+   * @example
+   * // Emit whenever the flow command changes
+   * settings.watch$(config => config.flowCommand)
+   */
+  watch$<T = CadenceConfiguration> (selector: (config: CadenceConfiguration) => T = (config) => config as unknown as T): Observable<T> {
+    return this.#configuration$.asObservable().pipe(
+      skip(1),
+      map(selector),
+      distinctUntilChanged(isEqual)
     )
-    if (flowCommand === undefined) {
-      throw new Error(`Missing ${Settings.CONFIG_FLOW_COMMAND} config`)
-    }
-    this.flowCommand = flowCommand
+  }
 
-    let accessCheckMode: string | undefined = cadenceConfig.get(
-      Settings.CONFIG_ACCESS_CHECK_MODE
-    )
-    if (accessCheckMode === undefined) {
-      accessCheckMode = 'strict'
-    }
-    this.accessCheckMode = accessCheckMode
+  /**
+   * Returns the current configuration
+   *
+   * @returns The current configuration
+   */
+  getSettings (): CadenceConfiguration {
+    return this.#configuration$.value
+  }
 
-    let customConfigPath: string | undefined = cadenceConfig.get(
-      Settings.CONFIG_CUSTOM_CONFIG_PATH
-    )
-    if (customConfigPath === undefined) {
-      customConfigPath = ''
-    }
-    if (customConfigPath[0] === '~') {
-      customConfigPath = path.join(
-        homedir(),
-        customConfigPath.slice(1)
-      )
-    }
-    this.customConfigPath = customConfigPath
+  dispose (): void {
+    this.#configuration$.complete()
+  }
 
-    let maxTestConcurrency: number | undefined = cadenceConfig.get(
-      'maxTestConcurrency'
-    )
-    if (maxTestConcurrency === undefined) {
-      maxTestConcurrency = 5
-    }
-    this.maxTestConcurrency = maxTestConcurrency
+  #getConfiguration (): CadenceConfiguration {
+    return workspace.getConfiguration('cadence') as unknown as CadenceConfiguration
   }
 }

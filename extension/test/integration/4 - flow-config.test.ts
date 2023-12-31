@@ -1,11 +1,12 @@
 
-import { Subject, firstValueFrom, of } from 'rxjs'
+import { BehaviorSubject, firstValueFrom } from 'rxjs'
 import { FlowConfig } from '../../src/server/flow-config'
-import { Settings } from '../../src/settings/settings'
+import { CadenceConfiguration, Settings } from '../../src/settings/settings'
 import { before, afterEach } from 'mocha'
 import * as assert from 'assert'
 import * as path from 'path'
 import * as fs from 'fs'
+import { getMockSettings } from '../mock/mockSettings'
 
 const workspacePath = path.resolve(__dirname, './fixtures/workspace')
 
@@ -43,10 +44,7 @@ suite('flow config tests', () => {
   })
 
   test('recognizes custom config path', async () => {
-    const mockSettings: Settings = {
-      customConfigPath: './foo/flow.json',
-      didChange$: of()
-    } as any
+    const mockSettings = getMockSettings({ customConfigPath: './foo/flow.json' })
 
     await withConfig(mockSettings, (config) => {
       assert.strictEqual(config.configPath, path.resolve(workspacePath, './foo/flow.json'))
@@ -54,10 +52,7 @@ suite('flow config tests', () => {
   })
 
   test('recognizes config path from project root', async () => {
-    const mockSettings: Settings = {
-      customConfigPath: '',
-      didChange$: of()
-    } as any
+    const mockSettings = getMockSettings({ customConfigPath: '' })
 
     await withConfig(mockSettings, (config) => {
       assert.strictEqual(config.configPath, path.resolve(workspacePath, './flow.json'))
@@ -65,11 +60,8 @@ suite('flow config tests', () => {
   })
 
   test('recognizes custom config change & emits pathChanged$', async () => {
-    const didChange$ = new Subject<void>()
-    const mockSettings = {
-      customConfigPath: './foo/flow.json',
-      didChange$: didChange$.asObservable()
-    } as any
+    const settings$ = new BehaviorSubject<Partial<CadenceConfiguration>>({ customConfigPath: './foo/flow.json' })
+    const mockSettings = getMockSettings(settings$)
 
     await withConfig(mockSettings, async (config) => {
       assert.strictEqual(config.configPath, path.resolve(workspacePath, './foo/flow.json'))
@@ -77,8 +69,7 @@ suite('flow config tests', () => {
       const pathChangedPromise = firstValueFrom(config.pathChanged$)
 
       // update custom config path
-      mockSettings.customConfigPath = './bar/flow.json'
-      didChange$.next()
+      settings$.next({ customConfigPath: './bar/flow.json' })
 
       await pathChangedPromise
       assert.strictEqual(config.configPath, path.resolve(workspacePath, './bar/flow.json'))
@@ -86,10 +77,7 @@ suite('flow config tests', () => {
   })
 
   test('ignores non-existent custom config path', async () => {
-    const mockSettings = {
-      customConfigPath: './missing/flow.json',
-      didChange$: of()
-    } as any
+    const mockSettings = getMockSettings({ customConfigPath: './missing/flow.json' })
 
     await withConfig(mockSettings, (config) => {
       assert.strictEqual(config.configPath, null)
@@ -100,10 +88,7 @@ suite('flow config tests', () => {
     // temporarily delete config at root
     deleteRootConfig()
 
-    const mockSettings: Settings = {
-      customConfigPath: '',
-      didChange$: of()
-    } as any
+    const mockSettings = getMockSettings({ customConfigPath: '' })
 
     await withConfig(mockSettings, (config) => {
       assert.strictEqual(config.configPath, null)
@@ -118,10 +103,7 @@ suite('flow config tests', () => {
       setTimeout(resolve, 1000)
     })
 
-    const mockSettings = {
-      customConfigPath: '',
-      didChange$: of()
-    } as any
+    const mockSettings = getMockSettings({ customConfigPath: '' })
 
     await withConfig(mockSettings, async (config) => {
       assert.strictEqual(config.configPath, null)
@@ -144,10 +126,7 @@ suite('flow config tests', () => {
       setTimeout(resolve, 1000)
     })
 
-    const mockSettings = {
-      customConfigPath: './missing/flow.json',
-      didChange$: of()
-    } as any
+    const mockSettings = getMockSettings({ customConfigPath: './missing/flow.json' })
 
     await withConfig(mockSettings, async (config) => {
       assert.strictEqual(config.configPath, null)

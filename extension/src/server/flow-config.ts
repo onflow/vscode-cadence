@@ -102,7 +102,7 @@ export class FlowConfig implements Disposable {
   }
 
   #resolveCustomConfigPath (): FlowConfigFile | null {
-    const customConfigPath = this.#settings.customConfigPath
+    const customConfigPath = this.#settings.getSettings().customConfigPath
     if (customConfigPath === null || customConfigPath === '') {
       return null
     }
@@ -172,7 +172,7 @@ export class FlowConfig implements Disposable {
 
   // Watch and reload flow configuration when changed.
   #watchWorkspaceConfiguration (): Subscription {
-    return this.#settings.didChange$.subscribe(() => {
+    return this.#settings.watch$(config => config.customConfigPath).subscribe(() => {
       void this.reloadConfigPath()
     })
   }
