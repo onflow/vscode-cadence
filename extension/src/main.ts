@@ -19,7 +19,7 @@ export async function activate (ctx: ExtensionContext): Promise<Extension | null
 
   // Initialize the extension
   Telemetry.withTelemetry(() => {
-    const settings = Settings.getWorkspaceSettings()
+    const settings = new Settings()
     ext = Extension.initialize(settings, ctx)
   })
 

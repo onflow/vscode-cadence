@@ -16,8 +16,7 @@ export class LanguageServerAPI {
   settings: Settings
 
   clientState$ = new BehaviorSubject<State>(State.Stopped)
-  #configPathSubscription: Subscription | null = null
-  #configModifiedSubscription: Subscription | null = null
+  #subscriptions: Subscription[] = []
 
   #isActive = false
 
@@ -33,12 +32,12 @@ export class LanguageServerAPI {
     this.#isActive = true
     await this.startClient()
     this.#subscribeToConfigChanges()
+    this.#subscribeToSettingsChanges()
   }
 
   async deactivate (): Promise<void> {
     this.#isActive = false
-    this.#configPathSubscription?.unsubscribe()
-    this.#configModifiedSubscription?.unsubscribe()
+    this.#subscriptions.forEach((sub) => sub.unsubscribe())
     await this.stopClient()
   }
 
@@ -59,10 +58,10 @@ export class LanguageServerAPI {
       // Set client state to starting
       this.clientState$.next(State.Starting)
 
-      const accessCheckMode: string = this.settings.accessCheckMode
+      const accessCheckMode: string = this.settings.getSettings().accessCheckMode
       const configPath: string | null = this.config.configPath
 
-      if (this.settings.flowCommand !== 'flow') {
+      if (this.settings.getSettings().flowCommand !== 'flow') {
         try {
           exec('killall dlv') // Required when running language server locally on mac
         } catch (err) { void err }
@@ -73,7 +72,7 @@ export class LanguageServerAPI {
         'cadence',
         'Cadence',
         {
-          command: this.settings.flowCommand,
+          command: this.settings.getSettings().flowCommand,
           args: ['cadence', 'language-server', '--enable-flow-client=false'],
           options: {
             env
@@ -125,7 +124,7 @@ export class LanguageServerAPI {
   #subscribeToConfigChanges (): void {
     const tryReloadConfig = (): void => { void this.#sendRequest(RELOAD_CONFIGURATION).catch(() => {}) }
 
-    this.#configModifiedSubscription = this.config.fileModified$.subscribe(() => {
+    this.#subscriptions.push(this.config.fileModified$.subscribe(() => {
       // Reload configuration
       if (this.clientState$.getValue() === State.Running) {
         tryReloadConfig()
@@ -135,12 +134,22 @@ export class LanguageServerAPI {
           tryReloadConfig()
         })
       }
-    })
+    }))
 
-    this.#configPathSubscription = this.config.pathChanged$.subscribe(() => {
+    this.#subscriptions.push(this.config.pathChanged$.subscribe(() => {
       // Restart client
       void this.restart()
-    })
+    }))
+  }
+
+  #subscribeToSettingsChanges (): void {
+    const onChange = (): void => {
+      // Restart client
+      void this.restart()
+    }
+
+    this.#subscriptions.push(this.settings.watch$((config) => config.flowCommand).subscribe(onChange))
+    this.#subscriptions.push(this.settings.watch$((config) => config.accessCheckMode).subscribe(onChange))
   }
 
   async #sendRequest (cmd: string, args: any[] = []): Promise<any> {

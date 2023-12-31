@@ -8,6 +8,7 @@ import * as vscode from 'vscode'
 import * as sinon from 'sinon'
 import * as assert from 'assert'
 import * as fs from 'fs'
+import { getMockSettings } from '../mock/mockSettings'
 
 const workspacePath = path.resolve(__dirname, './fixtures/workspace')
 
@@ -22,11 +23,12 @@ suite('test provider tests', () => {
 
     const parserLocation = path.resolve(__dirname, '../../../../node_modules/@onflow/cadence-parser/dist/cadence-parser.wasm')
 
-    mockSettings = {
-      maxTestConcurrency: 5,
+    mockSettings = getMockSettings({
       flowCommand: 'flow',
-      didChange$: of()
-    } as any
+      test: {
+        maxConcurrency: 1
+      }
+    })
     mockConfig = {
       fileModified$: of(),
       pathChanged$: of(),
