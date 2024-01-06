@@ -3,24 +3,37 @@ import { Settings } from '../../src/settings/settings'
 import { MaxTimeout } from '../globals'
 import { before, after } from 'mocha'
 import * as assert from 'assert'
-import { ext, testActivate } from '../../src/main'
 import * as commands from '../../src/commands/command-constants'
+import { CommandController } from '../../src/commands/command-controller'
+import { DependencyInstaller } from '../../src/dependency-installer/dependency-installer'
+import * as sinon from 'sinon'
 
 suite('Extension Commands', () => {
   let settings: Settings
+  let checkDependenciesStub: sinon.SinonStub
+  let mockDependencyInstaller: DependencyInstaller
+  let commandController: CommandController
 
   before(async function () {
     this.timeout(MaxTimeout)
     settings = getMockSettings()
-    await testActivate(settings)
+
+    // Initialize the command controller & mock dependencies
+    checkDependenciesStub = sinon.stub()
+    mockDependencyInstaller = {
+      checkDependencies: checkDependenciesStub
+    } as any
+    commandController = new CommandController(mockDependencyInstaller)
   })
 
   after(async function () {
     this.timeout(MaxTimeout)
-    await ext?.deactivate()
   })
 
   test('Command: Check Dependencies', async () => {
-    assert.strictEqual(await ext?.executeCommand(commands.CHECK_DEPENDENCIES), true)
+    assert.ok(commandController.executeCommand(commands.CHECK_DEPENDENCIES))
+
+    // Check that the dependency installer was called to check dependencies
+    assert.ok(checkDependenciesStub.calledOnce)
   }).timeout(MaxTimeout)
 })

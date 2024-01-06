@@ -1,4 +1,5 @@
-/* The extension */
+import './crypto-polyfill'
+
 import { CommandController } from './commands/command-controller'
 import { ExtensionContext } from 'vscode'
 import { DependencyInstaller } from './dependency-installer/dependency-installer'
@@ -8,9 +9,9 @@ import { flowVersion } from './utils/flow-version'
 import { LanguageServerAPI } from './server/language-server'
 import { FlowConfig } from './server/flow-config'
 import { TestProvider } from './test-provider/test-provider'
+import { StorageProvider } from './storage/storage-provider'
 import * as path from 'path'
-
-import './crypto-polyfill'
+import { Notification, displayNotifications, fetchNotifications, filterNotifications } from './ui/notifications'
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -18,20 +19,35 @@ export class Extension {
   static #instance: Extension
   static initialized = false
 
-  static initialize (settings: Settings, ctx?: ExtensionContext): Extension {
+  static initialize (settings: Settings, ctx: ExtensionContext): Extension {
     Extension.#instance = new Extension(settings, ctx)
     Extension.initialized = true
     return Extension.#instance
   }
 
-  ctx: ExtensionContext | undefined
+  ctx: ExtensionContext
   languageServer: LanguageServerAPI
   #dependencyInstaller: DependencyInstaller
   #commands: CommandController
-  #testProvider?: TestProvider
+  #testProvider: TestProvider
 
-  private constructor (settings: Settings, ctx: ExtensionContext | undefined) {
+  private constructor (settings: Settings, ctx: ExtensionContext) {
     this.ctx = ctx
+
+    // Initialize Storage Provider
+    const storageProvider = new StorageProvider(ctx?.globalState)
+
+    // Display any notifications from remote server
+    flowVersion.getValue().then(flowVersion => {
+      if (flowVersion == null) return
+      const notificationFilter = (notifications: Notification[]) => filterNotifications(notifications, storageProvider, {
+        'vscode-cadence': this.ctx.extension.packageJSON.version ?? '0.0.0',
+        'flow-cli': flowVersion.version
+      })
+      fetchNotifications(notificationFilter).then(notifications => {
+        displayNotifications(notifications, storageProvider)
+      })
+    })
 
     // Register JSON schema provider
     if (ctx != null) JSONSchemaProvider.register(ctx, flowVersion)
@@ -60,7 +76,7 @@ export class Extension {
     this.#commands = new CommandController(this.#dependencyInstaller)
 
     // Initialize TestProvider
-    const extensionPath = ctx?.extensionPath ?? ''
+    const extensionPath = ctx.extensionPath ?? ''
     const parserLocation = path.resolve(extensionPath, 'out/extension/cadence-parser.wasm')
     this.#testProvider = new TestProvider(parserLocation, settings, flowConfig)
   }
@@ -69,9 +85,5 @@ export class Extension {
   async deactivate (): Promise<void> {
     await this.languageServer.deactivate()
     this.#testProvider?.dispose()
-  }
-
-  async executeCommand (command: string): Promise<boolean> {
-    return await this.#commands.executeCommand(command)
   }
 }

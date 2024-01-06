@@ -1,0 +1,19 @@
+[
+  {
+    "_type": "Notification",
+    "id": "1",
+    "type": "info",
+    "text": "Cadence 1.0 pre-release builds are now available!  Developers should begin upgrading their projects - see the Cadence 1.0 Upgrade Plan for more details.",
+    "buttons": [
+      {
+        "text": "Learn More",
+        "link": "https://forum.flow.com/t/cadence-1-0-upgrade-plan/5477#what-does-it-mean-for-me-if-i-am-a-2"
+      }
+    ],
+    "suppressable": true,
+    "versions": {
+      "vscode-cadence": "*",
+      "flow-cli": "*"
+    }
+  }
+]
