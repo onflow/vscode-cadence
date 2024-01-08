@@ -38,13 +38,13 @@ export class Extension {
     const storageProvider = new StorageProvider(ctx?.globalState)
 
     // Display any notifications from remote server
-    flowVersion.getValue().then(flowVersion => {
+    void flowVersion.getValue().then(flowVersion => {
       if (flowVersion == null) return
-      const notificationFilter = (notifications: Notification[]) => filterNotifications(notifications, storageProvider, {
-        'vscode-cadence': this.ctx.extension.packageJSON.version ?? '0.0.0',
+      const notificationFilter = (notifications: Notification[]): Notification[] => filterNotifications(notifications, storageProvider, {
+        'vscode-cadence': this.ctx.extension.packageJSON.version,
         'flow-cli': flowVersion.version
       })
-      fetchNotifications(notificationFilter).then(notifications => {
+      void fetchNotifications(notificationFilter).then(notifications => {
         displayNotifications(notifications, storageProvider)
       })
     })

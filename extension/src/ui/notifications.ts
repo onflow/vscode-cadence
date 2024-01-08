@@ -28,7 +28,7 @@ export function displayNotifications (notifications: Notification[], storageProv
 }
 
 export function displayNotification (notification: Notification, storageProvider: StorageProvider): void {
-  const transformButton = (button: { label: string, link: string }) => {
+  const transformButton = (button: { label: string, link: string }): { label: string, callback: () => void } => {
     return {
       label: button.label,
       callback: () => {
@@ -56,7 +56,7 @@ export function displayNotification (notification: Notification, storageProvider
 
 export function filterNotifications (notifications: Notification[], storageProvider: StorageProvider, currentVersions: { 'vscode-cadence': string, 'flow-cli': string }): Notification[] {
   return notifications.filter(notification => {
-    if (notification.suppressable && isNotificationDismissed(notification, storageProvider)) {
+    if (notification.suppressable === true && isNotificationDismissed(notification, storageProvider)) {
       return false
     }
 

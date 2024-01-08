@@ -1,5 +1,3 @@
-import { getMockSettings } from '../mock/mockSettings'
-import { Settings } from '../../src/settings/settings'
 import { MaxTimeout } from '../globals'
 import { before, after } from 'mocha'
 import * as assert from 'assert'
@@ -9,14 +7,12 @@ import { DependencyInstaller } from '../../src/dependency-installer/dependency-i
 import * as sinon from 'sinon'
 
 suite('Extension Commands', () => {
-  let settings: Settings
   let checkDependenciesStub: sinon.SinonStub
   let mockDependencyInstaller: DependencyInstaller
   let commandController: CommandController
 
   before(async function () {
     this.timeout(MaxTimeout)
-    settings = getMockSettings()
 
     // Initialize the command controller & mock dependencies
     checkDependenciesStub = sinon.stub()
