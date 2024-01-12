@@ -28,14 +28,16 @@ async function fetchFlowVersion (): Promise<semver.SemVer | null> {
 }
 
 export function extractFlowCLIVersion (buffer: Buffer | string): string | null {
-  const versionRegex = /Version: (0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?/
-  let versionMatch = versionRegex.exec(buffer.toString())
+  const output = buffer.toString()
+
+  const versionRegex = /Version: v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?/
+  let versionMatch = output.match(versionRegex)
 
   if (versionMatch != null) return versionMatch[1]
 
   // Fallback regex to semver if versionRegex fails (protect against future changes to flow version output)
-  const fallbackRegex = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
-  versionMatch ??= fallbackRegex.exec(buffer.toString())
+  const fallbackRegex = /^((0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*)))?$/
+  versionMatch ??= output.match(fallbackRegex)
   if (versionMatch != null) {
     void vscode.window.showWarningMessage(`Unfamiliar Flow CLI version format. Assuming that version is ${versionMatch[1]}. Please report this issue to the Flow team.`)
     return versionMatch[1]
