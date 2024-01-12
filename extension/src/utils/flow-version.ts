@@ -37,7 +37,7 @@ export function extractFlowCLIVersion (buffer: Buffer | string): string {
   const fallbackRegex = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
   versionMatch ??= fallbackRegex.exec(buffer.toString())
   if (versionMatch != null) {
-    vscode.window.showWarningMessage(`Unfamiliar Flow CLI version format. Assuming that version is ${versionMatch[1]}. Please report this issue to the Flow team.`)
+    void vscode.window.showWarningMessage(`Unfamiliar Flow CLI version format. Assuming that version is ${versionMatch[1]}. Please report this issue to the Flow team.`)
     return versionMatch[1]
   }
 }
