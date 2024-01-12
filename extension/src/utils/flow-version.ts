@@ -27,7 +27,7 @@ async function fetchFlowVersion (): Promise<semver.SemVer | null> {
   }
 }
 
-export function extractFlowCLIVersion (buffer: Buffer | string): string {
+export function extractFlowCLIVersion (buffer: Buffer | string): string | null {
   const versionRegex = /Version: (0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?/
   let versionMatch = versionRegex.exec(buffer.toString())
 
@@ -40,6 +40,8 @@ export function extractFlowCLIVersion (buffer: Buffer | string): string {
     void vscode.window.showWarningMessage(`Unfamiliar Flow CLI version format. Assuming that version is ${versionMatch[1]}. Please report this issue to the Flow team.`)
     return versionMatch[1]
   }
+
+  return null
 }
 
 export const flowVersion = new StateCache(fetchFlowVersion)
