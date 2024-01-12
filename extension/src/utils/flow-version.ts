@@ -31,13 +31,13 @@ export function extractFlowCLIVersion (buffer: Buffer | string): string | null {
   const output = buffer.toString()
 
   const versionRegex = /Version: v((0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)/g
-  let versionMatch = output.match(versionRegex)
+  let versionMatch = versionRegex.exec(output)
 
   if (versionMatch != null) return versionMatch[1]
 
   // Fallback regex to semver if versionRegex fails (protect against future changes to flow version output)
   const fallbackRegex = /(((0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*)))?)/g
-  versionMatch ??= output.match(fallbackRegex)
+  versionMatch ??= fallbackRegex.exec(output)
   if (versionMatch != null) {
     void vscode.window.showWarningMessage(`Unfamiliar Flow CLI version format. Assuming that version is ${versionMatch[1]}. Please report this issue to the Flow team.`)
     return versionMatch[1]
