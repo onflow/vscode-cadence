@@ -8,7 +8,7 @@ import fetch from 'node-fetch'
 import { HomebrewInstaller } from './homebrew-installer'
 
 // Command to check flow-cli
-export const COMPATIBLE_FLOW_CLI_VERSIONS = '>=1.6.0'
+const COMPATIBLE_FLOW_CLI_VERSIONS = '>=1.6.0'
 
 // Shell install commands
 const BREW_INSTALL_FLOW_CLI = 'brew update && brew install flow-cli'
