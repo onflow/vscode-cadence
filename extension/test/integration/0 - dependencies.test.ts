@@ -3,16 +3,25 @@ import { DependencyInstaller } from '../../src/dependency-installer/dependency-i
 import { MaxTimeout } from '../globals'
 import { InstallFlowCLI } from '../../src/dependency-installer/installers/flow-cli-installer'
 import { stub } from 'sinon'
+import { before } from 'mocha'
+import { FlowVersionProvider } from '../../src/flow-cli/flow-version-provider'
+import { getMockSettings } from '../mock/mockSettings'
 
 // Note: Dependency installation must run before other integration tests
 suite('Dependency Installer', () => {
+  let flowVersionProvider: any
+
+  before(async function () {
+    flowVersionProvider = new FlowVersionProvider(getMockSettings())
+  })
+
   test('Install Missing Dependencies', async () => {
-    const mockLangaugeServerApi = {
+    const mocklanguageServerApi = {
       activate: stub(),
       deactivate: stub(),
       isActive: true
     }
-    const dependencyManager = new DependencyInstaller(mockLangaugeServerApi as any)
+    const dependencyManager = new DependencyInstaller(mocklanguageServerApi as any, flowVersionProvider)
     await assert.doesNotReject(async () => { await dependencyManager.installMissing() })
 
     // Check that all dependencies are installed
@@ -21,45 +30,47 @@ suite('Dependency Installer', () => {
   }).timeout(MaxTimeout)
 
   test('Flow CLI installer restarts langauge server if active', async () => {
-    const mockLangaugeServerApi = {
+    const mocklanguageServerApi = {
       activate: stub().callsFake(async () => {
-        mockLangaugeServerApi.isActive = true
+        mocklanguageServerApi.isActive = true
       }),
       deactivate: stub().callsFake(async () => {
-        mockLangaugeServerApi.isActive = false
+        mocklanguageServerApi.isActive = false
       }),
       isActive: true
     }
     const mockInstallerContext = {
       refreshDependencies: async () => {},
-      langaugeServerApi: mockLangaugeServerApi as any
+      languageServerApi: mocklanguageServerApi as any,
+      flowVersionProvider
     }
     const flowCliInstaller = new InstallFlowCLI(mockInstallerContext)
 
     await assert.doesNotReject(async () => { await flowCliInstaller.install() })
-    assert(mockLangaugeServerApi.deactivate.calledOnce)
-    assert(mockLangaugeServerApi.activate.calledOnce)
-    assert(mockLangaugeServerApi.deactivate.calledBefore(mockLangaugeServerApi.activate))
+    assert(mocklanguageServerApi.deactivate.calledOnce)
+    assert(mocklanguageServerApi.activate.calledOnce)
+    assert(mocklanguageServerApi.deactivate.calledBefore(mocklanguageServerApi.activate))
   }).timeout(MaxTimeout)
 
   test('Flow CLI installer does not restart langauge server if inactive', async () => {
-    const mockLangaugeServerApi = {
+    const mocklanguageServerApi = {
       activate: stub().callsFake(async () => {
-        mockLangaugeServerApi.isActive = true
+        mocklanguageServerApi.isActive = true
       }),
       deactivate: stub().callsFake(async () => {
-        mockLangaugeServerApi.isActive = false
+        mocklanguageServerApi.isActive = false
       }),
       isActive: false
     }
     const mockInstallerContext = {
       refreshDependencies: async () => {},
-      langaugeServerApi: mockLangaugeServerApi as any
+      languageServerApi: mocklanguageServerApi as any,
+      flowVersionProvider
     }
     const flowCliInstaller = new InstallFlowCLI(mockInstallerContext)
 
     await assert.doesNotReject(async () => { await flowCliInstaller.install() })
-    assert(mockLangaugeServerApi.activate.notCalled)
-    assert(mockLangaugeServerApi.deactivate.notCalled)
+    assert(mocklanguageServerApi.activate.notCalled)
+    assert(mocklanguageServerApi.deactivate.notCalled)
   }).timeout(MaxTimeout)
 })

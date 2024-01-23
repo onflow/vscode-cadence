@@ -2,13 +2,15 @@
 import { window } from 'vscode'
 import { envVars } from '../utils/shell/env-vars'
 import { LanguageServerAPI } from '../server/language-server'
+import { FlowVersionProvider } from '../flow-cli/flow-version-provider'
 
 // InstallError is thrown if install fails
 export class InstallError extends Error {}
 
 export interface InstallerContext {
   refreshDependencies: () => Promise<void>
-  langaugeServerApi: LanguageServerAPI
+  languageServerApi: LanguageServerAPI
+  flowVersionProvider: FlowVersionProvider
 }
 
 export type InstallerConstructor = new (context: InstallerContext) => Installer

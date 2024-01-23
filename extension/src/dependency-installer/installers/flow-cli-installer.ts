@@ -6,10 +6,9 @@ import { Installer, InstallerConstructor, InstallerContext } from '../installer'
 import * as semver from 'semver'
 import fetch from 'node-fetch'
 import { HomebrewInstaller } from './homebrew-installer'
-import { flowVersion } from '../../utils/flow-version'
 
 // Command to check flow-cli
-const COMPATIBLE_FLOW_CLI_VERSIONS = '>=1.6.0'
+export const COMPATIBLE_FLOW_CLI_VERSIONS = '>=1.6.0'
 
 // Shell install commands
 const BREW_INSTALL_FLOW_CLI = 'brew update && brew install flow-cli'
@@ -39,8 +38,8 @@ export class InstallFlowCLI extends Installer {
   }
 
   async install (): Promise<void> {
-    const isActive = this.#context.langaugeServerApi.isActive ?? false
-    if (isActive) await this.#context.langaugeServerApi.deactivate()
+    const isActive = this.#context.languageServerApi.isActive ?? false
+    if (isActive) await this.#context.languageServerApi.deactivate()
     const OS_TYPE = process.platform
 
     try {
@@ -58,7 +57,7 @@ export class InstallFlowCLI extends Installer {
     } catch {
       void window.showErrorMessage('Failed to install Flow CLI')
     }
-    if (isActive) await this.#context.langaugeServerApi.activate()
+    if (isActive) await this.#context.languageServerApi.activate()
   }
 
   async #install_macos (): Promise<void> {
@@ -98,7 +97,8 @@ export class InstallFlowCLI extends Installer {
 
   async checkVersion (vsn?: semver.SemVer): Promise<boolean> {
     // Get user's version informaton
-    const version = vsn ?? await flowVersion.getValue(true)
+    this.#context.flowVersionProvider.refresh()
+    const version = vsn ?? await this.#context.flowVersionProvider.getVersion()
     if (version === null) return false
 
     if (!semver.satisfies(version, COMPATIBLE_FLOW_CLI_VERSIONS, {
@@ -123,7 +123,8 @@ export class InstallFlowCLI extends Installer {
 
   async verifyInstall (): Promise<boolean> {
     // Check if flow version is valid to verify install
-    const version = await flowVersion.getValue(true)
+    this.#context.flowVersionProvider.refresh()
+    const version = await this.#context.flowVersionProvider.getVersion()
     if (version == null) return false
 
     // Check flow-cli version number

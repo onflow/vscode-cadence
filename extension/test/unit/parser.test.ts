@@ -1,4 +1,4 @@
-import { parseFlowCliVersion } from '../../src/utils/flow-version'
+import { parseFlowCliVersion } from '../../src/flow-cli/utils'
 import { ASSERT_EQUAL } from '../globals'
 
 suite('Parsing Unit Tests', () => {
