@@ -19,20 +19,20 @@ export interface Notification {
 export class NotificationProvider {
   #storageProvider: StorageProvider
 
-  constructor(
+  constructor (
     storageProvider: StorageProvider
   ) {
     this.#storageProvider = storageProvider
   }
 
-  activate () {
+  activate (): void {
     void this.#fetchAndDisplayNotifications()
   }
 
   async #fetchAndDisplayNotifications (): Promise<void> {
     // Fetch notifications
     const notifications = await this.#fetchNotifications()
-    
+
     // Display all valid notifications
     notifications
       .filter(this.#notificationFilter.bind(this))
@@ -60,7 +60,7 @@ export class NotificationProvider {
       }]
     }
     buttons = buttons?.concat(notification.buttons?.map(transformButton) ?? [])
-  
+
     if (notification.type === 'error') {
       promptUserErrorMessage(notification.text, buttons)
     } else if (notification.type === 'info') {
