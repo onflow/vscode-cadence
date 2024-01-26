@@ -11,7 +11,7 @@ import { FlowConfig } from './server/flow-config'
 import { TestProvider } from './test-provider/test-provider'
 import { StorageProvider } from './storage/storage-provider'
 import * as path from 'path'
-import { Notification, displayNotifications, fetchNotifications, filterNotifications } from './ui/notifications'
+import { NotificationProvider } from './ui/notification-provider'
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -38,16 +38,8 @@ export class Extension {
     const storageProvider = new StorageProvider(ctx?.globalState)
 
     // Display any notifications from remote server
-    void flowVersion.getValue().then(flowVersion => {
-      if (flowVersion == null) return
-      const notificationFilter = (notifications: Notification[]): Notification[] => filterNotifications(notifications, storageProvider, {
-        'vscode-cadence': this.ctx.extension.packageJSON.version,
-        'flow-cli': flowVersion.version
-      })
-      void fetchNotifications(notificationFilter).then(notifications => {
-        displayNotifications(notifications, storageProvider)
-      })
-    })
+    const notificationProvider = new NotificationProvider(storageProvider)
+    notificationProvider.activate()
 
     // Register JSON schema provider
     if (ctx != null) JSONSchemaProvider.register(ctx, flowVersion)

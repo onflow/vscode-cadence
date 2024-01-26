@@ -19,10 +19,6 @@ interface Notification {
     link: string
   }>
   suppressable?: boolean
-  compatibility?: {
-    'vscode-cadence'?: string
-    'flow-cli'?: string
-  }
 }
 ```
 
@@ -32,8 +28,5 @@ interface Notification {
 - `id`: A unique identifier for the notification.  This is used to determine if the notification has already been displayed to the user.
 - `type`: The type of notification.  Can be `"info"`, `"warning"`, or `"error"`.
 - `text`: The text to display to the user.
-- `buttons`: An array of buttons to display to the user.  Each button should have a `text` field and a `link` field.  The `link` field should be a URL to open when the button is clicked.
+- `buttons`: An array of buttons to display to the user.  Each button should have a `label` field and a `link` field.  The `link` field should be a URL to open when the button is clicked.
 - `suppressable`: Whether or not the user should be able to suppress the notification. (defaults to `true`)
-- `compatibility`: An object containing compatibility information for the notification.  If all of the specified compatibility requirements are met, the notification will be displayed to the user.  If not, the notification will be ignored.  The following compatibility requirements are supported:
-  - `vscode-cadence`: The version of the Cadence VSCode Extension that the user must be running.  Can be a specific version number (e.g. `"0.0.1"`) or a semver range (e.g. `"^0.0.1"`).
-  - `flow-cli`: The version of the Flow CLI that the user must be running.  Can be a specific version number (e.g. `"0.25.0"`) or a semver range (e.g. `"^0.25.0"`).
