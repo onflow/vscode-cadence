@@ -16,12 +16,12 @@ suite('Dependency Installer', () => {
   })
 
   test('Install Missing Dependencies', async () => {
-    const mocklanguageServerApi = {
+    const mockLanguageServerApi = {
       activate: stub(),
       deactivate: stub(),
       isActive: true
     }
-    const dependencyManager = new DependencyInstaller(mocklanguageServerApi as any, flowVersionProvider)
+    const dependencyManager = new DependencyInstaller(mockLanguageServerApi as any, flowVersionProvider)
     await assert.doesNotReject(async () => { await dependencyManager.installMissing() })
 
     // Check that all dependencies are installed
@@ -30,47 +30,47 @@ suite('Dependency Installer', () => {
   }).timeout(MaxTimeout)
 
   test('Flow CLI installer restarts langauge server if active', async () => {
-    const mocklanguageServerApi = {
+    const mockLanguageServerApi = {
       activate: stub().callsFake(async () => {
-        mocklanguageServerApi.isActive = true
+        mockLanguageServerApi.isActive = true
       }),
       deactivate: stub().callsFake(async () => {
-        mocklanguageServerApi.isActive = false
+        mockLanguageServerApi.isActive = false
       }),
       isActive: true
     }
     const mockInstallerContext = {
       refreshDependencies: async () => {},
-      languageServerApi: mocklanguageServerApi as any,
+      languageServerApi: mockLanguageServerApi as any,
       flowVersionProvider
     }
     const flowCliInstaller = new InstallFlowCLI(mockInstallerContext)
 
     await assert.doesNotReject(async () => { await flowCliInstaller.install() })
-    assert(mocklanguageServerApi.deactivate.calledOnce)
-    assert(mocklanguageServerApi.activate.calledOnce)
-    assert(mocklanguageServerApi.deactivate.calledBefore(mocklanguageServerApi.activate))
+    assert(mockLanguageServerApi.deactivate.calledOnce)
+    assert(mockLanguageServerApi.activate.calledOnce)
+    assert(mockLanguageServerApi.deactivate.calledBefore(mockLanguageServerApi.activate))
   }).timeout(MaxTimeout)
 
   test('Flow CLI installer does not restart langauge server if inactive', async () => {
-    const mocklanguageServerApi = {
+    const mockLanguageServerApi = {
       activate: stub().callsFake(async () => {
-        mocklanguageServerApi.isActive = true
+        mockLanguageServerApi.isActive = true
       }),
       deactivate: stub().callsFake(async () => {
-        mocklanguageServerApi.isActive = false
+        mockLanguageServerApi.isActive = false
       }),
       isActive: false
     }
     const mockInstallerContext = {
       refreshDependencies: async () => {},
-      languageServerApi: mocklanguageServerApi as any,
+      languageServerApi: mockLanguageServerApi as any,
       flowVersionProvider
     }
     const flowCliInstaller = new InstallFlowCLI(mockInstallerContext)
 
     await assert.doesNotReject(async () => { await flowCliInstaller.install() })
-    assert(mocklanguageServerApi.activate.notCalled)
-    assert(mocklanguageServerApi.deactivate.notCalled)
+    assert(mockLanguageServerApi.activate.notCalled)
+    assert(mockLanguageServerApi.deactivate.notCalled)
   }).timeout(MaxTimeout)
 })
