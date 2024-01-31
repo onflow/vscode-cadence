@@ -4,6 +4,7 @@ import { Installer, InstallerConstructor, InstallerContext, InstallError } from 
 import { promptUserErrorMessage } from '../ui/prompts'
 import { StateCache } from '../utils/state-cache'
 import { LanguageServerAPI } from '../server/language-server'
+import { FlowVersionProvider } from '../flow-cli/flow-version-provider'
 
 const INSTALLERS: InstallerConstructor[] = [
   InstallFlowCLI
@@ -14,10 +15,11 @@ export class DependencyInstaller {
   missingDependencies: StateCache<Installer[]>
   #installerContext: InstallerContext
 
-  constructor (languageServer: LanguageServerAPI) {
+  constructor (languageServerApi: LanguageServerAPI, flowVersionProvider: FlowVersionProvider) {
     this.#installerContext = {
       refreshDependencies: this.checkDependencies.bind(this),
-      langaugeServerApi: languageServer
+      languageServerApi,
+      flowVersionProvider
     }
     this.#registerInstallers()
 
