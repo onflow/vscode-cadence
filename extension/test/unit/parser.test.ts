@@ -16,14 +16,14 @@ suite('Parsing Unit Tests', () => {
   })
 
   test('FLow CLI Version Parsing string', async () => {
-    let versionTest: string = 'Version: v0.1.0\nCommit: 0a1b2c3d'
-    let formatted = parseFlowCliVersion(versionTest)
+    const versionTest: string = 'Version: v0.1.0\nCommit: 0a1b2c3d'
+    const formatted = parseFlowCliVersion(versionTest)
     ASSERT_EQUAL(formatted, 'v0.1.0')
   })
 
   test('Flow CLI Version Parsing Integration', async () => {
     // Check that version is parsed from currently installed flow-cli
-    const {stdout} = await execDefault('flow version')
+    const { stdout } = await execDefault('flow version')
     const formatted = parseFlowCliVersion(stdout)
     assert(semver.valid(formatted))
   })
