@@ -4,8 +4,8 @@ import { CommandController } from './commands/command-controller'
 import { ExtensionContext } from 'vscode'
 import { DependencyInstaller } from './dependency-installer/dependency-installer'
 import { Settings } from './settings/settings'
+import { FlowVersionProvider } from './flow-cli/flow-version-provider'
 import { JSONSchemaProvider } from './json-schema-provider'
-import { flowVersion } from './utils/flow-version'
 import { LanguageServerAPI } from './server/language-server'
 import { FlowConfig } from './server/flow-config'
 import { TestProvider } from './test-provider/test-provider'
@@ -40,9 +40,12 @@ export class Extension {
     // Display any notifications from remote server
     const notificationProvider = new NotificationProvider(storageProvider)
     notificationProvider.activate()
+    
+    // Register Flow version provider
+    const flowVersionProvider = new FlowVersionProvider(settings)
 
     // Register JSON schema provider
-    if (ctx != null) JSONSchemaProvider.register(ctx, flowVersion)
+    if (ctx != null) JSONSchemaProvider.register(ctx, flowVersionProvider.state$)
 
     // Initialize Flow Config
     const flowConfig = new FlowConfig(settings)
@@ -55,7 +58,7 @@ export class Extension {
     // The language server will start if all dependencies are installed
     // Otherwise, the language server will not start and will start after
     // the user installs the missing dependencies
-    this.#dependencyInstaller = new DependencyInstaller(this.languageServer)
+    this.#dependencyInstaller = new DependencyInstaller(this.languageServer, flowVersionProvider)
     this.#dependencyInstaller.missingDependencies.subscribe((missing) => {
       if (missing.length === 0) {
         void this.languageServer.activate()
