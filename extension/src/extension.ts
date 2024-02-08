@@ -40,7 +40,7 @@ export class Extension {
     // Display any notifications from remote server
     const notificationProvider = new NotificationProvider(storageProvider)
     notificationProvider.activate()
-    
+
     // Register Flow version provider
     const flowVersionProvider = new FlowVersionProvider(settings)
 
