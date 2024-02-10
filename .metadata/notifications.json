@@ -7,7 +7,7 @@
     "buttons": [
       {
         "label": "Learn More",
-        "link": "https://cadence-lang.org/docs/cadence-migration-guide"
+        "link": "https://cadence-lang.org/docs/cadence_migration_guide"
       }
     ],
     "suppressable": false
