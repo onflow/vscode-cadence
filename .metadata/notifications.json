@@ -1,0 +1,15 @@
+[
+  {
+    "_type": "Notification",
+    "id": "1",
+    "type": "info",
+    "text": "Cadence 1.0 pre-release builds are now available!  Developers should begin upgrading their projects - see the Cadence 1.0 Migration Guide for more details.",
+    "buttons": [
+      {
+        "label": "Learn More",
+        "link": "https://cadence-lang.org/docs/cadence-migration-guide"
+      }
+    ],
+    "suppressable": false
+  }
+]

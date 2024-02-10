@@ -86,11 +86,13 @@ export class InstallFlowCLI extends Installer {
     if (latest != null && latestStr != null && semver.compare(latest, currentVersion) === 1) {
       promptUserInfoMessage(
         'There is a new Flow CLI version available: ' + latestStr,
-        'Install latest Flow CLI',
-        async () => {
-          await this.runInstall()
-          await this.#context.refreshDependencies()
-        }
+        [{
+          label: 'Install latest Flow CLI',
+          callback: async () => {
+            await this.runInstall()
+            await this.#context.refreshDependencies()
+          }
+        }]
       )
     }
   }
@@ -106,11 +108,13 @@ export class InstallFlowCLI extends Installer {
     })) {
       promptUserErrorMessage(
         'Incompatible Flow CLI version: ' + version.format(),
-        'Install latest Flow CLI',
-        async () => {
-          await this.runInstall()
-          await this.#context.refreshDependencies()
-        }
+        [{
+          label: 'Install latest Flow CLI',
+          callback: async () => {
+            await this.runInstall()
+            await this.#context.refreshDependencies()
+          }
+        }]
       )
       return false
     }

@@ -31,8 +31,3 @@ export function deactivate (): Thenable<void> | undefined {
   void Telemetry.deactivate()
   return (ext === undefined ? undefined : ext?.deactivate())
 }
-
-export async function testActivate (settings: Settings): Promise<Extension> {
-  ext = Extension.initialize(settings)
-  return ext
-}

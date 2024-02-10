@@ -40,8 +40,12 @@ export class DependencyInstaller {
         // Prompt user to install missing dependencies
         promptUserErrorMessage(
           'Not all dependencies are installed: ' + missing.map(x => x.getName()).join(', '),
-          'Install Missing Dependencies',
-          () => { void this.#installMissingDependencies() }
+          [
+            {
+              label: 'Install Missing Dependencies',
+              callback: () => { void this.#installMissingDependencies() }
+            }
+          ]
         )
       }
     })
@@ -76,7 +80,7 @@ export class DependencyInstaller {
     const missing = await this.missingDependencies.getValue()
     const installed: Installer[] = this.registeredInstallers.filter(x => !missing.includes(x))
 
-    await new Promise<void>((resolve, reject) => {
+    await new Promise<void>((resolve) => {
       setTimeout(() => { resolve() }, 2000)
     })
 
