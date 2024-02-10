@@ -2,7 +2,7 @@ import { StorageProvider } from '../storage/storage-provider'
 import { promptUserErrorMessage, promptUserInfoMessage, promptUserWarningMessage } from './prompts'
 import * as vscode from 'vscode'
 
-const NOTIFICATIONS_URL = 'https://raw.githubusercontent.com/onflow/vscode-cadence/.metadata/notifications.json'
+const NOTIFICATIONS_URL = 'https://raw.githubusercontent.com/onflow/vscode-cadence/master/.metadata/notifications.json'
 
 export interface Notification {
   _type: 'Notification'
