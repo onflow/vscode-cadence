@@ -148,8 +148,8 @@
 					".cdc"
 				],
 				"icon": {
-					"light": "./images/file-logo.png",
-					"dark": "./images/file-logo.png"
+					"light": "./images/icon.png",
+					"dark": "./images/icon.png"
 				},
 				"configuration": "./extension/language/language-configuration.json"
 			}
