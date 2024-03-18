@@ -2,12 +2,18 @@ import * as vscode from 'vscode'
 import { readFile } from 'fs'
 import { promisify } from 'util'
 import { resolve } from 'path'
-import { SemVer } from 'semver'
+import { SemVer, compare } from 'semver'
 import fetch from 'node-fetch'
 import { StateCache } from './utils/state-cache'
 import { Subscription } from 'rxjs'
 
-const GET_FLOW_SCHEMA_URL = (version: SemVer): string => `https://raw.githubusercontent.com/onflow/flow-cli/v${version.format()}/flowkit/schema.json`
+const GET_FLOW_SCHEMA_URL = (version: SemVer): string => {
+  // For versions less than 1.13.1, use the old schema URL
+  if (compare(version, 'v1.13.1') < 0) {
+    return `https://raw.githubusercontent.com/onflow/flow-cli/v${version.format()}/flowkit/schema.json`
+  }
+  return `https://raw.githubusercontent.com/onflow/flowkit/v${version.format()}/schema.json`
+}
 
 // This class provides the JSON schema for the flow.json file
 // It is accessible via the URI scheme "cadence-schema:///flow.json"
