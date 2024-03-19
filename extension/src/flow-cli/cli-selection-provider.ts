@@ -56,16 +56,18 @@ export class CliSelectionProvider implements vscode.Disposable {
       const selected = versionSelector.selectedItems[0]
 
       if (selected instanceof CustomBinaryItem) {
-        void vscode.window.showInputBox({
-          placeHolder: 'Enter the path to the Flow CLI binary',
-          prompt: 'Enter the path to the Flow CLI binary'
-        }).then((path) => {
-          if (path != null) {
-            this.#cliProvider.setCurrentBinary(path)
+        void vscode.window.showOpenDialog({
+          canSelectFiles: true,
+          canSelectFolders: false,
+          canSelectMany: false,
+          openLabel: 'Choose a Flow CLI binary'
+        }).then((uri) => {
+          if (uri != null) {
+            void this.#cliProvider.setCurrentBinary(uri[0].fsPath)
           }
         })
       } else if (selected instanceof AvailableBinaryItem) {
-        this.#cliProvider.setCurrentBinary(selected.path)
+        void this.#cliProvider.setCurrentBinary(selected.path)
       }
     }))
 
