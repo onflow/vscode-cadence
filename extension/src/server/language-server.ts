@@ -74,7 +74,7 @@ export class LanguageServerAPI {
           exec('killall dlv') // Required when running language server locally on mac
         } catch (err) { void err }
       }
-      
+
       const env = await envVars.getValue()
       this.client = new LanguageClient(
         'cadence',

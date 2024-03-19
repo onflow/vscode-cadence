@@ -1,4 +1,4 @@
-import { BehaviorSubject, Observable, of, map, distinctUntilChanged, skip } from 'rxjs'
+import { BehaviorSubject, Observable, of, map, distinctUntilChanged } from 'rxjs'
 import { CadenceConfiguration, Settings } from '../../src/settings/settings'
 import * as path from 'path'
 import { isEqual } from 'lodash'

@@ -1,5 +1,5 @@
 /* Workspace Settings */
-import { BehaviorSubject, Observable, distinctUntilChanged, map, skip } from 'rxjs'
+import { BehaviorSubject, Observable, distinctUntilChanged, map } from 'rxjs'
 import { workspace, Disposable, ConfigurationTarget } from 'vscode'
 import { isEqual } from 'lodash'
 
@@ -54,20 +54,20 @@ export class Settings implements Disposable {
     return this.#configuration$.value
   }
 
-  updateSettings (config: Partial<CadenceConfiguration>, target?: ConfigurationTarget): void {
+  async updateSettings (config: Partial<CadenceConfiguration>, target?: ConfigurationTarget): Promise<void> {
     // Recursively update all keys in the configuration
-    function update(section: string, obj: any) {
-      Object.entries(obj).forEach(([key, value]) => {
-        const newKey = section ? `${section}.${key}` : key
+    async function update (section: string, obj: any): Promise<void> {
+      await Promise.all(Object.entries(obj).map(async ([key, value]) => {
+        const newKey = `${section}.${key}`
         if (typeof value === 'object' && !Array.isArray(value)) {
-          update(newKey, value)
+          await update(newKey, value)
         } else {
-          workspace.getConfiguration().update(newKey, value, target)
+          await workspace.getConfiguration().update(newKey, value, target)
         }
-      })
+      }))
     }
 
-    update(CONFIGURATION_KEY, config)
+    await update(CONFIGURATION_KEY, config)
   }
 
   dispose (): void {

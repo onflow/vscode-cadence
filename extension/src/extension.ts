@@ -12,7 +12,7 @@ import { TestProvider } from './test-provider/test-provider'
 import { StorageProvider } from './storage/storage-provider'
 import * as path from 'path'
 import { NotificationProvider } from './ui/notification-provider'
-import { CliSelectionProvider } from './ui/cli-selection-provider'
+import { CliSelectionProvider } from './flow-cli/cli-selection-provider'
 
 // The container for all data relevant to the extension.
 export class Extension {
@@ -32,6 +32,7 @@ export class Extension {
   #commands: CommandController
   #testProvider: TestProvider
   #schemaProvider: JSONSchemaProvider
+  #cliSelectionProvider: CliSelectionProvider
 
   private constructor (settings: Settings, ctx: ExtensionContext) {
     this.ctx = ctx
@@ -47,7 +48,7 @@ export class Extension {
     const cliProvider = new CliProvider(settings)
 
     // Register CliSelectionProvider
-    const cliSelectionProvider = new CliSelectionProvider(cliProvider)
+    this.#cliSelectionProvider = new CliSelectionProvider(cliProvider)
 
     // Register JSON schema provider
     this.#schemaProvider = new JSONSchemaProvider(ctx.extensionPath, cliProvider)
@@ -84,7 +85,8 @@ export class Extension {
   // Called on exit
   async deactivate (): Promise<void> {
     await this.languageServer.deactivate()
-    this.#testProvider?.dispose()
-    this.#schemaProvider?.dispose()
+    this.#testProvider.dispose()
+    this.#schemaProvider.dispose()
+    this.#cliSelectionProvider.dispose()
   }
 }

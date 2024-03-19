@@ -8,8 +8,6 @@ import { CliProvider } from './flow-cli/cli-provider'
 const CADENCE_SCHEMA_URI = 'cadence-schema'
 const GET_FLOW_SCHEMA_URL = (version: string): string => `https://raw.githubusercontent.com/onflow/flow-cli/v${version}/flowkit/schema.json`
 
-const LOCAL_SCHEMA_KEY = 'local'
-
 // This class provides the JSON schema for the flow.json file
 // It is accessible via the URI scheme "cadence-schema:///flow.json"
 export class JSONSchemaProvider implements vscode.FileSystemProvider, vscode.Disposable {
@@ -52,7 +50,7 @@ export class JSONSchemaProvider implements vscode.FileSystemProvider, vscode.Dis
         return await this.getLocalSchema()
       })
     }
-    
+
     return await this.#schemaCache[version]
   }
 

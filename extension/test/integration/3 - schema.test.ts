@@ -2,7 +2,6 @@ import { MaxTimeout } from '../globals'
 import { before, after } from 'mocha'
 import * as assert from 'assert'
 import * as vscode from 'vscode'
-import { StateCache } from '../../src/utils/state-cache'
 import { SemVer } from 'semver'
 import { JSONSchemaProvider } from '../../src/json-schema-provider'
 import * as fetch from 'node-fetch'
@@ -29,10 +28,12 @@ suite('JSON schema tests', () => {
     // Mock cli provider
     mockCliProvider = {
       currentBinary$: new Subject(),
-      getCurrentBinary: sinon.stub().callsFake(async () => (mockFlowVersionValue ? {
-        name: 'flow',
-        version: mockFlowVersionValue
-      } : null))
+      getCurrentBinary: sinon.stub().callsFake(async () => ((mockFlowVersionValue != null)
+        ? {
+            name: 'flow',
+            version: mockFlowVersionValue
+          }
+        : null))
     } as any
 
     // Mock fetch (assertion is for linter workaround)

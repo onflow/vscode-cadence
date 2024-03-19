@@ -9,12 +9,12 @@ const KNOWN_BINS = ['flow', 'flow-c1']
 
 const CADENCE_V1_CLI_REGEX = /-cadence-v1.0.0/g
 
-export type CliBinary = {
+export interface CliBinary {
   name: string
   version: semver.SemVer
 }
 
-type AvailableBinariesCache = {
+interface AvailableBinariesCache {
   [key: string]: StateCache<CliBinary | null>
 }
 
@@ -33,27 +33,28 @@ export class CliProvider {
       this.#selectedBinaryName.next(flowCommand)
     })
 
-    this.#availableBinaries = KNOWN_BINS.reduce((acc, bin) => {
+    this.#availableBinaries = KNOWN_BINS.reduce<AvailableBinariesCache>((acc, bin) => {
       acc[bin] = new StateCache(async () => await this.#fetchBinaryInformation(bin))
       acc[bin].subscribe(() => {
         this.#availableBinaries$.invalidate()
       })
       return acc
-    }, {} as AvailableBinariesCache)
+    }, {})
 
     this.#availableBinaries$ = new StateCache(async () => {
-      return this.getAvailableBinaries()
+      return await this.getAvailableBinaries()
     })
 
     this.#currentBinary$ = new StateCache(async () => {
       const name: string = this.#selectedBinaryName.getValue()
-      return this.#availableBinaries[name].getValue()
+      return await this.#availableBinaries[name].getValue()
     })
 
     // Subscribe to changes in the selected binary to update the caches
     this.#selectedBinaryName.pipe(distinctUntilChanged(), startWith(null), pairwise()).subscribe(([prev, curr]) => {
       // Swap out the cache for the selected binary
       if (prev != null && !KNOWN_BINS.includes(prev)) {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete this.#availableBinaries[prev]
       }
       if (curr != null && !KNOWN_BINS.includes(curr)) {
@@ -109,7 +110,6 @@ export class CliProvider {
     })
   }
 
-
   async getAvailableBinaries (): Promise<CliBinary[]> {
     const bins: CliBinary[] = []
     for (const name in this.#availableBinaries) {
@@ -126,16 +126,16 @@ export class CliProvider {
   }
 
   async getCurrentBinary (): Promise<CliBinary | null> {
-    return this.#currentBinary$.getValue()
+    return await this.#currentBinary$.getValue()
   }
 
-  setCurrentBinary (name: string): void {
-    this.#settings.updateSettings({ flowCommand: name })
+  async setCurrentBinary (name: string): Promise<void> {
+    await this.#settings.updateSettings({ flowCommand: name })
   }
 }
 
 export function isCadenceV1Cli (version: semver.SemVer): boolean {
-    return CADENCE_V1_CLI_REGEX.test(version.raw)
+  return CADENCE_V1_CLI_REGEX.test(version.raw)
 }
 
 export function parseFlowCliVersion (buffer: Buffer | string): string {

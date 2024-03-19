@@ -8,7 +8,7 @@ import { MaxTimeout } from '../globals'
 import { BehaviorSubject, Subject } from 'rxjs'
 import { State } from 'vscode-languageclient'
 import * as sinon from 'sinon'
-import { CliBinary, CliProvider } from '../../src/flow-cli/cli-provider'
+import { CliBinary } from '../../src/flow-cli/cli-provider'
 import { SemVer } from 'semver'
 
 suite('Language Server & Emulator Integration', () => {
@@ -40,7 +40,7 @@ suite('Language Server & Emulator Integration', () => {
       currentBinary$: cliBinary$,
       getCurrentBinary: sinon.stub().callsFake(async () => cliBinary$.getValue())
     } as any
-    
+
     LS = new LanguageServerAPI(settings, mockCliProvider, mockConfig)
     await LS.activate()
   })
