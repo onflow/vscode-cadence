@@ -3,26 +3,29 @@ import { window } from 'vscode'
 import { Settings } from '../settings/settings'
 import { exec } from 'child_process'
 import { ExecuteCommandRequest } from 'vscode-languageclient'
-import { BehaviorSubject, Subscription, filter, firstValueFrom } from 'rxjs'
+import { BehaviorSubject, Subscription, filter, firstValueFrom, skip, zip } from 'rxjs'
 import { envVars } from '../utils/shell/env-vars'
 import { FlowConfig } from './flow-config'
+import { CliProvider } from '../flow-cli/cli-provider'
 
 // Identities for commands handled by the Language server
 const RELOAD_CONFIGURATION = 'cadence.server.flow.reloadConfiguration'
 
 export class LanguageServerAPI {
-  config: FlowConfig
+  #settings: Settings
+  #config: FlowConfig
+  #cliProvider: CliProvider
   client: LanguageClient | null = null
-  settings: Settings
 
   clientState$ = new BehaviorSubject<State>(State.Stopped)
   #subscriptions: Subscription[] = []
 
   #isActive = false
 
-  constructor (settings: Settings, config: FlowConfig) {
-    this.settings = settings
-    this.config = config
+  constructor (settings: Settings, cliProvider: CliProvider, config: FlowConfig) {
+    this.#settings = settings
+    this.#cliProvider = cliProvider
+    this.#config = config
   }
 
   async activate (): Promise<void> {
@@ -58,21 +61,26 @@ export class LanguageServerAPI {
       // Set client state to starting
       this.clientState$.next(State.Starting)
 
-      const accessCheckMode: string = this.settings.getSettings().accessCheckMode
-      const configPath: string | null = this.config.configPath
+      const accessCheckMode: string = this.#settings.getSettings().accessCheckMode
+      const configPath: string | null = this.#config.configPath
 
-      if (this.settings.getSettings().flowCommand !== 'flow') {
+      const binaryPath = (await this.#cliProvider.getCurrentBinary())?.name
+      if (binaryPath == null) {
+        throw new Error('No flow binary found')
+      }
+
+      if (binaryPath !== 'flow') {
         try {
           exec('killall dlv') // Required when running language server locally on mac
         } catch (err) { void err }
       }
-
+      
       const env = await envVars.getValue()
       this.client = new LanguageClient(
         'cadence',
         'Cadence',
         {
-          command: this.settings.getSettings().flowCommand,
+          command: binaryPath,
           args: ['cadence', 'language-server', '--enable-flow-client=false'],
           options: {
             env
@@ -124,7 +132,7 @@ export class LanguageServerAPI {
   #subscribeToConfigChanges (): void {
     const tryReloadConfig = (): void => { void this.#sendRequest(RELOAD_CONFIGURATION).catch(() => {}) }
 
-    this.#subscriptions.push(this.config.fileModified$.subscribe(() => {
+    this.#subscriptions.push(this.#config.fileModified$.subscribe(() => {
       // Reload configuration
       if (this.clientState$.getValue() === State.Running) {
         tryReloadConfig()
@@ -136,7 +144,7 @@ export class LanguageServerAPI {
       }
     }))
 
-    this.#subscriptions.push(this.config.pathChanged$.subscribe(() => {
+    this.#subscriptions.push(this.#config.pathChanged$.subscribe(() => {
       // Restart client
       void this.restart()
     }))
@@ -148,8 +156,11 @@ export class LanguageServerAPI {
       void this.restart()
     }
 
-    this.#subscriptions.push(this.settings.watch$((config) => config.flowCommand).subscribe(onChange))
-    this.#subscriptions.push(this.settings.watch$((config) => config.accessCheckMode).subscribe(onChange))
+    const subscription = zip(
+      this.#cliProvider.currentBinary$.pipe(skip(1)),
+      this.#settings.settings$((config) => config.flowCommand).pipe(skip(1))
+    ).subscribe(onChange)
+    this.#subscriptions.push(subscription)
   }
 
   async #sendRequest (cmd: string, args: any[] = []): Promise<any> {

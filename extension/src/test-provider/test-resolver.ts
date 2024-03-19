@@ -1,6 +1,5 @@
 import * as vscode from 'vscode'
 import * as CadenceParser from '@onflow/cadence-parser'
-import { StateCache } from '../utils/state-cache'
 import { QueuedMutator, TestFunction, TestTrie } from './test-trie'
 import { isDirectory } from '../utils/utils'
 
@@ -26,7 +25,6 @@ interface Declaration {
 }
 
 export class TestResolver implements vscode.Disposable {
-  testTree: StateCache<void>
   #controller: vscode.TestController
   #parser: Thenable<CadenceParser.CadenceParser>
   #testTrie: QueuedMutator<TestTrie>
@@ -35,7 +33,6 @@ export class TestResolver implements vscode.Disposable {
   constructor (parserLocation: string, controller: vscode.TestController, testTrie: QueuedMutator<TestTrie>) {
     this.#controller = controller
     this.#parser = vscode.workspace.fs.readFile(vscode.Uri.file(parserLocation)).then(async buffer => await CadenceParser.CadenceParser.create(buffer))
-    this.testTree = new StateCache<void>(async () => await Promise.resolve())
     this.#testTrie = testTrie
 
     void this.watchFiles()

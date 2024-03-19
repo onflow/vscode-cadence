@@ -172,7 +172,7 @@ export class FlowConfig implements Disposable {
 
   // Watch and reload flow configuration when changed.
   #watchWorkspaceConfiguration (): Subscription {
-    return this.#settings.watch$(config => config.customConfigPath).subscribe(() => {
+    return this.#settings.settings$(config => config.customConfigPath).subscribe(() => {
       void this.reloadConfigPath()
     })
   }

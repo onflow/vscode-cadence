@@ -2,68 +2,69 @@ import * as vscode from 'vscode'
 import { readFile } from 'fs'
 import { promisify } from 'util'
 import { resolve } from 'path'
-import { SemVer } from 'semver'
 import fetch from 'node-fetch'
-import { StateCache } from './utils/state-cache'
-import { Subscription } from 'rxjs'
+import { CliProvider } from './flow-cli/cli-provider'
 
-const GET_FLOW_SCHEMA_URL = (version: SemVer): string => `https://raw.githubusercontent.com/onflow/flow-cli/v${version.format()}/flowkit/schema.json`
+const CADENCE_SCHEMA_URI = 'cadence-schema'
+const GET_FLOW_SCHEMA_URL = (version: string): string => `https://raw.githubusercontent.com/onflow/flow-cli/v${version}/flowkit/schema.json`
+
+const LOCAL_SCHEMA_KEY = 'local'
 
 // This class provides the JSON schema for the flow.json file
 // It is accessible via the URI scheme "cadence-schema:///flow.json"
 export class JSONSchemaProvider implements vscode.FileSystemProvider, vscode.Disposable {
-  static CADENCE_SCHEMA_URI = 'cadence-schema'
-  static #instance: JSONSchemaProvider | null
-
   #contentProviderDisposable: vscode.Disposable | undefined
-  #flowVersionSubscription: Subscription
-  #flowVersion: StateCache<SemVer | null>
-  #flowSchema: StateCache<string>
-  #showLocalError: boolean = false
+  #extensionPath: string
+  #cliProvider: CliProvider
+  #schemaCache: { [version: string]: Promise<string> } = {}
 
-  static register (ctx: vscode.ExtensionContext, flowVersion: StateCache<SemVer | null>): void {
-    if (JSONSchemaProvider.#instance != null) {
-      JSONSchemaProvider.#instance.dispose()
-    }
+  constructor (
+    extensionPath: string,
+    cliProvider: CliProvider
+  ) {
+    this.#extensionPath = extensionPath
+    this.#cliProvider = cliProvider
 
-    // Create a provider for the cadence-schema URI scheme, this will be deactivated when the extension is deactivated
-    JSONSchemaProvider.#instance = new JSONSchemaProvider(
-      ctx,
-      flowVersion,
-      { dispose: () => contentProviderDisposable.dispose() }
-    )
-    const contentProviderDisposable = vscode.workspace.registerFileSystemProvider(
-      JSONSchemaProvider.CADENCE_SCHEMA_URI,
-      JSONSchemaProvider.#instance
-    )
-    ctx.subscriptions.push(
-      JSONSchemaProvider.#instance
+    // Register the schema provider
+    this.#contentProviderDisposable = vscode.workspace.registerFileSystemProvider(
+      CADENCE_SCHEMA_URI,
+      this
     )
   }
 
-  private constructor (
-    private readonly ctx: vscode.ExtensionContext,
-    flowVersion: StateCache<SemVer | null>,
-    contentProviderDisposable: vscode.Disposable
-  ) {
-    this.#flowVersion = flowVersion
-    this.#contentProviderDisposable = contentProviderDisposable
-    this.#flowSchema = new StateCache(async () => await this.#resolveFlowSchema())
+  async #getFlowSchema (): Promise<string> {
+    const cliBinary = await this.#cliProvider.getCurrentBinary()
+    if (cliBinary == null) {
+      void vscode.window.showWarningMessage('Cannot get flow-cli version, using local schema instead.  Please install flow-cli to get the latest schema.')
+      return await this.getLocalSchema()
+    }
 
-    // Invalidate the schema when the flow-cli version changes
-    this.#flowVersionSubscription = this.#flowVersion.subscribe(
-      () => this.#flowSchema.invalidate()
-    )
+    const version = cliBinary.version.format()
+    if (this.#schemaCache[version] == null) {
+      // Try to get schema from flow-cli repo based on the flow-cli version
+      this.#schemaCache[version] = fetch(GET_FLOW_SCHEMA_URL(version)).then(async (response: Response) => {
+        if (!response.ok) {
+          throw new Error(`Failed to fetch schema for flow-cli version ${version}`)
+        }
+        return await response.text()
+      }).catch(async () => {
+        void vscode.window.showWarningMessage('Failed to fetch flow.json schema from flow-cli repo, using local schema instead.  Please update flow-cli to the latest version to get the latest schema.')
+        return await this.getLocalSchema()
+      })
+    }
+    
+    return await this.#schemaCache[version]
+  }
+
+  async getLocalSchema (): Promise<string> {
+    const schemaUrl = resolve(this.#extensionPath, 'flow-schema.json')
+    return await promisify(readFile)(schemaUrl).then(x => x.toString())
   }
 
   async readFile (uri: vscode.Uri): Promise<Uint8Array> {
     if (uri.path === '/flow.json') {
-      const schema = await this.#flowSchema.getValue()
-      if (this.#showLocalError) {
-        void vscode.window.showWarningMessage('Failed to fetch flow.json schema from flow-cli repo, using local schema instead.  Please update flow-cli to the latest version to get the latest schema.')
-        this.#showLocalError = false
-      }
-      return Buffer.from(schema, 'utf-8')
+      const schema = await this.#getFlowSchema()
+      return Buffer.from(schema)
     } else {
       throw new Error('Unknown schema')
     }
@@ -76,7 +77,7 @@ export class JSONSchemaProvider implements vscode.FileSystemProvider, vscode.Dis
         type: vscode.FileType.File,
         ctime: 0,
         mtime: 0,
-        size: await this.#flowSchema.getValue().then(x => x.length)
+        size: await this.#getFlowSchema().then(x => x.length)
       }
     } else {
       throw new Error('Unknown schema')
@@ -87,27 +88,6 @@ export class JSONSchemaProvider implements vscode.FileSystemProvider, vscode.Dis
     if (this.#contentProviderDisposable != null) {
       this.#contentProviderDisposable.dispose()
     }
-    this.#flowVersionSubscription.unsubscribe()
-  }
-
-  async #resolveFlowSchema (): Promise<string> {
-    return await this.#flowVersion.getValue().then(async (cliVersion) => {
-      // Verify that version is valid (could be null if flow-cli is not installed, etc.)
-      if (cliVersion == null) throw new Error('Failed to get flow-cli version, please make sure flow-cli is installed and in your PATH')
-
-      // Try to get schema from flow-cli repo based on the flow-cli version
-      return fetch(GET_FLOW_SCHEMA_URL(cliVersion))
-    }).then(async (response: Response) => {
-      if (!response.ok) {
-        throw new Error(`Failed to fetch schema from flow-cli repo: ${response.statusText}`)
-      }
-      return await response.text()
-    }).catch(async () => {
-      // Fallback to local schema
-      this.#showLocalError = true
-      const schemaUrl = resolve(this.ctx.extensionPath, 'flow-schema.json')
-      return await promisify(readFile)(schemaUrl).then(x => x.toString())
-    })
   }
 
   // Unsupported file system provider methods
