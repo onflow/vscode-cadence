@@ -31,7 +31,7 @@ export class Extension {
   #dependencyInstaller: DependencyInstaller
   #commands: CommandController
   #testProvider: TestProvider
-  //#schemaProvider: JSONSchemaProvider
+  #schemaProvider: JSONSchemaProvider
 
   private constructor (settings: Settings, ctx: ExtensionContext) {
     this.ctx = ctx
@@ -50,9 +50,7 @@ export class Extension {
     const cliSelectionProvider = new CliSelectionProvider(cliProvider)
 
     // Register JSON schema provider
-    if (ctx != null) {
-      //this.#schemaProvider = new JSONSchemaProvider(ctx.extensionPath, cliProvider.currentBinary$)
-    }
+    this.#schemaProvider = new JSONSchemaProvider(ctx.extensionPath, cliProvider)
 
     // Initialize Flow Config
     const flowConfig = new FlowConfig(settings)
@@ -87,6 +85,6 @@ export class Extension {
   async deactivate (): Promise<void> {
     await this.languageServer.deactivate()
     this.#testProvider?.dispose()
-    //this.#schemaProvider?.dispose()
+    this.#schemaProvider?.dispose()
   }
 }
