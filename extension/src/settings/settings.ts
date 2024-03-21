@@ -37,9 +37,9 @@ export class Settings implements Disposable {
    * @template T The type of the selected value
    * @example
    * // Emit whenever the flow command changes
-   * settings.settings$(config => config.flowCommand)
+   * settings.watch$(config => config.flowCommand)
    */
-  settings$<T = CadenceConfiguration> (selector: (config: CadenceConfiguration) => T = (config) => config as unknown as T): Observable<T> {
+  watch$<T = CadenceConfiguration> (selector: (config: CadenceConfiguration) => T = (config) => config as unknown as T): Observable<T> {
     return this.#configuration$.pipe(
       map(selector),
       distinctUntilChanged(isEqual)

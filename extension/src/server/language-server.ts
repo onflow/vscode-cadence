@@ -33,9 +33,11 @@ export class LanguageServerAPI {
     await this.deactivate()
 
     this.#isActive = true
-    await this.startClient().catch(() => {})
+
     this.#subscribeToConfigChanges()
     this.#subscribeToSettingsChanges()
+
+    await this.startClient()
   }
 
   async deactivate (): Promise<void> {
@@ -167,7 +169,7 @@ export class LanguageServerAPI {
 
     const subscription = zip(
       this.#cliProvider.currentBinary$.pipe(skip(1)),
-      this.#settings.settings$((config) => config.flowCommand).pipe(skip(1))
+      this.#settings.watch$((config) => config.flowCommand).pipe(skip(1))
     ).subscribe(onChange)
     this.#subscriptions.push(subscription)
   }

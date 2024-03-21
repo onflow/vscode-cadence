@@ -4,7 +4,7 @@ import * as path from 'path'
 import { isEqual } from 'lodash'
 
 export function getMockSettings (_settings$: BehaviorSubject<Partial<CadenceConfiguration>> | Partial<CadenceConfiguration> | null = null): Settings {
-  const mockSettings: Settings = { getSettings, settings$ } as any
+  const mockSettings: Settings = { getSettings, watch$ } as any
 
   function getSettings (): Partial<CadenceConfiguration> {
     if (!(_settings$ instanceof BehaviorSubject) && _settings$ != null) return _settings$
@@ -19,7 +19,7 @@ export function getMockSettings (_settings$: BehaviorSubject<Partial<CadenceConf
     }
   }
 
-  function settings$<T = CadenceConfiguration> (selector: (config: CadenceConfiguration) => T = (config) => config as unknown as T): Observable<T> {
+  function watch$<T = CadenceConfiguration> (selector: (config: CadenceConfiguration) => T = (config) => config as unknown as T): Observable<T> {
     if (!(_settings$ instanceof BehaviorSubject)) return of()
 
     return _settings$.asObservable().pipe(
