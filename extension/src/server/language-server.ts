@@ -130,7 +130,11 @@ export class LanguageServerAPI {
   }
 
   #subscribeToConfigChanges (): void {
-    const tryReloadConfig = (): void => { void this.#sendRequest(RELOAD_CONFIGURATION).catch(() => {}) }
+    const tryReloadConfig = (): void => {
+      void this.#sendRequest(RELOAD_CONFIGURATION).catch((e: any) => {
+        void window.showErrorMessage(`Failed to reload configuration: ${e}`)
+      })
+    }
 
     this.#subscriptions.push(this.#config.fileModified$.subscribe(() => {
       // Reload configuration
@@ -139,6 +143,11 @@ export class LanguageServerAPI {
       } else if (this.clientState$.getValue() === State.Starting) {
         // Wait for client to connect
         void firstValueFrom(this.clientState$.pipe(filter((state) => state === State.Running))).then(() => {
+          tryReloadConfig()
+        })
+      } else {
+        // Start client
+        void this.startClient().then(() => {
           tryReloadConfig()
         })
       }
