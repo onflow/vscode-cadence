@@ -41,7 +41,7 @@ export class CliSelectionProvider implements vscode.Disposable {
     statusBarItem.color = new vscode.ThemeColor('statusBar.foreground')
     statusBarItem.tooltip = 'Click to change the Flow CLI version'
 
-    if (version) {
+    if (version != null) {
       statusBarItem.text = GET_BINARY_LABEL(version)
     } else {
       statusBarItem.text = '$(error) Flow CLI not found'
