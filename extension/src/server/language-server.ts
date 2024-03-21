@@ -3,7 +3,7 @@ import { window } from 'vscode'
 import { Settings } from '../settings/settings'
 import { exec } from 'child_process'
 import { ExecuteCommandRequest } from 'vscode-languageclient'
-import { BehaviorSubject, Subscription, filter, firstValueFrom, skip, zip } from 'rxjs'
+import { BehaviorSubject, Subscription, filter, firstValueFrom, skip } from 'rxjs'
 import { envVars } from '../utils/shell/env-vars'
 import { FlowConfig } from './flow-config'
 import { CliProvider } from '../flow-cli/cli-provider'
@@ -28,6 +28,9 @@ export class LanguageServerAPI {
     this.#config = config
   }
 
+  // Activates the language server manager
+  // This will control the lifecycle of the language server
+  // & restart it when necessary
   async activate (): Promise<void> {
     if (this.isActive) return
     await this.deactivate()
@@ -36,8 +39,14 @@ export class LanguageServerAPI {
 
     this.#subscribeToConfigChanges()
     this.#subscribeToSettingsChanges()
+    this.#subscribeToBinaryChanges()
 
-    await this.startClient()
+    // Report error, but an error starting is non-terminal
+    // The server will be restarted if conditions change which make it possible
+    // (e.g. a new binary is selected, or the config file is created)
+    await this.startClient().catch((e) => {
+      console.error(e)
+    })
   }
 
   async deactivate (): Promise<void> {
@@ -162,15 +171,21 @@ export class LanguageServerAPI {
   }
 
   #subscribeToSettingsChanges (): void {
-    const onChange = (): void => {
+    // Subscribe to changes in the flowCommand setting to restart the client
+    // Skip the first value since we don't want to restart the client when it's first initialized
+    this.#settings.watch$((config) => config.flowCommand).pipe(skip(1)).subscribe(() => {
       // Restart client
       void this.restart()
-    }
+    })
+  }
 
-    const subscription = zip(
-      this.#cliProvider.currentBinary$.pipe(skip(1)),
-      this.#settings.watch$((config) => config.flowCommand).pipe(skip(1))
-    ).subscribe(onChange)
+  #subscribeToBinaryChanges (): void {
+    // Subscribe to changes in the selected binary to restart the client
+    // Skip the first value since we don't want to restart the client when it's first initialized
+    const subscription = this.#cliProvider.currentBinary$.pipe(skip(1)).subscribe(() => {
+      // Restart client
+      void this.restart()
+    })
     this.#subscriptions.push(subscription)
   }
 
