@@ -30,7 +30,7 @@ export class CliProvider {
     this.#settings = settings
 
     this.#selectedBinaryName = new BehaviorSubject<string>(settings.getSettings().flowCommand)
-    this.#settings.settings$(config => config.flowCommand).subscribe((flowCommand) => {
+    this.#settings.watch$(config => config.flowCommand).subscribe((flowCommand) => {
       this.#selectedBinaryName.next(flowCommand)
     })
 
