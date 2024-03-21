@@ -8,7 +8,7 @@ const CADENCE_V1_CLI_REGEX = /-cadence-v1.0.0/g
 // label with icon
 const GET_BINARY_LABEL = (version: SemVer): string => `Flow CLI v${version.format()}`
 
-export class CliSelectionProvider implements vscode.Disposable {
+export class CliSelectionProvider {
   #statusBarItem: vscode.StatusBarItem | undefined
   #cliProvider: CliProvider
   #showSelector: boolean = false
@@ -19,10 +19,10 @@ export class CliSelectionProvider implements vscode.Disposable {
     this.#cliProvider = cliProvider
 
     // Register the command to toggle the version
-    vscode.commands.registerCommand(CHANGE_CADENCE_VERSION, async () => {
+    this.#disposables.push(vscode.commands.registerCommand(CHANGE_CADENCE_VERSION, async () => {
       this.#cliProvider.refresh()
       await this.#toggleSelector(true)
-    })
+    }))
 
     // Register UI components
     zip(this.#cliProvider.currentBinary$, this.#cliProvider.availableBinaries$).subscribe(() => {
@@ -114,6 +114,8 @@ export class CliSelectionProvider implements vscode.Disposable {
 
   dispose (): void {
     this.#disposables.forEach(disposable => disposable.dispose())
+    this.#statusBarItem?.dispose()
+    this.#versionSelector?.dispose()
   }
 }
 

@@ -58,6 +58,10 @@ export class CliProvider {
       }
     })
 
+    this.#watchForBinaryChanges()
+  }
+
+  #watchForBinaryChanges (): void {
     // Subscribe to changes in the selected binary to update the caches
     this.#selectedBinaryName.pipe(distinctUntilChanged(), startWith(null), pairwise()).subscribe(([prev, curr]) => {
       // Swap out the cache for the selected binary

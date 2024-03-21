@@ -132,7 +132,7 @@ export class LanguageServerAPI {
   #subscribeToConfigChanges (): void {
     const tryReloadConfig = (): void => {
       void this.#sendRequest(RELOAD_CONFIGURATION).catch((e: any) => {
-        void window.showErrorMessage(`Failed to reload configuration: ${e}`)
+        void window.showErrorMessage(`Failed to reload configuration: ${String(e)}`)
       })
     }
 
