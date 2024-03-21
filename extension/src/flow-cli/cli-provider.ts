@@ -2,6 +2,7 @@ import { BehaviorSubject, Observable, distinctUntilChanged, pairwise, startWith 
 import { execDefault } from '../utils/shell/exec'
 import { StateCache } from '../utils/state-cache'
 import * as semver from 'semver'
+import * as vscode from 'vscode'
 import { Settings } from '../settings/settings'
 
 const CHECK_FLOW_CLI_CMD = (flowCommand: string): string => `${flowCommand} version`
@@ -48,6 +49,13 @@ export class CliProvider {
     this.#currentBinary$ = new StateCache(async () => {
       const name: string = this.#selectedBinaryName.getValue()
       return await this.#availableBinaries[name].getValue()
+    })
+
+    // Display warning to user if binary doesn't exist
+    this.#currentBinary$.subscribe((binary) => {
+      if (binary === null) {
+        void vscode.window.showErrorMessage(`The configured Flow CLI binary "${this.#selectedBinaryName.getValue()}" does not exist. Please check your settings.`)
+      }
     })
 
     // Subscribe to changes in the selected binary to update the caches

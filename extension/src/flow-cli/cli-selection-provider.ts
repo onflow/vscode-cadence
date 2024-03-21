@@ -3,8 +3,9 @@ import { CliBinary, CliProvider } from './cli-provider'
 import { SemVer } from 'semver'
 import * as vscode from 'vscode'
 
-const TOGGLE_CADENCE_VERSION_COMMAND = 'cadence.changeCadenceVersion'
+const CHANGE_CADENCE_VERSION = 'cadence.changeCadenceVersion'
 const CADENCE_V1_CLI_REGEX = /-cadence-v1.0.0/g
+// label with icon
 const GET_BINARY_LABEL = (version: SemVer): string => `Flow CLI v${version.format()}`
 
 export class CliSelectionProvider implements vscode.Disposable {
@@ -18,28 +19,34 @@ export class CliSelectionProvider implements vscode.Disposable {
     this.#cliProvider = cliProvider
 
     // Register the command to toggle the version
-    vscode.commands.registerCommand(TOGGLE_CADENCE_VERSION_COMMAND, async () => await this.#toggleSelector(true))
+    vscode.commands.registerCommand(CHANGE_CADENCE_VERSION, async () => {
+      this.#cliProvider.refresh()
+      await this.#toggleSelector(true)
+    })
 
     // Register UI components
     zip(this.#cliProvider.currentBinary$, this.#cliProvider.availableBinaries$).subscribe(() => {
       void this.#refreshSelector()
     })
     this.#cliProvider.currentBinary$.subscribe((binary) => {
-      if (binary === null) return
       this.#statusBarItem?.dispose()
-      this.#statusBarItem = this.#createStatusBarItem(binary?.version)
+      this.#statusBarItem = this.#createStatusBarItem(binary?.version ?? null)
       this.#statusBarItem.show()
     })
   }
 
-  #createStatusBarItem (version: SemVer): vscode.StatusBarItem {
+  #createStatusBarItem (version: SemVer | null): vscode.StatusBarItem {
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1)
-    statusBarItem.command = TOGGLE_CADENCE_VERSION_COMMAND
+    statusBarItem.command = CHANGE_CADENCE_VERSION
     statusBarItem.color = new vscode.ThemeColor('statusBar.foreground')
     statusBarItem.tooltip = 'Click to change the Flow CLI version'
 
-    // Update the status bar text when the version changes
-    statusBarItem.text = GET_BINARY_LABEL(version)
+    if (version) {
+      statusBarItem.text = GET_BINARY_LABEL(version)
+    } else {
+      statusBarItem.text = '$(error) Flow CLI not found'
+      statusBarItem.color = new vscode.ThemeColor('errorForeground')
+    }
 
     return statusBarItem
   }
@@ -79,7 +86,6 @@ export class CliSelectionProvider implements vscode.Disposable {
     // Select the current binary
     if (currentBinary !== null) {
       const currentBinaryItem = versionSelector.items.find(item => item instanceof AvailableBinaryItem && item.path === currentBinary.name)
-      console.log(currentBinaryItem)
       if (currentBinaryItem != null) {
         versionSelector.selectedItems = [currentBinaryItem]
       }

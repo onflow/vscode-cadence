@@ -33,7 +33,7 @@ export class LanguageServerAPI {
     await this.deactivate()
 
     this.#isActive = true
-    await this.startClient()
+    await this.startClient().catch(() => {})
     this.#subscribeToConfigChanges()
     this.#subscribeToSettingsChanges()
   }
