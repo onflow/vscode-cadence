@@ -136,14 +136,14 @@ export class LanguageServerAPI {
       })
     }
 
-    this.#subscriptions.push(this.#config.fileModified$.subscribe(() => {
+    this.#subscriptions.push(this.#config.fileModified$.subscribe(function notify (this: LanguageServerAPI): void {
       // Reload configuration
       if (this.clientState$.getValue() === State.Running) {
         tryReloadConfig()
       } else if (this.clientState$.getValue() === State.Starting) {
         // Wait for client to connect
         void firstValueFrom(this.clientState$.pipe(filter((state) => state === State.Running))).then(() => {
-          tryReloadConfig()
+          notify.call(this)
         })
       } else {
         // Start client
@@ -151,7 +151,7 @@ export class LanguageServerAPI {
           tryReloadConfig()
         })
       }
-    }))
+    }.bind(this)))
 
     this.#subscriptions.push(this.#config.pathChanged$.subscribe(() => {
       // Restart client
