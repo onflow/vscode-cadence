@@ -3,10 +3,11 @@ import { window } from 'vscode'
 import { Settings } from '../settings/settings'
 import { exec } from 'child_process'
 import { ExecuteCommandRequest } from 'vscode-languageclient'
-import { BehaviorSubject, Subscription, filter, firstValueFrom, skip } from 'rxjs'
+import { BehaviorSubject, Subscription, distinctUntilChanged, filter, firstValueFrom, skip } from 'rxjs'
 import { envVars } from '../utils/shell/env-vars'
 import { FlowConfig } from './flow-config'
 import { CliProvider } from '../flow-cli/cli-provider'
+import { isEqual } from 'lodash'
 
 // Identities for commands handled by the Language server
 const RELOAD_CONFIGURATION = 'cadence.server.flow.reloadConfiguration'
@@ -118,20 +119,17 @@ export class LanguageServerAPI {
           void window.showErrorMessage(`Cadence language server failed to start: ${err.message}`)
         })
     } catch (e) {
-      await this.client?.stop()
-      this.clientState$.next(State.Stopped)
+      await this.stopClient()
       throw e
     }
   }
 
   async stopClient (): Promise<void> {
-    // Prevent stopping multiple times (important since LanguageClient state may be startFailed)
-    if (this.clientState$.getValue() === State.Stopped) return
-
     // Set emulator state to disconnected
     this.clientState$.next(State.Stopped)
 
     await this.client?.stop()
+    this.client?.dispose()
     this.client = null
   }
 
@@ -158,9 +156,7 @@ export class LanguageServerAPI {
         })
       } else {
         // Start client
-        void this.startClient().then(() => {
-          tryReloadConfig()
-        })
+        void this.startClient()
       }
     }.bind(this)))
 
@@ -182,7 +178,7 @@ export class LanguageServerAPI {
   #subscribeToBinaryChanges (): void {
     // Subscribe to changes in the selected binary to restart the client
     // Skip the first value since we don't want to restart the client when it's first initialized
-    const subscription = this.#cliProvider.currentBinary$.pipe(skip(1)).subscribe(() => {
+    const subscription = this.#cliProvider.currentBinary$.pipe(skip(1), distinctUntilChanged(isEqual)).subscribe(() => {
       // Restart client
       void this.restart()
     })
