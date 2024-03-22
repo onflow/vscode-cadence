@@ -98,6 +98,11 @@
 				"command": "cadence.checkDepencencies",
 				"category": "Cadence",
 				"title": "Check Dependencies"
+			},
+			{
+				"command": "cadence.changeCadenceVersion",
+				"category": "Cadence",
+				"title": "Change Cadence Version"
 			}
 		],
 		"configuration": {

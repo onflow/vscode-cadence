@@ -4,15 +4,15 @@ import { MaxTimeout } from '../globals'
 import { InstallFlowCLI } from '../../src/dependency-installer/installers/flow-cli-installer'
 import { stub } from 'sinon'
 import { before } from 'mocha'
-import { FlowVersionProvider } from '../../src/flow-cli/flow-version-provider'
+import { CliProvider } from '../../src/flow-cli/cli-provider'
 import { getMockSettings } from '../mock/mockSettings'
 
 // Note: Dependency installation must run before other integration tests
 suite('Dependency Installer', () => {
-  let flowVersionProvider: any
+  let cliProvider: any
 
   before(async function () {
-    flowVersionProvider = new FlowVersionProvider(getMockSettings())
+    cliProvider = new CliProvider(getMockSettings())
   })
 
   test('Install Missing Dependencies', async () => {
@@ -21,7 +21,7 @@ suite('Dependency Installer', () => {
       deactivate: stub(),
       isActive: true
     }
-    const dependencyManager = new DependencyInstaller(mockLanguageServerApi as any, flowVersionProvider)
+    const dependencyManager = new DependencyInstaller(mockLanguageServerApi as any, cliProvider)
     await assert.doesNotReject(async () => { await dependencyManager.installMissing() })
 
     // Check that all dependencies are installed
@@ -42,7 +42,7 @@ suite('Dependency Installer', () => {
     const mockInstallerContext = {
       refreshDependencies: async () => {},
       languageServerApi: mockLanguageServerApi as any,
-      flowVersionProvider
+      cliProvider
     }
     const flowCliInstaller = new InstallFlowCLI(mockInstallerContext)
 
@@ -65,7 +65,7 @@ suite('Dependency Installer', () => {
     const mockInstallerContext = {
       refreshDependencies: async () => {},
       languageServerApi: mockLanguageServerApi as any,
-      flowVersionProvider
+      cliProvider
     }
     const flowCliInstaller = new InstallFlowCLI(mockInstallerContext)
 

@@ -4,7 +4,7 @@ import { Installer, InstallerConstructor, InstallerContext, InstallError } from 
 import { promptUserErrorMessage } from '../ui/prompts'
 import { StateCache } from '../utils/state-cache'
 import { LanguageServerAPI } from '../server/language-server'
-import { FlowVersionProvider } from '../flow-cli/flow-version-provider'
+import { CliProvider } from '../flow-cli/cli-provider'
 
 const INSTALLERS: InstallerConstructor[] = [
   InstallFlowCLI
@@ -15,12 +15,14 @@ export class DependencyInstaller {
   missingDependencies: StateCache<Installer[]>
   #installerContext: InstallerContext
 
-  constructor (languageServerApi: LanguageServerAPI, flowVersionProvider: FlowVersionProvider) {
+  constructor (languageServerApi: LanguageServerAPI, cliProvider: CliProvider) {
     this.#installerContext = {
       refreshDependencies: this.checkDependencies.bind(this),
       languageServerApi,
-      flowVersionProvider
+      cliProvider
     }
+
+    // Register installers
     this.#registerInstallers()
 
     // Create state cache for missing dependencies
@@ -54,7 +56,8 @@ export class DependencyInstaller {
   async checkDependencies (): Promise<void> {
     // Invalidate and wait for state to update
     // This will trigger the missingDependencies subscriptions
-    await this.missingDependencies.getValue(true)
+    this.missingDependencies.invalidate()
+    await this.missingDependencies.getValue()
   }
 
   async installMissing (): Promise<void> {
