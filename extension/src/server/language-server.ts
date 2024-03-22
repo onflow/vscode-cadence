@@ -129,7 +129,7 @@ export class LanguageServerAPI {
     this.clientState$.next(State.Stopped)
 
     await this.client?.stop()
-    this.client?.dispose()
+    await this.client?.dispose()
     this.client = null
   }
 
@@ -178,7 +178,7 @@ export class LanguageServerAPI {
   #subscribeToBinaryChanges (): void {
     // Subscribe to changes in the selected binary to restart the client
     // Skip the first value since we don't want to restart the client when it's first initialized
-    const subscription = this.#cliProvider.currentBinary$.pipe(skip(1), distinctUntilChanged(isEqual)).subscribe(() => {
+    const subscription = this.#cliProvider.currentBinary$.pipe(skip(1)).subscribe(() => {
       // Restart client
       void this.restart()
     })

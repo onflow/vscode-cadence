@@ -4,6 +4,7 @@ import { StateCache } from '../utils/state-cache'
 import * as semver from 'semver'
 import * as vscode from 'vscode'
 import { Settings } from '../settings/settings'
+import { isEqual } from 'lodash'
 
 const CHECK_FLOW_CLI_CMD = (flowCommand: string): string => `${flowCommand} version`
 const KNOWN_BINS = ['flow', 'flow-c1']
@@ -51,9 +52,9 @@ export class CliProvider {
       return await this.#availableBinaries[name].getValue()
     })
 
-    // Display warning to user if binary doesn't exist
+    // Display warning to user if binary doesn't exist (only if not using the default binary)
     this.#currentBinary$.subscribe((binary) => {
-      if (binary === null) {
+      if (binary === null && this.#selectedBinaryName.getValue() !== 'flow') {
         void vscode.window.showErrorMessage(`The configured Flow CLI binary "${this.#selectedBinaryName.getValue()}" does not exist. Please check your settings.`)
       }
     })
@@ -119,7 +120,7 @@ export class CliProvider {
       this.#availableBinaries$.subscribe((binaries) => {
         subscriber.next(binaries)
       })
-    })
+    }).pipe(distinctUntilChanged(isEqual))
   }
 
   async getAvailableBinaries (): Promise<CliBinary[]> {
@@ -134,7 +135,7 @@ export class CliProvider {
   }
 
   get currentBinary$ (): Observable<CliBinary | null> {
-    return this.#currentBinary$
+    return this.#currentBinary$.pipe(distinctUntilChanged(isEqual))
   }
 
   async getCurrentBinary (): Promise<CliBinary | null> {
