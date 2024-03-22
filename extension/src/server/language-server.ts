@@ -3,11 +3,10 @@ import { window } from 'vscode'
 import { Settings } from '../settings/settings'
 import { exec } from 'child_process'
 import { ExecuteCommandRequest } from 'vscode-languageclient'
-import { BehaviorSubject, Subscription, distinctUntilChanged, filter, firstValueFrom, skip } from 'rxjs'
+import { BehaviorSubject, Subscription, filter, firstValueFrom, skip } from 'rxjs'
 import { envVars } from '../utils/shell/env-vars'
 import { FlowConfig } from './flow-config'
 import { CliProvider } from '../flow-cli/cli-provider'
-import { isEqual } from 'lodash'
 
 // Identities for commands handled by the Language server
 const RELOAD_CONFIGURATION = 'cadence.server.flow.reloadConfiguration'
