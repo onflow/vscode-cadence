@@ -6,7 +6,9 @@ import * as vscode from 'vscode'
 import { Settings } from '../settings/settings'
 import { isEqual } from 'lodash'
 
-const CHECK_FLOW_CLI_CMD = (flowCommand: string): string => `${flowCommand} version`
+const CHECK_FLOW_CLI_CMD = (flowCommand: string): string => `${flowCommand} version --output=json`
+const CHECK_FLOW_CLI_CMD_NO_JSON = (flowCommand: string): string => `${flowCommand} version`
+
 const KNOWN_BINS = ['flow', 'flow-c1']
 
 const CADENCE_V1_CLI_REGEX = /-cadence-v1.0.0/g
@@ -14,6 +16,10 @@ const CADENCE_V1_CLI_REGEX = /-cadence-v1.0.0/g
 export interface CliBinary {
   name: string
   version: semver.SemVer
+}
+
+interface FlowVersionOutput {
+  version: string
 }
 
 interface AvailableBinariesCache {
@@ -85,10 +91,34 @@ export class CliProvider {
     })
   }
 
+  // Fetches the binary information for the given binary
   async #fetchBinaryInformation (bin: string): Promise<CliBinary | null> {
     try {
       // Get user's version informaton
       const buffer: string = (await execDefault(CHECK_FLOW_CLI_CMD(
+        bin
+      ))).stdout
+
+      // Format version string from output
+      const versionInfo: FlowVersionOutput = JSON.parse(buffer)
+
+      // Ensure user has a compatible version number installed
+      const version: semver.SemVer | null = semver.parse(versionInfo.version)
+      if (version === null) return null
+
+      return { name: bin, version }
+    } catch {
+      // Fallback to old method if JSON is not supported/fails
+      return await this.#fetchBinaryInformationOld(bin)
+    }
+  }
+
+  // Old version of fetchBinaryInformation (before JSON was supported)
+  // Used as fallback for old CLI versions
+  async #fetchBinaryInformationOld (bin: string): Promise<CliBinary | null> {
+    try {
+      // Get user's version informaton
+      const buffer: string = (await execDefault(CHECK_FLOW_CLI_CMD_NO_JSON(
         bin
       ))).stdout
 
