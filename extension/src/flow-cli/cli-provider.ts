@@ -100,7 +100,7 @@ export class CliProvider {
       ))).stdout
 
       // Format version string from output
-      let versionInfo: FlowVersionOutput = JSON.parse(buffer)
+      const versionInfo: FlowVersionOutput = JSON.parse(buffer)
 
       // Ensure user has a compatible version number installed
       const version: semver.SemVer | null = semver.parse(versionInfo.version)
@@ -109,8 +109,7 @@ export class CliProvider {
       return { name: bin, version }
     } catch {
       // Fallback to old method if JSON is not supported/fails
-      console.warn(`Failed to fetch binary version information for "${bin}", falling back to old method`)
-      return this.#fetchBinaryInformationOld(bin)
+      return await this.#fetchBinaryInformationOld(bin)
     }
   }
 
