@@ -12,6 +12,7 @@ const CHECK_FLOW_CLI_CMD_NO_JSON = (flowCommand: string): string => `${flowComma
 const KNOWN_BINS = ['flow', 'flow-c1']
 
 const CADENCE_V1_CLI_REGEX = /-cadence-v1.0.0/g
+const LEGACY_VERSION_REGEXP = /Version:\s*(v?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)\s/m
 
 export interface CliBinary {
   name: string
@@ -118,14 +119,17 @@ export class CliProvider {
   async #fetchBinaryInformationOld (bin: string): Promise<CliBinary | null> {
     try {
       // Get user's version informaton
-      const buffer: string = (await execDefault(CHECK_FLOW_CLI_CMD_NO_JSON(
+      const output = (await execDefault(CHECK_FLOW_CLI_CMD_NO_JSON(
         bin
-      ))).stdout
+      )))
 
-      // Format version string from output
-      let versionStr: string | null = parseFlowCliVersion(buffer)
+      let versionStr: string | null = parseFlowCliVersion(output.stdout)
+      if (versionStr === null) {
+        // Try to fallback to stderr as patch for bugged version
+        versionStr = parseFlowCliVersion(output.stderr)
+      }
 
-      versionStr = semver.clean(versionStr)
+      versionStr = versionStr != null ? semver.clean(versionStr) : null
       if (versionStr === null) return null
 
       // Ensure user has a compatible version number installed
@@ -181,6 +185,6 @@ export function isCadenceV1Cli (version: semver.SemVer): boolean {
   return CADENCE_V1_CLI_REGEX.test(version.raw)
 }
 
-export function parseFlowCliVersion (buffer: Buffer | string): string {
-  return (buffer.toString().split('\n')[0]).split(' ')[1]
+export function parseFlowCliVersion (buffer: Buffer | string): string | null {
+  return buffer.toString().match(LEGACY_VERSION_REGEXP)?.[1] ?? null
 }
