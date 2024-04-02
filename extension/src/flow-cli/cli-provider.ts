@@ -12,7 +12,7 @@ const CHECK_FLOW_CLI_CMD_NO_JSON = (flowCommand: string): string => `${flowComma
 const KNOWN_BINS = ['flow', 'flow-c1']
 
 const CADENCE_V1_CLI_REGEX = /-cadence-v1.0.0/g
-const LEGACY_VERSION_REGEXP = /Version:\s*(v?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)\s/m
+const LEGACY_VERSION_REGEXP = /Version:\s*(v?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(\s|$)/m
 
 export interface CliBinary {
   name: string
