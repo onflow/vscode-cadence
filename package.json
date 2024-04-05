@@ -198,7 +198,7 @@
 		"@types/vscode": "^1.82.0",
 		"@vscode/test-electron": "^2.3.9",
 		"chai": "^5.1.0",
-		"esbuild": "^0.20.0",
+		"esbuild": "^0.20.2",
 		"glob": "^10.3.10",
 		"mkdirp": "^3.0.1",
 		"mocha": "^10.4.0",
