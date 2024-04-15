@@ -75,7 +75,7 @@ export class CliSelectionProvider {
           }
         })
       } else if (selected instanceof AvailableBinaryItem) {
-        void this.#cliProvider.setCurrentBinary(selected.path)
+        void this.#cliProvider.setCurrentBinary(selected.command)
       }
     }))
 
@@ -84,7 +84,7 @@ export class CliSelectionProvider {
     items.push(new CustomBinaryItem())
 
     // Hoist the current binary to the top of the list
-    const currentBinaryIndex = items.findIndex(item => item instanceof AvailableBinaryItem && item.path === currentBinary?.path)
+    const currentBinaryIndex = items.findIndex(item => item instanceof AvailableBinaryItem && item.command === currentBinary?.command)
     if (currentBinaryIndex != null) {
       const currentBinaryItem = items[currentBinaryIndex]
       items.splice(currentBinaryIndex, 1)
@@ -135,11 +135,11 @@ class AvailableBinaryItem implements vscode.QuickPickItem {
   }
 
   get description (): string {
-    return `(${this.#binary.path})`
+    return `(${this.#binary.command})`
   }
 
-  get path (): string {
-    return this.#binary.path
+  get command (): string {
+    return this.#binary.command
   }
 }
 

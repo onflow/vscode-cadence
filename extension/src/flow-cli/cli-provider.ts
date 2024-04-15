@@ -3,7 +3,7 @@ import { StateCache } from '../utils/state-cache'
 import * as vscode from 'vscode'
 import { Settings } from '../settings/settings'
 import { isEqual } from 'lodash'
-import { CliBinary, BinaryVersionsProvider } from './binary-versions-provider'
+import { CliBinary, BinaryVersionsProvider, KNOWN_FLOW_COMMANDS } from './binary-versions-provider'
 
 export class CliProvider {
   #selectedBinaryName: BehaviorSubject<string>
@@ -31,7 +31,7 @@ export class CliProvider {
 
     // Display warning to user if binary doesn't exist (only if not using the default binary)
     this.currentBinary$.subscribe((binary) => {
-      if (binary === null && this.#selectedBinaryName.getValue() !== 'flow') {
+      if (binary === null && this.#selectedBinaryName.getValue() !== KNOWN_FLOW_COMMANDS.DEFAULT) {
         void vscode.window.showErrorMessage(`The configured Flow CLI binary "${this.#selectedBinaryName.getValue()}" does not exist. Please check your settings.`)
       }
     })

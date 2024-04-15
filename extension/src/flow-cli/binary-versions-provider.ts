@@ -7,12 +7,15 @@ import { isEqual } from 'lodash'
 const CHECK_FLOW_CLI_CMD = (flowCommand: string): string => `${flowCommand} version --output=json`
 const CHECK_FLOW_CLI_CMD_NO_JSON = (flowCommand: string): string => `${flowCommand} version`
 
-const KNOWN_BINS = ['flow', 'flow-c1']
+export enum KNOWN_FLOW_COMMANDS {
+  DEFAULT = 'flow',
+  CADENCE_V1 = 'flow-c1',
+}
 
 const LEGACY_VERSION_REGEXP = /Version:\s*(v?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(\s|$)/m
 
 export interface CliBinary {
-  path: string
+  command: string
   version: semver.SemVer
 }
 
@@ -26,7 +29,7 @@ export class BinaryVersionsProvider {
 
   constructor (seedBinaries: string[] = []) {
     // Seed the caches with the known binaries
-    KNOWN_BINS.forEach((bin) => {
+    Object.values(KNOWN_FLOW_COMMANDS).forEach((bin) => {
       this.add(bin)
     })
 
@@ -60,7 +63,7 @@ export class BinaryVersionsProvider {
 
   remove (path: string): void {
     // Known binaries cannot be removed
-    if (this.#caches[path] == null || KNOWN_BINS.includes(path)) return
+    if (this.#caches[path] == null || (Object.values(KNOWN_FLOW_COMMANDS) as string[]).includes(path)) return
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     delete this.#caches[path]
     this.#rootCache?.invalidate()
@@ -85,7 +88,7 @@ export class BinaryVersionsProvider {
       const version: semver.SemVer | null = semver.parse(versionInfo.version)
       if (version === null) return null
 
-      return { path: bin, version }
+      return { command: bin, version }
     } catch {
       // Fallback to old method if JSON is not supported/fails
       return await this.#fetchBinaryInformationOld(bin)
@@ -114,7 +117,7 @@ export class BinaryVersionsProvider {
       const version: semver.SemVer | null = semver.parse(versionStr)
       if (version === null) return null
 
-      return { path: bin, version }
+      return { command: bin, version }
     } catch {
       return null
     }

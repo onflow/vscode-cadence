@@ -33,7 +33,7 @@ suite('Language Server & Emulator Integration', () => {
 
     // create a mock cli provider without invokign the constructor
     cliBinary$ = new BehaviorSubject<CliBinary>({
-      path: 'flow',
+      command: 'flow',
       version: new SemVer('1.0.0')
     })
     const mockCliProvider = {
@@ -63,7 +63,7 @@ suite('Language Server & Emulator Integration', () => {
     fileModified$.next()
     pathChanged$.next('foo')
     cliBinary$.next({
-      path: 'flow',
+      command: 'flow',
       version: new SemVer('1.0.1')
     })
 
