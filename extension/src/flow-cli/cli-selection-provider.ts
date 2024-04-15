@@ -1,9 +1,10 @@
-import { zip } from 'rxjs'
-import { CliBinary, CliProvider } from './cli-provider'
-import { SemVer } from 'semver'
 import * as vscode from 'vscode'
+import { zip } from 'rxjs'
+import { CliProvider } from './cli-provider'
+import { SemVer } from 'semver'
+import { CliBinary } from './binary-versions-provider'
 
-const CHANGE_CADENCE_VERSION = 'cadence.changeCadenceVersion'
+const CHANGE_CLI_BINARY = 'cadence.changeFlowCliBinary'
 const CADENCE_V1_CLI_REGEX = /-cadence-v1.0.0/g
 // label with icon
 const GET_BINARY_LABEL = (version: SemVer): string => `Flow CLI v${version.format()}`
@@ -19,13 +20,13 @@ export class CliSelectionProvider {
     this.#cliProvider = cliProvider
 
     // Register the command to toggle the version
-    this.#disposables.push(vscode.commands.registerCommand(CHANGE_CADENCE_VERSION, async () => {
+    this.#disposables.push(vscode.commands.registerCommand(CHANGE_CLI_BINARY, async () => {
       this.#cliProvider.refresh()
       await this.#toggleSelector(true)
     }))
 
     // Register UI components
-    zip(this.#cliProvider.currentBinary$, this.#cliProvider.availableBinaries$).subscribe(() => {
+    zip(this.#cliProvider.currentBinary$, this.#cliProvider.binaryVersions$).subscribe(() => {
       void this.#refreshSelector()
     })
     this.#cliProvider.currentBinary$.subscribe((binary) => {
@@ -37,7 +38,7 @@ export class CliSelectionProvider {
 
   #createStatusBarItem (version: SemVer | null): vscode.StatusBarItem {
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1)
-    statusBarItem.command = CHANGE_CADENCE_VERSION
+    statusBarItem.command = CHANGE_CLI_BINARY
     statusBarItem.color = new vscode.ThemeColor('statusBar.foreground')
     statusBarItem.tooltip = 'Click to change the Flow CLI version'
 
@@ -85,7 +86,7 @@ export class CliSelectionProvider {
 
     // Select the current binary
     if (currentBinary !== null) {
-      const currentBinaryItem = versionSelector.items.find(item => item instanceof AvailableBinaryItem && item.path === currentBinary.name)
+      const currentBinaryItem = versionSelector.items.find(item => item instanceof AvailableBinaryItem && item.path === currentBinary.path)
       if (currentBinaryItem != null) {
         versionSelector.selectedItems = [currentBinaryItem]
       }
@@ -103,7 +104,7 @@ export class CliSelectionProvider {
     if (this.#showSelector) {
       this.#versionSelector?.dispose()
       const currentBinary = await this.#cliProvider.getCurrentBinary()
-      const availableBinaries = await this.#cliProvider.getAvailableBinaries()
+      const availableBinaries = await this.#cliProvider.getBinaryVersions()
       this.#versionSelector = this.#createVersionSelector(currentBinary, availableBinaries)
       this.#disposables.push(this.#versionSelector)
       this.#versionSelector.show()
@@ -134,11 +135,11 @@ class AvailableBinaryItem implements vscode.QuickPickItem {
   }
 
   get description (): string {
-    return `(${this.#binary.name})`
+    return `(${this.#binary.path})`
   }
 
   get path (): string {
-    return this.#binary.name
+    return this.#binary.path
   }
 }
 

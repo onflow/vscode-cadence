@@ -75,7 +75,7 @@ export class LanguageServerAPI {
       const accessCheckMode: string = this.#settings.getSettings().accessCheckMode
       const configPath: string | null = this.#config.configPath
 
-      const binaryPath = (await this.#cliProvider.getCurrentBinary())?.name
+      const binaryPath = (await this.#cliProvider.getCurrentBinary())?.path
       if (binaryPath == null) {
         throw new Error('No flow binary found')
       }
