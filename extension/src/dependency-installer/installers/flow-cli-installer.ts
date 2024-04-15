@@ -100,7 +100,7 @@ export class InstallFlowCLI extends Installer {
   async checkVersion (vsn?: semver.SemVer): Promise<boolean> {
     // Get user's version informaton
     this.#context.cliProvider.refresh()
-    const version = vsn ?? await this.#context.cliProvider.getAvailableBinaries().then(x => x.find(y => y.name === 'flow')?.version)
+    const version = vsn ?? await this.#context.cliProvider.getBinaryVersions().then(x => x.find(y => y.path === 'flow')?.version)
     if (version == null) return false
 
     if (!semver.satisfies(version, COMPATIBLE_FLOW_CLI_VERSIONS, {
@@ -128,7 +128,7 @@ export class InstallFlowCLI extends Installer {
   async verifyInstall (): Promise<boolean> {
     // Check if flow version is valid to verify install
     this.#context.cliProvider.refresh()
-    const version = await this.#context.cliProvider.getAvailableBinaries().then(x => x.find(y => y.name === 'flow')?.version)
+    const version = await this.#context.cliProvider.getBinaryVersions().then(x => x.find(y => y.path === 'flow')?.version)
     if (version == null) return false
 
     // Check flow-cli version number
