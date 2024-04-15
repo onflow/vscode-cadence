@@ -84,8 +84,12 @@ export class CliSelectionProvider {
     items.push(new CustomBinaryItem())
 
     // Hoist the current binary to the top of the list
-    const currentBinaryIndex = items.findIndex(item => item instanceof AvailableBinaryItem && item.command === currentBinary?.command)
-    if (currentBinaryIndex != null) {
+    const currentBinaryIndex = items.findIndex(item =>
+      item instanceof AvailableBinaryItem &&
+      currentBinary != null &&
+      item.command === currentBinary.command
+    )
+    if (currentBinaryIndex !== -1) {
       const currentBinaryItem = items[currentBinaryIndex]
       items.splice(currentBinaryIndex, 1)
       items.unshift(currentBinaryItem)
