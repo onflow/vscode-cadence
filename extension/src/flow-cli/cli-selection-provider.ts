@@ -82,16 +82,16 @@ export class CliSelectionProvider {
     // Update available versions
     const items: Array<AvailableBinaryItem | CustomBinaryItem> = availableBinaries.map(binary => new AvailableBinaryItem(binary))
     items.push(new CustomBinaryItem())
-    versionSelector.items = items
 
-    // Select the current binary
-    if (currentBinary !== null) {
-      const currentBinaryItem = versionSelector.items.find(item => item instanceof AvailableBinaryItem && item.path === currentBinary.path)
-      if (currentBinaryItem != null) {
-        versionSelector.selectedItems = [currentBinaryItem]
-      }
+    // Hoist the current binary to the top of the list
+    const currentBinaryIndex = items.findIndex(item => item instanceof AvailableBinaryItem && item.path === currentBinary?.path)
+    if (currentBinaryIndex != null) {
+      const currentBinaryItem = items[currentBinaryIndex]
+      items.splice(currentBinaryIndex, 1)
+      items.unshift(currentBinaryItem)
     }
 
+    versionSelector.items = items
     return versionSelector
   }
 
