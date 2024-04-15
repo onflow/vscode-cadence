@@ -12,6 +12,8 @@ export enum KNOWN_FLOW_COMMANDS {
   CADENCE_V1 = 'flow-c1',
 }
 
+// This regex matches a string like "Version: v{SEMVER}" and extracts the version number
+// It uses the official semver regex from https://semver.org/
 const LEGACY_VERSION_REGEXP = /Version:\s*(v?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(\s|$)/m
 
 export interface CliBinary {
