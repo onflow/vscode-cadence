@@ -52,20 +52,20 @@ export class BinaryVersionsProvider {
     })
   }
 
-  add (path: string): void {
-    if (this.#caches[path] != null) return
-    this.#caches[path] = new StateCache(async () => await this.#fetchBinaryInformation(path))
-    this.#caches[path].subscribe(() => {
+  add (command: string): void {
+    if (this.#caches[command] != null) return
+    this.#caches[command] = new StateCache(async () => await this.#fetchBinaryInformation(command))
+    this.#caches[command].subscribe(() => {
       this.#rootCache?.invalidate()
     })
     this.#rootCache?.invalidate()
   }
 
-  remove (path: string): void {
+  remove (command: string): void {
     // Known binaries cannot be removed
-    if (this.#caches[path] == null || (Object.values(KNOWN_FLOW_COMMANDS) as string[]).includes(path)) return
+    if (this.#caches[command] == null || (Object.values(KNOWN_FLOW_COMMANDS) as string[]).includes(command)) return
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-    delete this.#caches[path]
+    delete this.#caches[command]
     this.#rootCache?.invalidate()
   }
 
