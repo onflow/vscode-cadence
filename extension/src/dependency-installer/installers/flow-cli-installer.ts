@@ -129,7 +129,7 @@ export class InstallFlowCLI extends Installer {
     // Check if flow version is valid to verify install
     this.#context.cliProvider.refresh()
     const installedVersions = await this.#context.cliProvider.getBinaryVersions().catch((e) => {
-      window.showErrorMessage('Failed to check CLI version: ' + e.message)
+      void window.showErrorMessage(`Failed to check CLI version: ${String(e.message)}`)
       return []
     })
     const version = installedVersions.find(y => y.command === KNOWN_FLOW_COMMANDS.DEFAULT)?.version
