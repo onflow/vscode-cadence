@@ -8,18 +8,18 @@ import { CliBinary, BinaryVersionsProvider, KNOWN_FLOW_COMMANDS } from './binary
 export class CliProvider {
   #selectedBinaryName: BehaviorSubject<string>
   #currentBinary$: StateCache<CliBinary | null>
-  #binaryVersions: BinaryVersionsProvider
+  #binaryVersionsProvider: BinaryVersionsProvider
   #settings: Settings
 
   constructor (settings: Settings) {
     const initialBinaryPath = settings.getSettings().flowCommand
 
     this.#settings = settings
-    this.#binaryVersions = new BinaryVersionsProvider([initialBinaryPath])
+    this.#binaryVersionsProvider = new BinaryVersionsProvider([initialBinaryPath])
     this.#selectedBinaryName = new BehaviorSubject<string>(initialBinaryPath)
     this.#currentBinary$ = new StateCache(async () => {
       const name: string = this.#selectedBinaryName.getValue()
-      const versionCache = this.#binaryVersions.get(name)
+      const versionCache = this.#binaryVersionsProvider.get(name)
       if (versionCache == null) return null
       return await versionCache.getValue()
     })
@@ -43,10 +43,10 @@ export class CliProvider {
     // Subscribe to changes in the selected binary to update the caches
     this.#selectedBinaryName.pipe(distinctUntilChanged(), startWith(null), pairwise()).subscribe(([prev, curr]) => {
       // Remove the previous binary from the cache
-      if (prev != null) this.#binaryVersions.remove(prev)
+      if (prev != null) this.#binaryVersionsProvider.remove(prev)
 
       // Add the current binary to the cache
-      if (curr != null) this.#binaryVersions.add(curr)
+      if (curr != null) this.#binaryVersionsProvider.add(curr)
 
       // Invalidate the current binary cache
       this.#currentBinary$.invalidate()
@@ -66,15 +66,15 @@ export class CliProvider {
   }
 
   async getBinaryVersions (): Promise<CliBinary[]> {
-    return await this.#binaryVersions.getVersions()
+    return await this.#binaryVersionsProvider.getVersions()
   }
 
   get binaryVersions$ (): Observable<CliBinary[]> {
-    return this.#binaryVersions.versions$.pipe(distinctUntilChanged(isEqual))
+    return this.#binaryVersionsProvider.versions$.pipe(distinctUntilChanged(isEqual))
   }
 
   // Refresh all cached binary versions
   refresh (): void {
-    this.#binaryVersions.refresh()
+    this.#binaryVersionsProvider.refresh()
   }
 }
