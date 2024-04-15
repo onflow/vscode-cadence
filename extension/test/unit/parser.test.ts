@@ -1,5 +1,5 @@
 import * as assert from 'assert'
-import { parseFlowCliVersion } from '../../src/flow-cli/cli-provider'
+import { parseFlowCliVersion } from '../../src/flow-cli/binary-versions-provider'
 import { execDefault } from '../../src/utils/shell/exec'
 import { ASSERT_EQUAL } from '../globals'
 import * as semver from 'semver'
