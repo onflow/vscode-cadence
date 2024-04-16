@@ -79,6 +79,10 @@ export class CliSelectionProvider {
       }
     }))
 
+    this.#disposables.push(versionSelector.onDidHide(() => {
+      void this.#toggleSelector(false)
+    }))
+
     // Update available versions
     const items: Array<AvailableBinaryItem | CustomBinaryItem> = availableBinaries.map(binary => new AvailableBinaryItem(binary))
     items.push(new CustomBinaryItem())
