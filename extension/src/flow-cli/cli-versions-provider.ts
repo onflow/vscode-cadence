@@ -13,7 +13,7 @@ export enum KNOWN_FLOW_COMMANDS {
 }
 
 // Matches the version number from the output of the Flow CLI
-const LEGACY_VERSION_REGEXP = /Version:\s*v(.*)(?\s|$)/m
+const LEGACY_VERSION_REGEXP = /Version:\s*v(.*)(?:\s|$)/m
 
 export interface CliBinary {
   command: string
