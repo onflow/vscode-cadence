@@ -2,7 +2,7 @@ import * as vscode from 'vscode'
 import { zip } from 'rxjs'
 import { CliProvider } from './cli-provider'
 import { SemVer } from 'semver'
-import { CliBinary } from './binary-versions-provider'
+import { CliBinary } from './cli-versions-provider'
 
 const CHANGE_CLI_BINARY = 'cadence.changeFlowCliBinary'
 const CADENCE_V1_CLI_REGEX = /-cadence-v1.0.0/g

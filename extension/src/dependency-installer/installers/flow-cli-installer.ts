@@ -6,7 +6,7 @@ import { Installer, InstallerConstructor, InstallerContext } from '../installer'
 import * as semver from 'semver'
 import fetch from 'node-fetch'
 import { HomebrewInstaller } from './homebrew-installer'
-import { KNOWN_FLOW_COMMANDS } from '../../flow-cli/binary-versions-provider'
+import { KNOWN_FLOW_COMMANDS } from '../../flow-cli/cli-versions-provider'
 
 // Command to check flow-cli
 const COMPATIBLE_FLOW_CLI_VERSIONS = '>=1.6.0'

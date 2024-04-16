@@ -9,7 +9,7 @@ import { BehaviorSubject, Subject } from 'rxjs'
 import { State } from 'vscode-languageclient'
 import * as sinon from 'sinon'
 import { SemVer } from 'semver'
-import { CliBinary } from '../../src/flow-cli/binary-versions-provider'
+import { CliBinary } from '../../src/flow-cli/cli-versions-provider'
 
 suite('Language Server & Emulator Integration', () => {
   let LS: LanguageServerAPI

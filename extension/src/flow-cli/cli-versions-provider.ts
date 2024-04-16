@@ -25,7 +25,7 @@ interface FlowVersionOutput {
   version: string
 }
 
-export class BinaryVersionsProvider {
+export class CliVersionsProvider {
   #rootCache: StateCache<CliBinary[]>
   #caches: { [key: string]: StateCache<CliBinary | null> } = {}
 
