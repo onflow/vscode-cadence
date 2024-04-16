@@ -12,9 +12,8 @@ export enum KNOWN_FLOW_COMMANDS {
   CADENCE_V1 = 'flow-c1',
 }
 
-// This regex matches a string like "Version: v{SEMVER}" and extracts the version number
-// It uses the official semver regex from https://semver.org/
-const LEGACY_VERSION_REGEXP = /Version:\s*(v?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(\s|$)/m
+// Matches the version number from the output of the Flow CLI
+const LEGACY_VERSION_REGEXP = /Version:\s*v(.*)(?\s|$)/m
 
 export interface CliBinary {
   command: string
@@ -112,9 +111,6 @@ export class CliVersionsProvider {
         versionStr = parseFlowCliVersion(output.stderr)
       }
 
-      versionStr = versionStr != null ? semver.clean(versionStr) : null
-      if (versionStr === null) return null
-
       // Ensure user has a compatible version number installed
       const version: semver.SemVer | null = semver.parse(versionStr)
       if (version === null) return null
@@ -142,5 +138,7 @@ export class CliVersionsProvider {
 }
 
 export function parseFlowCliVersion (buffer: Buffer | string): string | null {
-  return buffer.toString().match(LEGACY_VERSION_REGEXP)?.[1] ?? null
+  const rawMatch = buffer.toString().match(LEGACY_VERSION_REGEXP)?.[1] ?? null
+  if (rawMatch == null) return null
+  return semver.clean(rawMatch)
 }
