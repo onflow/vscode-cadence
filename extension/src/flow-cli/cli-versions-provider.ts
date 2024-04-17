@@ -85,11 +85,7 @@ export class CliVersionsProvider {
       // Format version string from output
       const versionInfo: FlowVersionOutput = JSON.parse(buffer)
 
-      // Ensure user has a compatible version number installed
-      const version: semver.SemVer | null = semver.parse(versionInfo.version)
-      if (version === null) return null
-
-      return { command: bin, version }
+      return cliBinaryFromVersion(bin, versionInfo.version)
     } catch {
       // Fallback to old method if JSON is not supported/fails
       return await this.#fetchBinaryInformationOld(bin)
@@ -111,11 +107,9 @@ export class CliVersionsProvider {
         versionStr = parseFlowCliVersion(output.stderr)
       }
 
-      // Ensure user has a compatible version number installed
-      const version: semver.SemVer | null = semver.parse(versionStr)
-      if (version === null) return null
+      if (versionStr == null) return null
 
-      return { command: bin, version }
+      return cliBinaryFromVersion(bin, versionStr)
     } catch {
       return null
     }
@@ -141,4 +135,12 @@ export function parseFlowCliVersion (buffer: Buffer | string): string | null {
   const rawMatch = buffer.toString().match(LEGACY_VERSION_REGEXP)?.[1] ?? null
   if (rawMatch == null) return null
   return semver.clean(rawMatch)
+}
+
+function cliBinaryFromVersion (bin: string, versionStr: string): CliBinary | null {
+  // Ensure user has a compatible version number installed
+  const version: semver.SemVer | null = semver.parse(versionStr)
+  if (version === null) return null
+
+  return { command: bin, version }
 }
