@@ -8,8 +8,8 @@ import { MaxTimeout } from '../globals'
 import { BehaviorSubject, Subject } from 'rxjs'
 import { State } from 'vscode-languageclient'
 import * as sinon from 'sinon'
-import { CliBinary } from '../../src/flow-cli/cli-provider'
 import { SemVer } from 'semver'
+import { CliBinary } from '../../src/flow-cli/cli-versions-provider'
 
 suite('Language Server & Emulator Integration', () => {
   let LS: LanguageServerAPI
@@ -33,7 +33,7 @@ suite('Language Server & Emulator Integration', () => {
 
     // create a mock cli provider without invokign the constructor
     cliBinary$ = new BehaviorSubject<CliBinary>({
-      name: 'flow',
+      command: 'flow',
       version: new SemVer('1.0.0')
     })
     const mockCliProvider = {
@@ -63,7 +63,7 @@ suite('Language Server & Emulator Integration', () => {
     fileModified$.next()
     pathChanged$.next('foo')
     cliBinary$.next({
-      name: 'flow',
+      command: 'flow',
       version: new SemVer('1.0.1')
     })
 

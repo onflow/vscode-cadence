@@ -6,6 +6,7 @@ import { Installer, InstallerConstructor, InstallerContext } from '../installer'
 import * as semver from 'semver'
 import fetch from 'node-fetch'
 import { HomebrewInstaller } from './homebrew-installer'
+import { KNOWN_FLOW_COMMANDS } from '../../flow-cli/cli-versions-provider'
 
 // Command to check flow-cli
 const COMPATIBLE_FLOW_CLI_VERSIONS = '>=1.6.0'
@@ -97,10 +98,9 @@ export class InstallFlowCLI extends Installer {
     }
   }
 
-  async checkVersion (vsn?: semver.SemVer): Promise<boolean> {
+  async checkVersion (version: semver.SemVer): Promise<boolean> {
     // Get user's version informaton
     this.#context.cliProvider.refresh()
-    const version = vsn ?? await this.#context.cliProvider.getAvailableBinaries().then(x => x.find(y => y.name === 'flow')?.version)
     if (version == null) return false
 
     if (!semver.satisfies(version, COMPATIBLE_FLOW_CLI_VERSIONS, {
@@ -128,7 +128,11 @@ export class InstallFlowCLI extends Installer {
   async verifyInstall (): Promise<boolean> {
     // Check if flow version is valid to verify install
     this.#context.cliProvider.refresh()
-    const version = await this.#context.cliProvider.getAvailableBinaries().then(x => x.find(y => y.name === 'flow')?.version)
+    const installedVersions = await this.#context.cliProvider.getBinaryVersions().catch((e) => {
+      void window.showErrorMessage(`Failed to check CLI version: ${String(e.message)}`)
+      return []
+    })
+    const version = installedVersions.find(y => y.command === KNOWN_FLOW_COMMANDS.DEFAULT)?.version
     if (version == null) return false
 
     // Check flow-cli version number

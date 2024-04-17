@@ -7,6 +7,7 @@ import { BehaviorSubject, Subscription, filter, firstValueFrom, skip } from 'rxj
 import { envVars } from '../utils/shell/env-vars'
 import { FlowConfig } from './flow-config'
 import { CliProvider } from '../flow-cli/cli-provider'
+import { KNOWN_FLOW_COMMANDS } from '../flow-cli/cli-versions-provider'
 
 // Identities for commands handled by the Language server
 const RELOAD_CONFIGURATION = 'cadence.server.flow.reloadConfiguration'
@@ -75,12 +76,12 @@ export class LanguageServerAPI {
       const accessCheckMode: string = this.#settings.getSettings().accessCheckMode
       const configPath: string | null = this.#config.configPath
 
-      const binaryPath = (await this.#cliProvider.getCurrentBinary())?.name
+      const binaryPath = (await this.#cliProvider.getCurrentBinary())?.command
       if (binaryPath == null) {
         throw new Error('No flow binary found')
       }
 
-      if (binaryPath !== 'flow') {
+      if (binaryPath !== KNOWN_FLOW_COMMANDS.DEFAULT) {
         try {
           exec('killall dlv') // Required when running language server locally on mac
         } catch (err) { void err }

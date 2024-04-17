@@ -100,9 +100,9 @@
 				"title": "Check Dependencies"
 			},
 			{
-				"command": "cadence.changeCadenceVersion",
+				"command": "cadence.changeFlowCliBinary",
 				"category": "Cadence",
-				"title": "Change Cadence Version"
+				"title": "Change Flow CLI Binary"
 			}
 		],
 		"configuration": {
