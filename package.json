@@ -214,7 +214,7 @@
 	"dependencies": {
 		"@onflow/cadence-parser": "^0.42.1",
 		"@onflow/decode": "0.0.11",
-		"@sentry/node": "^7.109.0",
+		"@sentry/node": "^7.110.0",
 		"@vscode/vsce": "^2.24.0",
 		"ansi-regex": "^6.0.1",
 		"async-lock": "^1.4.1",
