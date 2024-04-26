@@ -8,7 +8,8 @@ import fetch from 'node-fetch'
 import { HomebrewInstaller } from './homebrew-installer'
 import { KNOWN_FLOW_COMMANDS } from '../../flow-cli/cli-versions-provider'
 
-type HomebrewVersionInfo = {
+// Relevant subset of Homebrew formulae JSON
+interface HomebrewVersionInfo {
   versions: {
     stable: string
   }
@@ -85,12 +86,12 @@ export class InstallFlowCLI extends Installer {
     await execVscodeTerminal('Install Flow CLI', BASH_INSTALL_FLOW_CLI())
   }
 
-  async findLatestVersion (currentVersion: semver.SemVer): Promise<void> {
+  async maybeNotifyNewerVersion (currentVersion: semver.SemVer): Promise<void> {
     try {
-      const response = await fetch(VERSION_INFO_URL)  
-      const { versions: {stable: latestStr} }: HomebrewVersionInfo = await response.json()
+      const response = await fetch(VERSION_INFO_URL)
+      const { versions: { stable: latestStr } }: HomebrewVersionInfo = await response.json()
       const latest: semver.SemVer | null = semver.parse(latestStr)
-  
+
       // Check if latest version > current version
       if (latest != null && latestStr != null && semver.compare(latest, currentVersion) === 1) {
         promptUserInfoMessage(
@@ -104,9 +105,7 @@ export class InstallFlowCLI extends Installer {
           }]
         )
       }
-    } catch(e) {
-      // swallow the error, it doesn't matter if we can't perform the check
-    }
+    } catch (e) {}
   }
 
   async checkVersion (version: semver.SemVer): Promise<boolean> {
@@ -130,8 +129,8 @@ export class InstallFlowCLI extends Installer {
       return false
     }
 
-    // Check for newer version
-    await this.findLatestVersion(version)
+    // Maybe notify user of newer version, non-blocking
+    void this.maybeNotifyNewerVersion(version)
 
     return true
   }
