@@ -197,7 +197,7 @@
 		"@types/uuid": "^9.0.8",
 		"@types/vscode": "^1.82.0",
 		"@vscode/test-electron": "^2.3.9",
-		"chai": "^5.1.0",
+		"chai": "^5.1.1",
 		"esbuild": "^0.21.3",
 		"glob": "^10.3.12",
 		"mkdirp": "^3.0.1",
