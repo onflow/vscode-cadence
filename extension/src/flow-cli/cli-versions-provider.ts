@@ -9,7 +9,6 @@ const CHECK_FLOW_CLI_CMD_NO_JSON = (flowCommand: string): string => `${flowComma
 
 export enum KNOWN_FLOW_COMMANDS {
   DEFAULT = 'flow',
-  CADENCE_V1 = 'flow-c1',
 }
 
 // Matches the version number from the output of the Flow CLI

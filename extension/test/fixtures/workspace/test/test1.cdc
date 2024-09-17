@@ -1,5 +1,5 @@
 import Test
 
-pub fun testPassing() {
+access(all) fun testPassing() {
   Test.assert(true)
 }
