@@ -1,7 +1,9 @@
 /* Workspace Settings */
-import { BehaviorSubject, Observable, distinctUntilChanged, map, skip } from 'rxjs'
-import { workspace, Disposable } from 'vscode'
+import { BehaviorSubject, Observable, distinctUntilChanged, map } from 'rxjs'
+import { workspace, Disposable, ConfigurationTarget } from 'vscode'
 import { isEqual } from 'lodash'
+
+const CONFIGURATION_KEY = 'cadence'
 
 // Schema for the cadence configuration
 export interface CadenceConfiguration {
@@ -20,7 +22,7 @@ export class Settings implements Disposable {
   constructor () {
     // Watch for configuration changes
     this.#disposables.push(workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration('cadence')) {
+      if (e.affectsConfiguration(CONFIGURATION_KEY)) {
         this.#configuration$.next(this.#getConfiguration())
       }
     }))
@@ -38,20 +40,34 @@ export class Settings implements Disposable {
    * settings.watch$(config => config.flowCommand)
    */
   watch$<T = CadenceConfiguration> (selector: (config: CadenceConfiguration) => T = (config) => config as unknown as T): Observable<T> {
-    return this.#configuration$.asObservable().pipe(
-      skip(1),
+    return this.#configuration$.pipe(
       map(selector),
       distinctUntilChanged(isEqual)
     )
   }
 
   /**
-   * Returns the current configuration
-   *
+   * Get the current configuration
    * @returns The current configuration
    */
   getSettings (): CadenceConfiguration {
     return this.#configuration$.value
+  }
+
+  async updateSettings (config: Partial<CadenceConfiguration>, target?: ConfigurationTarget): Promise<void> {
+    // Recursively update all keys in the configuration
+    async function update (section: string, obj: any): Promise<void> {
+      await Promise.all(Object.entries(obj).map(async ([key, value]) => {
+        const newKey = `${section}.${key}`
+        if (typeof value === 'object' && !Array.isArray(value)) {
+          await update(newKey, value)
+        } else {
+          await workspace.getConfiguration().update(newKey, value, target)
+        }
+      }))
+    }
+
+    await update(CONFIGURATION_KEY, config)
   }
 
   dispose (): void {
@@ -59,6 +75,6 @@ export class Settings implements Disposable {
   }
 
   #getConfiguration (): CadenceConfiguration {
-    return workspace.getConfiguration('cadence') as unknown as CadenceConfiguration
+    return workspace.getConfiguration(CONFIGURATION_KEY) as unknown as CadenceConfiguration
   }
 }

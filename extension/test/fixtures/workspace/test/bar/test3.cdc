@@ -1,9 +1,9 @@
 import Test
 
-pub fun testFailing() {
+access(all) fun testFailing() {
   Test.assert(false)
 }
 
-pub fun testPassing() {
+access(all) fun testPassing() {
   Test.assert(true)
 }

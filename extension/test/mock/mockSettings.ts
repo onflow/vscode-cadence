@@ -1,15 +1,15 @@
-import { BehaviorSubject, Observable, of, map, distinctUntilChanged, skip } from 'rxjs'
+import { BehaviorSubject, Observable, of, map, distinctUntilChanged } from 'rxjs'
 import { CadenceConfiguration, Settings } from '../../src/settings/settings'
 import * as path from 'path'
 import { isEqual } from 'lodash'
 
-export function getMockSettings (settings$: BehaviorSubject<Partial<CadenceConfiguration>> | Partial<CadenceConfiguration> | null = null): Settings {
+export function getMockSettings (_settings$: BehaviorSubject<Partial<CadenceConfiguration>> | Partial<CadenceConfiguration> | null = null): Settings {
   const mockSettings: Settings = { getSettings, watch$ } as any
 
   function getSettings (): Partial<CadenceConfiguration> {
-    if (!(settings$ instanceof BehaviorSubject) && settings$ != null) return settings$
+    if (!(_settings$ instanceof BehaviorSubject) && _settings$ != null) return _settings$
 
-    return settings$?.getValue() ?? {
+    return _settings$?.getValue() ?? {
       flowCommand: 'flow',
       accessCheckMode: 'strict',
       customConfigPath: path.join(__dirname, '../integration/fixtures/workspace/flow.json'),
@@ -20,10 +20,9 @@ export function getMockSettings (settings$: BehaviorSubject<Partial<CadenceConfi
   }
 
   function watch$<T = CadenceConfiguration> (selector: (config: CadenceConfiguration) => T = (config) => config as unknown as T): Observable<T> {
-    if (!(settings$ instanceof BehaviorSubject)) return of()
+    if (!(_settings$ instanceof BehaviorSubject)) return of()
 
-    return settings$.asObservable().pipe(
-      skip(1),
+    return _settings$.asObservable().pipe(
       map(selector as any),
       distinctUntilChanged(isEqual)
     )

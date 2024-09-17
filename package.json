@@ -3,7 +3,7 @@
 	"displayName": "Cadence",
 	"publisher": "onflow",
 	"description": "This extension integrates Cadence, the resource-oriented smart contract programming language of Flow, into Visual Studio Code.",
-	"version": "2.2.0",
+	"version": "2.4.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/onflow/vscode-cadence.git"
@@ -98,6 +98,11 @@
 				"command": "cadence.checkDepencencies",
 				"category": "Cadence",
 				"title": "Check Dependencies"
+			},
+			{
+				"command": "cadence.changeFlowCliBinary",
+				"category": "Cadence",
+				"title": "Change Flow CLI Binary"
 			}
 		],
 		"configuration": {
@@ -148,8 +153,8 @@
 					".cdc"
 				],
 				"icon": {
-					"light": "./images/file-logo.png",
-					"dark": "./images/file-logo.png"
+					"light": "./images/icon.png",
+					"dark": "./images/icon.png"
 				},
 				"configuration": "./extension/language/language-configuration.json"
 			}
@@ -179,51 +184,50 @@
 		]
 	},
 	"devDependencies": {
-		"@types/chai": "^4.3.11",
+		"@types/chai": "^4.3.19",
 		"@types/expect": "^24.3.0",
 		"@types/glob": "^8.0.1",
-		"@types/lodash": "^4.14.202",
-		"@types/mixpanel": "^2.14.8",
+		"@types/lodash": "^4.17.7",
+		"@types/mixpanel": "^2.14.9",
 		"@types/mocha": "^10.0.6",
-		"@types/node": "^20.11.16",
+		"@types/node": "^22.5.5",
 		"@types/object-hash": "^3.0.6",
-		"@types/semver": "^7.5.6",
+		"@types/semver": "^7.5.8",
 		"@types/sinon": "^17.0.3",
-		"@types/uuid": "^9.0.8",
+		"@types/uuid": "^10.0.0",
 		"@types/vscode": "^1.82.0",
-		"@vscode/test-electron": "^2.3.9",
-		"chai": "^5.0.3",
-		"esbuild": "^0.20.0",
-		"glob": "^10.3.10",
+		"@vscode/test-electron": "^2.4.1",
+		"chai": "^5.1.1",
+		"esbuild": "^0.23.0",
+		"glob": "^11.0.0",
 		"mkdirp": "^3.0.1",
-		"mocha": "^10.2.0",
-		"nyc": "^15.1.0",
-		"ovsx": "^0.8.3",
-		"rimraf": "^5.0.5",
-		"sinon": "^17.0.1",
+		"mocha": "^10.4.0",
+		"nyc": "^17.0.0",
+		"ovsx": "^0.9.2",
+		"rimraf": "^6.0.1",
+		"sinon": "^18.0.0",
 		"ts-mocha": "^10.0.0",
 		"ts-node": "^10.9.2",
 		"ts-standard": "^12.0.2",
 		"typescript": "~5.1.6"
 	},
 	"dependencies": {
-		"@onflow/cadence-parser": "^0.42.1",
-		"@onflow/decode": "0.0.11",
-		"@sentry/node": "^7.99.0",
-		"@vscode/vsce": "^2.23.0",
+		"@onflow/cadence-parser": "^1.0.0-preview.50",
+		"@sentry/node": "^8.30.0",
+		"@vscode/vsce": "^3.1.0",
 		"ansi-regex": "^6.0.1",
 		"async-lock": "^1.4.1",
 		"crypto": "^1.0.1",
-		"elliptic": "^6.5.4",
+		"elliptic": "^6.5.7",
 		"lodash": "^4.17.21",
 		"mixpanel": "^0.18.0",
 		"node-fetch": "^2.6.7",
 		"object-hash": "^3.0.0",
 		"os-name": "^6.0.0",
 		"rxjs": "^7.8.1",
-		"semver": "^7.6.0",
+		"semver": "^7.6.3",
 		"sleep-synchronously": "^2.0.0",
-		"uuid": "^9.0.1",
+		"uuid": "^10.0.0",
 		"vscode-languageclient": "^9.0.1"
 	},
 	"__metadata": {

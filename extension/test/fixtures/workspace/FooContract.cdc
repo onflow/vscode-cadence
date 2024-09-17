@@ -1,2 +1,2 @@
-pub contract FooContract {}
+access(all) contract FooContract {}
  

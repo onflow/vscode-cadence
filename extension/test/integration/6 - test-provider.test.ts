@@ -123,7 +123,7 @@ suite('test provider tests', () => {
     const testFilePath = path.join(workspacePath, 'test/bar/test4.cdc')
     const testFileContents = `
       import Test
-      pub fun testPassing() {
+      access(all) fun testPassing() {
         Test.assert(true)
       }
     `

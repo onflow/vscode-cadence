@@ -6,9 +6,17 @@ import { Installer, InstallerConstructor, InstallerContext } from '../installer'
 import * as semver from 'semver'
 import fetch from 'node-fetch'
 import { HomebrewInstaller } from './homebrew-installer'
+import { KNOWN_FLOW_COMMANDS } from '../../flow-cli/cli-versions-provider'
+
+// Relevant subset of Homebrew formulae JSON
+interface HomebrewVersionInfo {
+  versions: {
+    stable: string
+  }
+}
 
 // Command to check flow-cli
-const COMPATIBLE_FLOW_CLI_VERSIONS = '>=1.6.0'
+const COMPATIBLE_FLOW_CLI_VERSIONS = '>=2.0.0'
 
 // Shell install commands
 const BREW_INSTALL_FLOW_CLI = 'brew update && brew install flow-cli'
@@ -20,7 +28,8 @@ const BASH_INSTALL_FLOW_CLI = (githubToken?: string): string =>
   `${
     githubToken != null ? `GITHUB_TOKEN=${githubToken} ` : ''
   }sh -ci "$(curl -fsSL https://raw.githubusercontent.com/onflow/flow-cli/master/install.sh)"`
-const VERSION_INFO_URL = 'https://raw.githubusercontent.com/onflow/flow-cli/master/version.txt'
+const VERSION_INFO_URL = 'https://formulae.brew.sh/api/formula/flow-cli.json'
+
 export class InstallFlowCLI extends Installer {
   #githubToken: string | undefined
   #context: InstallerContext
@@ -77,54 +86,63 @@ export class InstallFlowCLI extends Installer {
     await execVscodeTerminal('Install Flow CLI', BASH_INSTALL_FLOW_CLI())
   }
 
-  async findLatestVersion (currentVersion: semver.SemVer): Promise<void> {
-    const response = await fetch(VERSION_INFO_URL)
-    const latestStr = semver.clean(await response.text())
-    const latest: semver.SemVer | null = semver.parse(latestStr)
+  async maybeNotifyNewerVersion (currentVersion: semver.SemVer): Promise<void> {
+    try {
+      const response = await fetch(VERSION_INFO_URL)
+      const { versions: { stable: latestStr } }: HomebrewVersionInfo = await response.json()
+      const latest: semver.SemVer | null = semver.parse(latestStr)
 
-    // Check if latest version > current version
-    if (latest != null && latestStr != null && semver.compare(latest, currentVersion) === 1) {
-      promptUserInfoMessage(
-        'There is a new Flow CLI version available: ' + latestStr,
-        'Install latest Flow CLI',
-        async () => {
-          await this.runInstall()
-          await this.#context.refreshDependencies()
-        }
-      )
-    }
+      // Check if latest version > current version
+      if (latest != null && latestStr != null && semver.compare(latest, currentVersion) === 1) {
+        promptUserInfoMessage(
+          'There is a new Flow CLI version available: ' + latest.format(),
+          [{
+            label: 'Install latest Flow CLI',
+            callback: async () => {
+              await this.runInstall()
+              await this.#context.refreshDependencies()
+            }
+          }]
+        )
+      }
+    } catch (e) {}
   }
 
-  async checkVersion (vsn?: semver.SemVer): Promise<boolean> {
+  async checkVersion (version: semver.SemVer): Promise<boolean> {
     // Get user's version informaton
-    this.#context.flowVersionProvider.refresh()
-    const version = vsn ?? await this.#context.flowVersionProvider.getVersion()
-    if (version === null) return false
+    this.#context.cliProvider.refresh()
+    if (version == null) return false
 
     if (!semver.satisfies(version, COMPATIBLE_FLOW_CLI_VERSIONS, {
       includePrerelease: true
     })) {
       promptUserErrorMessage(
         'Incompatible Flow CLI version: ' + version.format(),
-        'Install latest Flow CLI',
-        async () => {
-          await this.runInstall()
-          await this.#context.refreshDependencies()
-        }
+        [{
+          label: 'Install latest Flow CLI',
+          callback: async () => {
+            await this.runInstall()
+            await this.#context.refreshDependencies()
+          }
+        }]
       )
       return false
     }
 
-    // Check for newer version
-    await this.findLatestVersion(version)
+    // Maybe notify user of newer version, non-blocking
+    void this.maybeNotifyNewerVersion(version)
 
     return true
   }
 
   async verifyInstall (): Promise<boolean> {
     // Check if flow version is valid to verify install
-    this.#context.flowVersionProvider.refresh()
-    const version = await this.#context.flowVersionProvider.getVersion()
+    this.#context.cliProvider.refresh()
+    const installedVersions = await this.#context.cliProvider.getBinaryVersions().catch((e) => {
+      void window.showErrorMessage(`Failed to check CLI version: ${String(e.message)}`)
+      return []
+    })
+    const version = installedVersions.find(y => y.command === KNOWN_FLOW_COMMANDS.DEFAULT)?.version
     if (version == null) return false
 
     // Check flow-cli version number

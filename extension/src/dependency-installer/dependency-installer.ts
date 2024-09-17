@@ -4,7 +4,7 @@ import { Installer, InstallerConstructor, InstallerContext, InstallError } from 
 import { promptUserErrorMessage } from '../ui/prompts'
 import { StateCache } from '../utils/state-cache'
 import { LanguageServerAPI } from '../server/language-server'
-import { FlowVersionProvider } from '../flow-cli/flow-version-provider'
+import { CliProvider } from '../flow-cli/cli-provider'
 
 const INSTALLERS: InstallerConstructor[] = [
   InstallFlowCLI
@@ -15,12 +15,14 @@ export class DependencyInstaller {
   missingDependencies: StateCache<Installer[]>
   #installerContext: InstallerContext
 
-  constructor (languageServerApi: LanguageServerAPI, flowVersionProvider: FlowVersionProvider) {
+  constructor (languageServerApi: LanguageServerAPI, cliProvider: CliProvider) {
     this.#installerContext = {
       refreshDependencies: this.checkDependencies.bind(this),
       languageServerApi,
-      flowVersionProvider
+      cliProvider
     }
+
+    // Register installers
     this.#registerInstallers()
 
     // Create state cache for missing dependencies
@@ -40,8 +42,12 @@ export class DependencyInstaller {
         // Prompt user to install missing dependencies
         promptUserErrorMessage(
           'Not all dependencies are installed: ' + missing.map(x => x.getName()).join(', '),
-          'Install Missing Dependencies',
-          () => { void this.#installMissingDependencies() }
+          [
+            {
+              label: 'Install Missing Dependencies',
+              callback: () => { void this.#installMissingDependencies() }
+            }
+          ]
         )
       }
     })
@@ -50,7 +56,8 @@ export class DependencyInstaller {
   async checkDependencies (): Promise<void> {
     // Invalidate and wait for state to update
     // This will trigger the missingDependencies subscriptions
-    await this.missingDependencies.getValue(true)
+    this.missingDependencies.invalidate()
+    await this.missingDependencies.getValue()
   }
 
   async installMissing (): Promise<void> {
@@ -76,7 +83,7 @@ export class DependencyInstaller {
     const missing = await this.missingDependencies.getValue()
     const installed: Installer[] = this.registeredInstallers.filter(x => !missing.includes(x))
 
-    await new Promise<void>((resolve, reject) => {
+    await new Promise<void>((resolve) => {
       setTimeout(() => { resolve() }, 2000)
     })
 

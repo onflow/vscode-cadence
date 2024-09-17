@@ -1,7 +1,7 @@
 transaction() {
     let guest: Address
 
-    prepare(authorizer: AuthAccount) {
+    prepare(authorizer: &Account) {
         self.guest = authorizer.address
     }
 
