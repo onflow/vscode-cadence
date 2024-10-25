@@ -5,8 +5,6 @@ import { SemVer } from 'semver'
 import { CliBinary } from './cli-versions-provider'
 
 const CHANGE_CLI_BINARY = 'cadence.changeFlowCliBinary'
-const CADENCE_V1_CLI_REGEX = /-cadence-v1.0.0/g
-// label with icon
 const GET_BINARY_LABEL = (version: SemVer): string => `Flow CLI v${version.format()}`
 
 export class CliSelectionProvider {
@@ -157,8 +155,4 @@ class CustomBinaryItem implements vscode.QuickPickItem {
   constructor () {
     this.label = 'Choose a custom version...'
   }
-}
-
-export function isCliCadenceV1 (version: SemVer): boolean {
-  return CADENCE_V1_CLI_REGEX.test(version.raw)
 }
