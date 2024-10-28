@@ -215,7 +215,7 @@
 		"@onflow/cadence-parser": "^1.0.0-preview.50",
 		"@sentry/node": "^8.30.0",
 		"@vscode/vsce": "^3.1.0",
-		"ansi-regex": "^6.0.1",
+		"ansi-regex": "^6.1.0",
 		"async-lock": "^1.4.1",
 		"crypto": "^1.0.1",
 		"elliptic": "^6.5.7",
