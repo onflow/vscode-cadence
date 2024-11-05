@@ -7,137 +7,136 @@
       { "include": "#keywords" },
       { "include": "#code-block" },
       { "include": "#composite" },
-      { "include": "#event" }
+      { "include": "#event" },
+      { "include": "#entitlement" }
     ],
     "repository": {
       "comments": {
         "patterns": [
           {
+            "name": "comment.line.number-sign.cadence",
+            "match": "\\A^(#!).*$\\n?",
             "captures": {
               "1": {
                 "name": "punctuation.definition.comment.cadence"
               }
-            },
-            "match": "\\A^(#!).*$\\n?",
-            "name": "comment.line.number-sign.cadence"
+            }
           },
           {
-            "begin": "/\\*\\*(?!/)",
-            "beginCaptures": {
-              "0": {
-                "name": "punctuation.definition.comment.begin.cadence"
-              }
-            },
-            "end": "\\*/",
-            "endCaptures": {
-              "0": {
-                "name": "punctuation.definition.comment.end.cadence"
-              }
-            },
             "name": "comment.block.documentation.cadence",
-            "patterns": [
-              {
-                "include": "#nested"
-              }
-            ]
-          },
-          {
-            "begin": "/\\*:",
+            "begin": "/\\*\\*(?!/)",
+            "end": "\\*/",
             "beginCaptures": {
               "0": {
                 "name": "punctuation.definition.comment.begin.cadence"
               }
             },
-            "end": "\\*/",
             "endCaptures": {
               "0": {
                 "name": "punctuation.definition.comment.end.cadence"
               }
             },
+            "patterns": [
+              {
+                "include": "#comments-nested"
+              }
+            ]
+          },
+          {
             "name": "comment.block.documentation.playground.cadence",
-            "patterns": [
-              {
-                "include": "#nested"
-              }
-            ]
-          },
-          {
-            "begin": "/\\*",
+            "begin": "/\\*:",
+            "end": "\\*/",
             "beginCaptures": {
               "0": {
                 "name": "punctuation.definition.comment.begin.cadence"
               }
             },
-            "end": "\\*/",
             "endCaptures": {
               "0": {
                 "name": "punctuation.definition.comment.end.cadence"
               }
             },
-            "name": "comment.block.cadence",
             "patterns": [
               {
-                "include": "#nested"
+                "include": "#comments-nested"
               }
             ]
           },
           {
-            "match": "\\*/",
-            "name": "invalid.illegal.unexpected-end-of-block-comment.cadence"
+            "name": "comment.block.cadence",
+            "begin": "/\\*",
+            "end": "\\*/",
+            "beginCaptures": {
+              "0": {
+                "name": "punctuation.definition.comment.begin.cadence"
+              }
+            },
+            "endCaptures": {
+              "0": {
+                "name": "punctuation.definition.comment.end.cadence"
+              }
+            },
+            "patterns": [
+              {
+                "include": "#comments-nested"
+              }
+            ]
+          },
+          {
+            "name": "invalid.illegal.unexpected-end-of-block-comment.cadence",
+            "match": "\\*/"
           },
           {
             "begin": "(^[ \\t]+)?(?=//)",
+            "end": "(?!\\G)",
             "beginCaptures": {
               "1": {
                 "name": "punctuation.whitespace.comment.leading.cadence"
               }
             },
-            "end": "(?!\\G)",
             "patterns": [
               {
+                "name": "comment.line.triple-slash.documentation.cadence",
                 "begin": "///",
+                "end": "$",
                 "beginCaptures": {
                   "0": {
                     "name": "punctuation.definition.comment.cadence"
                   }
-                },
-                "end": "^",
-                "name": "comment.line.triple-slash.documentation.cadence"
+                }
               },
               {
+                "name": "comment.line.double-slash.documentation.cadence",
                 "begin": "//:",
+                "end": "$",
                 "beginCaptures": {
                   "0": {
                     "name": "punctuation.definition.comment.cadence"
                   }
-                },
-                "end": "^",
-                "name": "comment.line.double-slash.documentation.cadence"
+                }
               },
               {
+                "name": "comment.line.double-slash.cadence",
                 "begin": "//",
+                "end": "$",
                 "beginCaptures": {
                   "0": {
                     "name": "punctuation.definition.comment.cadence"
                   }
-                },
-                "end": "^",
-                "name": "comment.line.double-slash.cadence"
+                }
               }
             ]
           }
-        ],
-        "repository": {
-          "nested": {
-            "begin": "/\\*",
-            "end": "\\*/",
-            "patterns": [
-              {
-                "include": "#nested"
-              }
-            ]
+        ]
+      },
+      "comments-nested": {
+        "begin": "/\\*",
+        "end": "\\*/",
+        "patterns": [
+          {
+            "include": "#comments-nested"
           }
-        }
+        ]
       },
       "literals": {
         "patterns": [
@@ -245,91 +244,169 @@
       "operators": {
         "patterns": [
           {
-            "match": "\\-",
-            "name": "keyword.operator.arithmetic.unary.cadence"
+            "comment": "Type casting",
+            "name": "keyword.other.operator.cadence",
+            "match": "\\bas([!?]\\B|\\b)"
           },
           {
-            "match": "!",
-            "name": "keyword.operator.logical.not.cadence"
+            "name": "keyword.other.operator.cadence",
+            "match": "(?<!\\.)\\b(?:create|destroy|emit)\\b"
           },
           {
-            "match": "=",
-            "name": "keyword.operator.assignment.cadence"
+            "comment": "This rule helps us speed up the matching.",
+            "begin": "(?x)\n(?=\n  (?<oph>                # operator-head\n    [/=\\-+!*%<>&|^~?]\n    | [\\x{00A1}-\\x{00A7}]\n    | [\\x{00A9}\\x{00AB}]\n    | [\\x{00AC}\\x{00AE}]\n    | [\\x{00B0}-\\x{00B1}\\x{00B6}\\x{00BB}\\x{00BF}\\x{00D7}\\x{00F7}]\n    | [\\x{2016}-\\x{2017}\\x{2020}-\\x{2027}]\n    | [\\x{2030}-\\x{203E}]\n    | [\\x{2041}-\\x{2053}]\n    | [\\x{2055}-\\x{205E}]\n    | [\\x{2190}-\\x{23FF}]\n    | [\\x{2500}-\\x{2775}]\n    | [\\x{2794}-\\x{2BFF}]\n    | [\\x{2E00}-\\x{2E7F}]\n    | [\\x{3001}-\\x{3003}]\n    | [\\x{3008}-\\x{3030}]\n  )\n  | \\.\n  (\n    \\g<oph>              # operator-head\n    | \\.\n    | [\\x{0300}-\\x{036F}]        # operator-character\n    | [\\x{1DC0}-\\x{1DFF}]\n    | [\\x{20D0}-\\x{20FF}]\n    | [\\x{FE00}-\\x{FE0F}]\n    | [\\x{FE20}-\\x{FE2F}]\n    | [\\x{E0100}-\\x{E01EF}]\n  )\n)",
+            "end": "(?!\\G)",
+            "patterns": [
+              {
+                "comment": "Prefix unary operator",
+                "match": "(?x)\n\\G                    # Matching from the beginning ensures\n                    # that we start with operator-head\n(?<=^|[\\s(\\[{,;:])\n(\n  (?!(//|/\\*|\\*/))\n  (\n    [/=\\-+!*%<>&|^~?]        # operator-head\n    | [\\x{00A1}-\\x{00A7}]\n    | [\\x{00A9}\\x{00AB}]\n    | [\\x{00AC}\\x{00AE}]\n    | [\\x{00B0}-\\x{00B1}\\x{00B6}\\x{00BB}\\x{00BF}\\x{00D7}\\x{00F7}]\n    | [\\x{2016}-\\x{2017}\\x{2020}-\\x{2027}]\n    | [\\x{2030}-\\x{203E}]\n    | [\\x{2041}-\\x{2053}]\n    | [\\x{2055}-\\x{205E}]\n    | [\\x{2190}-\\x{23FF}]\n    | [\\x{2500}-\\x{2775}]\n    | [\\x{2794}-\\x{2BFF}]\n    | [\\x{2E00}-\\x{2E7F}]\n    | [\\x{3001}-\\x{3003}]\n    | [\\x{3008}-\\x{3030}]\n  \n    | [\\x{0300}-\\x{036F}]        # operator-character\n    | [\\x{1DC0}-\\x{1DFF}]\n    | [\\x{20D0}-\\x{20FF}]\n    | [\\x{FE00}-\\x{FE0F}]\n    | [\\x{FE20}-\\x{FE2F}]\n    | [\\x{E0100}-\\x{E01EF}]\n  )\n)++\n(?![\\s)\\]},;:]|\\z)",
+                "captures": {
+                  "0": {
+                    "patterns": [
+                      {
+                        "name": "keyword.operator.increment-or-decrement.cadence",
+                        "match": "\\G(\\+\\+|\\-\\-)$"
+                      },
+                      {
+                        "name": "keyword.operator.arithmetic.unary.cadence",
+                        "match": "\\G(\\+|\\-)$"
+                      },
+                      {
+                        "name": "keyword.operator.logical.not.cadence",
+                        "match": "\\G!$"
+                      },
+                      {
+                        "name": "keyword.operator.bitwise.not.cadence",
+                        "match": "\\G~$"
+                      },
+                      {
+                        "name": "keyword.operator.move.cadence",
+                        "match": "\\G<-!?$"
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "comment": "Postfix unary operator",
+                "match": "(?x)\n\\G                    # Matching from the beginning ensures\n                    # that we start with operator-head\n(?<!^|[\\s(\\[{,;:])\n(\n  (?!(//|/\\*|\\*/))\n  (\n    [/=\\-+!*%<>&|^~?]        # operator-head\n    | [\\x{00A1}-\\x{00A7}]\n    | [\\x{00A9}\\x{00AB}]\n    | [\\x{00AC}\\x{00AE}]\n    | [\\x{00B0}-\\x{00B1}\\x{00B6}\\x{00BB}\\x{00BF}\\x{00D7}\\x{00F7}]\n    | [\\x{2016}-\\x{2017}\\x{2020}-\\x{2027}]\n    | [\\x{2030}-\\x{203E}]\n    | [\\x{2041}-\\x{2053}]\n    | [\\x{2055}-\\x{205E}]\n    | [\\x{2190}-\\x{23FF}]\n    | [\\x{2500}-\\x{2775}]\n    | [\\x{2794}-\\x{2BFF}]\n    | [\\x{2E00}-\\x{2E7F}]\n    | [\\x{3001}-\\x{3003}]\n    | [\\x{3008}-\\x{3030}]\n  \n    | [\\x{0300}-\\x{036F}]        # operator-character\n    | [\\x{1DC0}-\\x{1DFF}]\n    | [\\x{20D0}-\\x{20FF}]\n    | [\\x{FE00}-\\x{FE0F}]\n    | [\\x{FE20}-\\x{FE2F}]\n    | [\\x{E0100}-\\x{E01EF}]\n  )\n)++\n(?=[\\s)\\]},;:]|\\z)",
+                "captures": {
+                  "0": {
+                    "patterns": [
+                      {
+                        "name": "keyword.operator.force-unwrap.cadence",
+                        "match": "\\G!$"
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "comment": "Infix operator",
+                "match": "(?x)\n\\G                    # Matching from the beginning ensures\n                    # that we start with operator-head\n(\n  (?!(//|/\\*|\\*/))\n  (\n    [/=\\-+!*%<>&|^~?]        # operator-head\n    | [\\x{00A1}-\\x{00A7}]\n    | [\\x{00A9}\\x{00AB}]\n    | [\\x{00AC}\\x{00AE}]\n    | [\\x{00B0}-\\x{00B1}\\x{00B6}\\x{00BB}\\x{00BF}\\x{00D7}\\x{00F7}]\n    | [\\x{2016}-\\x{2017}\\x{2020}-\\x{2027}]\n    | [\\x{2030}-\\x{203E}]\n    | [\\x{2041}-\\x{2053}]\n    | [\\x{2055}-\\x{205E}]\n    | [\\x{2190}-\\x{23FF}]\n    | [\\x{2500}-\\x{2775}]\n    | [\\x{2794}-\\x{2BFF}]\n    | [\\x{2E00}-\\x{2E7F}]\n    | [\\x{3001}-\\x{3003}]\n    | [\\x{3008}-\\x{3030}]\n  \n    | [\\x{0300}-\\x{036F}]        # operator-character\n    | [\\x{1DC0}-\\x{1DFF}]\n    | [\\x{20D0}-\\x{20FF}]\n    | [\\x{FE00}-\\x{FE0F}]\n    | [\\x{FE20}-\\x{FE2F}]\n    | [\\x{E0100}-\\x{E01EF}]\n  )\n)++",
+                "captures": {
+                  "0": {
+                    "patterns": [
+                      {
+                        "name": "keyword.operator.assignment.cadence",
+                        "match": "\\G=$"
+                      },
+                      {
+                        "name": "keyword.operator.arithmetic.cadence",
+                        "match": "\\G(\\+|\\-|\\*|/)$"
+                      },
+                      {
+                        "name": "keyword.operator.arithmetic.remainder.cadence",
+                        "match": "\\G%$"
+                      },
+                      {
+                        "name": "keyword.operator.comparison.cadence",
+                        "match": "\\G(==|!=|>|<|>=|<=)$"
+                      },
+                      {
+                        "name": "keyword.operator.coalescing.cadence",
+                        "match": "\\G\\?\\?$"
+                      },
+                      {
+                        "name": "keyword.operator.logical.cadence",
+                        "match": "\\G(&&|\\|\\|)$"
+                      },
+                      {
+                        "name": "keyword.operator.bitwise.cadence",
+                        "match": "\\G(&|\\||\\^|<<|>>)$"
+                      },
+                      {
+                        "name": "keyword.operator.ternary.cadence",
+                        "match": "\\G\\?$"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
           },
           {
-            "match": "<-",
-            "name": "keyword.operator.move.cadence"
-          },
-          {
-            "match": "<-!",
-            "name": "keyword.operator.force-move.cadence"
-          },
-          {
-            "match": "\\+|\\-|\\*|/",
-            "name": "keyword.operator.arithmetic.cadence"
-          },
-          {
-            "match": "%",
-            "name": "keyword.operator.arithmetic.remainder.cadence"
-          },
-          {
-            "match": "==|!=|>|<|>=|<=",
-            "name": "keyword.operator.comparison.cadence"
-          },
-          {
-            "match": "\\?\\?",
-            "name": "keyword.operator.coalescing.cadence"
-          },
-          {
-            "match": "&&|\\|\\|",
-            "name": "keyword.operator.logical.cadence"
-          },
-          {
-            "match": "[?!]",
-            "name": "keyword.operator.type.optional.cadence"
+            "name": "keyword.operator.ternary.cadence",
+            "match": ":"
           }
         ]
       },
       "keywords": {
         "patterns": [
           {
-            "match": "(?<!\\.)\\b(?:if|else|switch|case|default)\\b",
-            "name": "keyword.control.branch.cadence"
+            "name": "keyword.control.branch.cadence",
+            "match": "(?<!\\.)\\b(?:if|else|switch|case|default)\\b"
           },
           {
-            "match": "(?<!\\.)\\b(?:return|continue|break)\\b",
-            "name": "keyword.control.transfer.cadence"
+            "name": "keyword.control.transfer.cadence",
+            "match": "(?<!\\.)\\b(?:continue|break|return)\\b"
           },
           {
-            "match": "(?<!\\.)\\b(?:while|for|in)\\b",
-            "name": "keyword.control.loop.cadence"
+            "name": "keyword.control.loop.cadence",
+            "match": "(?<!\\.)\\b(?:while|for|in)\\b"
           },
           {
-            "match": "(?<!\\.)\\b(?:pre|post|prepare|execute|create|destroy|emit)\\b",
-            "name": "keyword.other.cadence"
+            "name": "keyword.other.entitlement.cadence",
+            "match": "(?<!\\.)\\b(?:entitlement)\\b"
           },
           {
-            "match": "(?<!\\.)\\b(?:private|pub(?:\\(set\\))?|access\\((?:self|contract|account|all)\\))\\b",
-            "name": "keyword.other.declaration-specifier.accessibility.cadence"
+            "name": "storage.type.$1.cadence",
+            "match": "(?<!\\.)\\b(struct|resource|enum|event)\\b"
           },
           {
-            "match": "\\b(?:init|destroy)\\b",
-            "name": "storage.type.function.cadence"
+            "name": "storage.modifier.cadence",
+            "match": "(?<!\\.)\\b(?:view|static|native)\\b"
           },
           {
-            "match": "(?<!\\.)\\b(?:import|from)\\b",
-            "name": "keyword.control.import.cadence"
+            "name": "keyword.other.declaration-specifier.accessibility.cadence",
+            "match": "(?<!\\.)\\b(?:access\\((?:self|contract|account|all)\\))\\b"
+          },
+          {
+            "name": "storage.type.function.cadence",
+            "match": "\\binit\\b|(?<!\\.)\\b(?:fun)\\b"
+          },
+          {
+            "name": "variable.language.cadence",
+            "match": "(?<!\\.)\\bself\\b"
+          },
+          {
+            "name": "keyword.control.import.cadence",
+            "match": "(?<!\\.)\\b(?:import|from)\\b"
+          },
+          {
+            "name": "keyword.other.cadence",
+            "match": "(?<!\\.)\\b(?:pre|post|prepare|execute)\\b"
           }
         ]
       },
       "code-block": {
         "begin": "\\{",
+        "end": "\\}",
         "beginCaptures": {
           "0": {
             "name": "punctuation.section.scope.begin.cadence"
           }
         },
-        "end": "\\}",
         "endCaptures": {
           "0": {
             "name": "punctuation.section.scope.end.cadence"
@@ -444,21 +521,13 @@
           { "include": "#function-call-expression" },
           { "include": "#literals" },
           { "include": "#operators" },
-          { "include": "#language-variables" }
-        ]
-      },
-      "language-variables": {
-        "patterns": [
-          {
-            "match": "\\b(self)\\b",
-            "name": "variable.language.cadence"
-          }
+          { "include": "#keywords" }
         ]
       },
       "function-call-expression": {
         "patterns": [
           {
-            "begin": "(?!(?:set|init))([\\p{L}_][\\p{L}_\\p{N}\\p{M}]*)\\s*(\\()",
+            "begin": "(?!init)([\\p{L}_][\\p{L}_\\p{N}\\p{M}]*)\\s*(\\()",
             "beginCaptures": {
               "1": {
                 "name": "support.function.any-method.cadence"
@@ -700,6 +769,18 @@
             ]
           }
         ]
+      },
+      "entitlement": {
+          "match": "\\b(entitlement)\\b\\s+([\\p{L}_][\\p{L}_\\p{N}\\p{M}]*)\\s*",
+          "captures": {
+            "1": {
+              "name": "storage.type.entitlement.cadence"
+            },
+            "2": {
+              "name": "entity.name.type.entitlement.cadence"
+            }
+          },
+          "name": "meta.definition.type.entitlement.cadence"
+        }
       }
-    }
   }
