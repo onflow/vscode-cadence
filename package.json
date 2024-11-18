@@ -185,7 +185,7 @@
 	},
 	"devDependencies": {
 		"@types/chai": "^5.0.1",
-		"@types/expect": "^24.3.0",
+		"@types/expect": "^24.3.2",
 		"@types/glob": "^8.0.1",
 		"@types/lodash": "^4.17.13",
 		"@types/mixpanel": "^2.14.9",
