@@ -45,7 +45,7 @@ export abstract class Installer {
       throw new InstallError('Failed to install: ' + this.#installerName)
     }
 
-    void window.showInformationMessage(this.#installerName + ' installed sucessfully.')
+    void window.showInformationMessage(this.#installerName + ' installed successfully.')
   }
 
   // Installation logic

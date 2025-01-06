@@ -29,7 +29,7 @@ suite('Dependency Installer', () => {
     assert.deepStrictEqual(await dependencyManager.missingDependencies.getValue(), [])
   }).timeout(MaxTimeout)
 
-  test('Flow CLI installer restarts langauge server if active', async () => {
+  test('Flow CLI installer restarts language server if active', async () => {
     const mockLanguageServerApi = {
       activate: stub().callsFake(async () => {
         mockLanguageServerApi.isActive = true
@@ -52,7 +52,7 @@ suite('Dependency Installer', () => {
     assert(mockLanguageServerApi.deactivate.calledBefore(mockLanguageServerApi.activate))
   }).timeout(MaxTimeout)
 
-  test('Flow CLI installer does not restart langauge server if inactive', async () => {
+  test('Flow CLI installer does not restart language server if inactive', async () => {
     const mockLanguageServerApi = {
       activate: stub().callsFake(async () => {
         mockLanguageServerApi.isActive = true

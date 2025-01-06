@@ -76,7 +76,7 @@ export class CliVersionsProvider {
   // Fetches the binary information for the given binary
   async #fetchBinaryInformation (bin: string): Promise<CliBinary | null> {
     try {
-      // Get user's version informaton
+      // Get user's version information
       const buffer: string = (await execDefault(CHECK_FLOW_CLI_CMD(
         bin
       ))).stdout
@@ -95,7 +95,7 @@ export class CliVersionsProvider {
   // Used as fallback for old CLI versions
   async #fetchBinaryInformationOld (bin: string): Promise<CliBinary | null> {
     try {
-      // Get user's version informaton
+      // Get user's version information
       const output = (await execDefault(CHECK_FLOW_CLI_CMD_NO_JSON(
         bin
       )))
