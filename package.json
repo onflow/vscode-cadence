@@ -213,7 +213,7 @@
 	},
 	"dependencies": {
 		"@onflow/cadence-parser": "^1.0.0-preview.50",
-		"@sentry/node": "^8.42.0",
+		"@sentry/node": "^9.3.0",
 		"@vscode/vsce": "^3.2.1",
 		"ansi-regex": "^6.1.0",
 		"async-lock": "^1.4.1",
