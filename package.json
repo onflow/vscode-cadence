@@ -195,7 +195,7 @@
 		"@types/semver": "^7.5.8",
 		"@types/sinon": "^17.0.3",
 		"@types/uuid": "^10.0.0",
-		"@types/vscode": "^1.82.0",
+		"@types/vscode": "^1.98.0",
 		"@vscode/test-electron": "^2.4.1",
 		"chai": "^5.1.2",
 		"esbuild": "^0.24.0",
