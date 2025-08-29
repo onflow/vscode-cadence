@@ -279,20 +279,12 @@
                   "0": {
                     "patterns": [
                       {
-                        "name": "keyword.operator.increment-or-decrement.cadence",
-                        "match": "\\G(\\+\\+|\\-\\-)$"
-                      },
-                      {
                         "name": "keyword.operator.arithmetic.unary.cadence",
                         "match": "\\G(\\+|\\-)$"
                       },
                       {
                         "name": "keyword.operator.logical.not.cadence",
                         "match": "\\G!$"
-                      },
-                      {
-                        "name": "keyword.operator.bitwise.not.cadence",
-                        "match": "\\G~$"
                       },
                       {
                         "name": "keyword.operator.move.cadence",
