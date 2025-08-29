@@ -331,6 +331,10 @@
                         "match": "\\G(==|!=|>|<|>=|<=)$"
                       },
                       {
+                        "name": "keyword.operator.swap.cadence",
+                        "match": "\\G<->$"
+                      },
+                      {
                         "name": "keyword.operator.coalescing.cadence",
                         "match": "\\G\\?\\?$"
                       },
