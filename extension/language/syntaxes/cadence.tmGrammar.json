@@ -150,6 +150,9 @@
             "include": "#string"
           },
           {
+            "include": "#path"
+          },
+          {
             "match": "\\bnil\\b",
             "name": "constant.language.nil.cadence"
           }
@@ -238,6 +241,10 @@
                 ]
               }
             }
+          },
+          "path": {
+            "match": "\\b/(storage|private|public)/[\\p{L}_][\\p{L}_\\p{N}\\p{M}]*\\b",
+            "name": "constant.language.path.cadence"
           }
         }
       },
