@@ -109,7 +109,7 @@ export class InstallFlowCLI extends Installer {
   }
 
   async checkVersion (version: semver.SemVer): Promise<boolean> {
-    // Get user's version informaton
+    // Get user's version information
     this.#context.cliProvider.refresh()
     if (version == null) return false
 
