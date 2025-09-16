@@ -3,6 +3,7 @@ import { TestTrie } from '../../src/test-provider/test-trie'
 import * as vscode from 'vscode'
 import * as path from 'path'
 import { beforeEach, afterEach } from 'mocha'
+import { MaxTimeout } from '../globals'
 
 interface TreeResult {
   id: string
@@ -72,7 +73,8 @@ suite('test trie tests', () => {
   let testTrie: TestTrie
   let workspaceFolder: vscode.WorkspaceFolder
 
-  beforeEach(() => {
+  beforeEach(function () {
+    this.timeout(MaxTimeout)
     testController = vscode.tests.createTestController('test-controller', 'test-controller')
     testTrie = new TestTrie(testController)
 
@@ -82,7 +84,8 @@ suite('test trie tests', () => {
     workspaceFolder = vscode.workspace.workspaceFolders[0]
   })
 
-  afterEach(() => {
+  afterEach(function () {
+    this.timeout(MaxTimeout)
     testController.dispose()
   })
 

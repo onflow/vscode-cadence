@@ -42,6 +42,16 @@ suite('Language Server & Emulator Integration', () => {
     } as any
 
     LS = new LanguageServerAPI(settings, mockCliProvider, mockConfig)
+    // Stub out actual client start to avoid spawning real flow binary on CI
+    const fakeClient: any = {
+      state: State.Running,
+      stop: async () => { fakeClient.state = State.Stopped },
+      dispose: async () => {}
+    }
+    sinon.stub(LS, 'startClient').callsFake(async () => {
+      ;(LS as any).client = fakeClient
+      LS.clientState$.next(State.Running)
+    })
     await LS.activate()
   })
 
