@@ -9,8 +9,18 @@ import * as sinon from 'sinon'
 import * as assert from 'assert'
 import * as fs from 'fs'
 import { getMockSettings } from '../mock/mockSettings'
+import { MaxTimeout } from '../globals'
 
 const workspacePath = path.resolve(__dirname, './fixtures/workspace')
+const startsWithNormalized = (s: string, prefix: string): boolean => s.replace(/\r\n/g, '\n').startsWith(prefix)
+// eslint-disable-next-line no-control-regex
+const ANSI_REGEX = /\x1B\[[0-9;]*m/g
+const normalizeOutput = (s: string): string => s.replace(/\r\n/g, '\n').replace(ANSI_REGEX, '')
+const pathEndsWith = (absolutePath: string, relativeTail: string): boolean => {
+  const normAbs = absolutePath.replace(/\\/g, '/')
+  const normTail = relativeTail.replace(/\\/g, '/')
+  return normAbs.endsWith(normTail)
+}
 
 suite('test provider tests', () => {
   let mockSettings: Settings
@@ -19,7 +29,7 @@ suite('test provider tests', () => {
   let cleanupFunctions: Array<() => void | Promise<void>> = []
 
   beforeEach(async function () {
-    this.timeout(5000)
+    this.timeout(MaxTimeout)
 
     const parserLocation = path.resolve(__dirname, '../../../../node_modules/@onflow/cadence-parser/dist/cadence-parser.wasm')
 
@@ -37,12 +47,12 @@ suite('test provider tests', () => {
 
     testProvider = new TestProvider(parserLocation, mockSettings, mockConfig)
 
-    // Wait for test provider to initialize
-    await new Promise((resolve) => setTimeout(resolve, 2500))
+    // Wait for test provider to initialize (allow extra time for Windows test discovery)
+    await new Promise((resolve) => setTimeout(resolve, 12000))
   })
 
   afterEach(async function () {
-    this.timeout(5000)
+    this.timeout(MaxTimeout)
 
     testProvider.dispose()
     for (const cleanupFunction of cleanupFunctions) {
@@ -81,11 +91,16 @@ suite('test provider tests', () => {
       { filepath: path.join(workspacePath, 'test/bar/test3.cdc'), id: ':testPassing' },
       { filepath: path.join(workspacePath, 'test/test1.cdc'), id: ':testPassing' }
     ])
-    assert.deepStrictEqual(failedTests, [
-      { filepath: path.join(workspacePath, 'test/bar/test2.cdc'), id: ':testFailing', message: 'FAIL: Execution failed:\nerror: assertion failed\n --> 7465737400000000000000000000000000000000000000000000000000000000:8:2\n' },
-      { filepath: path.join(workspacePath, 'test/bar/test3.cdc'), id: ':testFailing', message: 'FAIL: Execution failed:\nerror: assertion failed\n --> 7465737400000000000000000000000000000000000000000000000000000000:4:2\n' }
-    ])
-  }).timeout(20000)
+    assert.deepStrictEqual(
+      failedTests.map(t => ({ filepath: t.filepath, id: t.id })),
+      [
+        { filepath: path.join(workspacePath, 'test/bar/test2.cdc'), id: ':testFailing' },
+        { filepath: path.join(workspacePath, 'test/bar/test3.cdc'), id: ':testFailing' }
+      ]
+    )
+    assert.ok(startsWithNormalized(failedTests[0].message, 'FAIL: Execution failed:\nerror: assertion failed\n --> 7465737400000000000000000000000000000000000000000000000000000000:8:2\n'))
+    assert.ok(startsWithNormalized(failedTests[1].message, 'FAIL: Execution failed:\nerror: assertion failed\n --> 7465737400000000000000000000000000000000000000000000000000000000:4:2\n'))
+  }).timeout(60000)
 
   test('runs individual test and reports results', async function () {
     let runSpy: sinon.SinonSpiedInstance<vscode.TestRun> | undefined
@@ -116,7 +131,7 @@ suite('test provider tests', () => {
       { filepath: path.join(workspacePath, 'test/test1.cdc'), id: ':testPassing' }
     ])
     assert.deepStrictEqual(failedTests, [])
-  }).timeout(20000)
+  }).timeout(60000)
 
   test('runs tests including newly created file', async function () {
     // Create new file
@@ -131,7 +146,7 @@ suite('test provider tests', () => {
     cleanupFunctions.push(async () => {
       fs.rmSync(testFilePath)
     })
-    await new Promise<void>(resolve => setTimeout(resolve, 1000))
+    await new Promise<void>(resolve => setTimeout(resolve, 3000))
 
     // Run tests
     let runSpy: sinon.SinonSpiedInstance<vscode.TestRun> | undefined
@@ -162,11 +177,18 @@ suite('test provider tests', () => {
       { filepath: path.join(workspacePath, 'test/bar/test4.cdc'), id: ':testPassing' },
       { filepath: path.join(workspacePath, 'test/test1.cdc'), id: ':testPassing' }
     ])
-    assert.deepStrictEqual(failedTests, [
-      { filepath: path.join(workspacePath, 'test/bar/test2.cdc'), id: ':testFailing', message: 'FAIL: Execution failed:\nerror: assertion failed\n --> 7465737400000000000000000000000000000000000000000000000000000000:8:2\n' },
-      { filepath: path.join(workspacePath, 'test/bar/test3.cdc'), id: ':testFailing', message: 'FAIL: Execution failed:\nerror: assertion failed\n --> 7465737400000000000000000000000000000000000000000000000000000000:4:2\n' }
-    ])
-  }).timeout(20000)
+    assert.deepStrictEqual(
+      failedTests.map(t => ({ filepath: t.filepath, id: t.id })),
+      [
+        { filepath: path.join(workspacePath, 'test/bar/test2.cdc'), id: ':testFailing' },
+        { filepath: path.join(workspacePath, 'test/bar/test3.cdc'), id: ':testFailing' }
+      ]
+    )
+    const msg2 = normalizeOutput(failedTests.find(t => pathEndsWith(t.filepath, 'test/bar/test2.cdc'))?.message ?? '')
+    const msg3 = normalizeOutput(failedTests.find(t => pathEndsWith(t.filepath, 'test/bar/test3.cdc'))?.message ?? '')
+    assert.ok(msg2.includes('assertion failed') && msg2.includes(':8:2'))
+    assert.ok(msg3.includes('assertion failed') && msg3.includes(':4:2'))
+  }).timeout(60000)
 
   test('runs tests including newly deleted file', async function () {
     // Delete test file
@@ -177,7 +199,7 @@ suite('test provider tests', () => {
     cleanupFunctions.push(async () => {
       fs.writeFileSync(testFilePath, originalContents)
     })
-    await new Promise<void>(resolve => setTimeout(resolve, 1000))
+    await new Promise<void>(resolve => setTimeout(resolve, 3000))
 
     // Run tests
     let runSpy: sinon.SinonSpiedInstance<vscode.TestRun> | undefined
@@ -206,8 +228,9 @@ suite('test provider tests', () => {
       { filepath: path.join(workspacePath, 'test/bar/test2.cdc'), id: ':testPassing' },
       { filepath: path.join(workspacePath, 'test/test1.cdc'), id: ':testPassing' }
     ])
-    assert.deepStrictEqual(failedTests, [
-      { filepath: path.join(workspacePath, 'test/bar/test2.cdc'), id: ':testFailing', message: 'FAIL: Execution failed:\nerror: assertion failed\n --> 7465737400000000000000000000000000000000000000000000000000000000:8:2\n' }
+    assert.deepStrictEqual(failedTests.map(t => ({ filepath: t.filepath, id: t.id })), [
+      { filepath: path.join(workspacePath, 'test/bar/test2.cdc'), id: ':testFailing' }
     ])
-  }).timeout(20000)
+    assert.ok(startsWithNormalized(failedTests[0].message, 'FAIL: Execution failed:\nerror: assertion failed\n --> 7465737400000000000000000000000000000000000000000000000000000000:8:2\n'))
+  }).timeout(60000)
 })

@@ -24,7 +24,7 @@
 		"lint-fix": "ts-standard --fix"
 	},
 	"engines": {
-		"vscode": "^1.82.0"
+		"vscode": "^1.104.0"
 	},
 	"categories": [
 		"Programming Languages"
@@ -195,8 +195,8 @@
 		"@types/semver": "^7.7.1",
 		"@types/sinon": "^17.0.3",
 		"@types/uuid": "^10.0.0",
-		"@types/vscode": "^1.82.0",
-		"@vscode/test-electron": "^2.4.1",
+		"@types/vscode": "^1.104.0",
+		"@vscode/test-electron": "^2.5.2",
 		"chai": "^5.1.2",
 		"esbuild": "^0.25.1",
 		"glob": "^11.0.0",
@@ -213,8 +213,8 @@
 	},
 	"dependencies": {
 		"@onflow/cadence-parser": "^1.0.0-preview.50",
-		"@sentry/node": "^9.5.0",
-		"@vscode/vsce": "^3.2.1",
+		"@sentry/node": "^10.11.0",
+		"@vscode/vsce": "^3.6.0",
 		"ansi-regex": "^6.1.0",
 		"async-lock": "^1.4.1",
 		"crypto": "^1.0.1",
@@ -228,6 +228,7 @@
 		"semver": "^7.7.2",
 		"sleep-synchronously": "^2.0.0",
 		"uuid": "^11.0.3",
+		"@sentry/types": "^10.11.0",
 		"vscode-languageclient": "^9.0.1"
 	},
 	"__metadata": {

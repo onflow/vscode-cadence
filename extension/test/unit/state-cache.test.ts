@@ -1,8 +1,12 @@
 import * as assert from 'assert'
 import { StateCache } from '../../src/utils/state-cache'
-import { ASSERT_EQUAL } from '../globals'
+import { ASSERT_EQUAL, MaxTimeout } from '../globals'
+import { before } from 'mocha'
 
 suite('State Cache Unit Tests', () => {
+  before(function () {
+    this.timeout(MaxTimeout)
+  })
   test('Returns value when valid', async () => {
     const fetcher = async (): Promise<number> => {
       return val

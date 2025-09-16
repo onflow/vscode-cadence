@@ -135,11 +135,14 @@ suite('flow config tests', () => {
       fs.mkdirSync(path.resolve(workspacePath, './missing'), { recursive: true })
       fs.writeFileSync(path.resolve(workspacePath, './missing/flow.json'), '{}')
 
-      await firstValueFrom(config.pathChanged$)
+      // Avoid relying solely on FS watcher timing in CI; explicitly reload
+      const pathChangedPromise = firstValueFrom(config.pathChanged$)
+      await config.reloadConfigPath()
+      await pathChangedPromise
       assert.strictEqual(config.configPath, path.resolve(workspacePath, './missing/flow.json'))
     })
 
     // delete custom config after test
     fs.unlinkSync(path.resolve(workspacePath, './missing/flow.json'))
-  })
+  }).timeout(30000)
 })

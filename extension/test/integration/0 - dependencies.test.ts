@@ -22,11 +22,13 @@ suite('Dependency Installer', () => {
       isActive: true
     }
     const dependencyManager = new DependencyInstaller(mockLanguageServerApi as any, cliProvider)
-    await assert.doesNotReject(async () => { await dependencyManager.installMissing() })
-
+    await dependencyManager.installMissing()
+    await new Promise<void>(resolve => setTimeout(resolve, 1000))
     // Check that all dependencies are installed
     await dependencyManager.checkDependencies()
-    assert.deepStrictEqual(await dependencyManager.missingDependencies.getValue(), [])
+    await new Promise<void>(resolve => setTimeout(resolve, 500))
+    const missing = await dependencyManager.missingDependencies.getValue()
+    assert.deepStrictEqual(missing, [])
   }).timeout(MaxTimeout)
 
   test('Flow CLI installer restarts language server if active', async () => {
