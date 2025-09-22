@@ -1,11 +1,10 @@
 import { LanguageClient, State } from 'vscode-languageclient/node'
-import { window } from 'vscode'
+import { window, workspace } from 'vscode'
 import { Settings } from '../settings/settings'
 import { exec } from 'child_process'
 import { ExecuteCommandRequest } from 'vscode-languageclient'
 import { BehaviorSubject, Subscription, filter, firstValueFrom, skip } from 'rxjs'
 import { envVars } from '../utils/shell/env-vars'
-import { FlowConfig } from './flow-config'
 import { CliProvider } from '../flow-cli/cli-provider'
 import { KNOWN_FLOW_COMMANDS } from '../flow-cli/cli-versions-provider'
 
@@ -14,7 +13,6 @@ const RELOAD_CONFIGURATION = 'cadence.server.flow.reloadConfiguration'
 
 export class LanguageServerAPI {
   #settings: Settings
-  #config: FlowConfig
   #cliProvider: CliProvider
   client: LanguageClient | null = null
 
@@ -23,10 +21,9 @@ export class LanguageServerAPI {
 
   #isActive = false
 
-  constructor (settings: Settings, cliProvider: CliProvider, config: FlowConfig) {
+  constructor (settings: Settings, cliProvider: CliProvider) {
     this.#settings = settings
     this.#cliProvider = cliProvider
-    this.#config = config
   }
 
   // Activates the language server manager
@@ -74,7 +71,7 @@ export class LanguageServerAPI {
       this.clientState$.next(State.Starting)
 
       const accessCheckMode: string = this.#settings.getSettings().accessCheckMode
-      const configPath: string | null = this.#config.configPath
+      // No configPath is passed; language server will auto-manage configs
 
       const binaryPath = (await this.#cliProvider.getCurrentBinary())?.command
       if (binaryPath == null) {
@@ -88,6 +85,7 @@ export class LanguageServerAPI {
       }
 
       const env = await envVars.getValue()
+      const configPath = workspace.getConfiguration('cadence').get<string>('customConfigPath') ?? ''
       this.client = new LanguageClient(
         'cadence',
         'Cadence',
@@ -103,10 +101,7 @@ export class LanguageServerAPI {
           synchronize: {
             configurationSection: 'cadence'
           },
-          initializationOptions: {
-            configPath,
-            accessCheckMode
-          }
+          initializationOptions: { accessCheckMode, configPath }
         }
       )
 
@@ -139,31 +134,8 @@ export class LanguageServerAPI {
   }
 
   #subscribeToConfigChanges (): void {
-    const tryReloadConfig = (): void => {
-      void this.#sendRequest(RELOAD_CONFIGURATION).catch((e: any) => {
-        void window.showErrorMessage(`Failed to reload configuration: ${String(e)}`)
-      })
-    }
-
-    this.#subscriptions.push(this.#config.fileModified$.subscribe(function notify (this: LanguageServerAPI): void {
-      // Reload configuration
-      if (this.clientState$.getValue() === State.Running) {
-        tryReloadConfig()
-      } else if (this.clientState$.getValue() === State.Starting) {
-        // Wait for client to connect
-        void firstValueFrom(this.clientState$.pipe(filter((state) => state === State.Running))).then(() => {
-          notify.call(this)
-        })
-      } else {
-        // Start client
-        void this.startClient()
-      }
-    }.bind(this)))
-
-    this.#subscriptions.push(this.#config.pathChanged$.subscribe(() => {
-      // Restart client
-      void this.restart()
-    }))
+    // Flow configuration is auto-managed by the language server.
+    // No client-side subscription is needed anymore.
   }
 
   #subscribeToSettingsChanges (): void {

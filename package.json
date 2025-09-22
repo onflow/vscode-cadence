@@ -135,7 +135,7 @@
 				"cadence.customConfigPath": {
 					"type": "string",
 					"default": "",
-					"description": "Enter a custom flow.json path, or leave empty for the default config search.",
+					"description": "Optional path to a flow.json. Passed to the language server as-is.",
 					"scope": "resource"
 				},
 				"cadence.test.maxConcurrency": {

@@ -2,7 +2,6 @@ import * as vscode from 'vscode'
 import { TestResolver } from './test-resolver'
 import { TestRunner } from './test-runner'
 import { Settings } from '../settings/settings'
-import { FlowConfig } from '../server/flow-config'
 import { QueuedMutator, TestTrie } from './test-trie'
 
 const testControllerId = 'cadence-test-controller'
@@ -14,11 +13,11 @@ export class TestProvider implements vscode.Disposable {
   #testRunner: TestRunner
   #testTrie: QueuedMutator<TestTrie>
 
-  constructor (parserLocation: string, settings: Settings, flowConfig: FlowConfig) {
+  constructor (parserLocation: string, settings: Settings) {
     this.#controller = vscode.tests.createTestController(testControllerId, testControllerLabel)
     this.#testTrie = new QueuedMutator(new TestTrie(this.#controller), recoverTrieError.bind(this))
     this.#testResolver = new TestResolver(parserLocation, this.#controller, this.#testTrie)
-    this.#testRunner = new TestRunner(this.#controller, this.#testTrie, settings, flowConfig, this.#testResolver)
+    this.#testRunner = new TestRunner(this.#controller, this.#testTrie, settings, this.#testResolver)
 
     // Recover from trie errors by rebuilding the test tree from scratch
     // It shouldn't happen, but if it does, this should catch tricky bugs

@@ -1,9 +1,9 @@
 import * as vscode from 'vscode'
 import { CADENCE_TEST_TAG } from './constants'
 import { execDefault } from '../utils/shell/exec'
+import { workspace } from 'vscode'
 import * as path from 'path'
 import { Settings } from '../settings/settings'
-import { FlowConfig } from '../server/flow-config'
 import { QueuedMutator, TestTrie } from './test-trie'
 import { TestResolver } from './test-resolver'
 import { decodeTestFunctionId } from './utils'
@@ -21,16 +21,14 @@ export class TestRunner implements vscode.Disposable {
   #controller: vscode.TestController
   #testTrie: QueuedMutator<TestTrie>
   #settings: Settings
-  #flowConfig: FlowConfig
   #testResolver: TestResolver
   #acquireLock: <T>(fn: () => Promise<T>) => Promise<T>
   #disposibles: vscode.Disposable[] = []
 
-  constructor (controller: vscode.TestController, testTrie: QueuedMutator<TestTrie>, settings: Settings, flowConfig: FlowConfig, testResolver: TestResolver) {
+  constructor (controller: vscode.TestController, testTrie: QueuedMutator<TestTrie>, settings: Settings, testResolver: TestResolver) {
     this.#controller = controller
     this.#testTrie = testTrie
     this.#settings = settings
-    this.#flowConfig = flowConfig
     this.#testResolver = testResolver
     this.#acquireLock = semaphore(settings.getSettings().test.maxConcurrency)
 
@@ -121,13 +119,10 @@ export class TestRunner implements vscode.Disposable {
     }
 
     // Execute the tests
-    if (this.#flowConfig.configPath == null) {
-      throw new Error('Flow config path is null')
-    }
     if (resolvedTest.uri == null) {
       throw new Error('Test uri is null')
     }
-    const testFilePath = path.resolve(this.#flowConfig.configPath, resolvedTest.uri.fsPath)
+    const testFilePath = resolvedTest.uri.fsPath
     let testResults: TestResult = {}
     try {
       testResults = await this.#executeTests(testFilePath, cancellationToken)
@@ -172,11 +167,10 @@ export class TestRunner implements vscode.Disposable {
     }
 
     return await this.#acquireLock(async () => {
-      if (this.#flowConfig.configPath == null) {
-        throw new Error('Flow config path is null')
-      }
-      const args = ['test', `'${globPattern}'`, '--output=json', '-f', `'${this.#flowConfig.configPath}'`]
-      const { stdout, stderr } = await execDefault(this.#settings.getSettings().flowCommand, args, { cwd: path.dirname(this.#flowConfig.configPath) }, cancellationToken)
+      const args = ['test', `'${globPattern}'`, '--output=json']
+      const nearestConfigDir = await this.#findNearestFlowConfigDir(globPattern)
+      const cwd = nearestConfigDir ?? workspace.workspaceFolders?.[0]?.uri.fsPath
+      const { stdout, stderr } = await execDefault(this.#settings.getSettings().flowCommand, args, cwd != null ? { cwd } : undefined, cancellationToken)
 
       if (stderr.length > 0) {
         throw new Error(stderr)
@@ -185,5 +179,27 @@ export class TestRunner implements vscode.Disposable {
       const testResults = JSON.parse(stdout) as TestResult
       return testResults
     })
+  }
+
+  async #findNearestFlowConfigDir (startFilePath: string): Promise<string | undefined> {
+    try {
+      let currentDir = path.dirname(startFilePath)
+
+      // Walk up the directory tree until filesystem root
+      // Return the first directory that contains a flow.json
+      while (true) {
+        const candidate = path.join(currentDir, 'flow.json')
+        try {
+          await vscode.workspace.fs.stat(vscode.Uri.file(candidate))
+          return currentDir
+        } catch {}
+
+        const parentDir = path.dirname(currentDir)
+        if (parentDir === currentDir) { break }
+        currentDir = parentDir
+      }
+    } catch {}
+
+    return undefined
   }
 }

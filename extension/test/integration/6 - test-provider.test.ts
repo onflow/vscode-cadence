@@ -1,7 +1,6 @@
 import { beforeEach, afterEach } from 'mocha'
 import { TestProvider } from '../../src/test-provider/test-provider'
 import { Settings } from '../../src/settings/settings'
-import { FlowConfig } from '../../src/server/flow-config'
 import { of } from 'rxjs'
 import * as path from 'path'
 import * as vscode from 'vscode'
@@ -24,7 +23,6 @@ const pathEndsWith = (absolutePath: string, relativeTail: string): boolean => {
 
 suite('test provider tests', () => {
   let mockSettings: Settings
-  let mockConfig: FlowConfig
   let testProvider: TestProvider
   let cleanupFunctions: Array<() => void | Promise<void>> = []
 
@@ -39,13 +37,7 @@ suite('test provider tests', () => {
         maxConcurrency: 1
       }
     })
-    mockConfig = {
-      fileModified$: of(),
-      pathChanged$: of(),
-      configPath: path.join(workspacePath, 'flow.json')
-    } as any
-
-    testProvider = new TestProvider(parserLocation, mockSettings, mockConfig)
+    testProvider = new TestProvider(parserLocation, mockSettings)
 
     // Wait for test provider to initialize (allow extra time for Windows test discovery)
     await new Promise((resolve) => setTimeout(resolve, 12000))

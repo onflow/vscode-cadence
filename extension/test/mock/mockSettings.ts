@@ -9,14 +9,14 @@ export function getMockSettings (_settings$: BehaviorSubject<Partial<CadenceConf
   function getSettings (): Partial<CadenceConfiguration> {
     if (!(_settings$ instanceof BehaviorSubject) && _settings$ != null) return _settings$
 
-    return _settings$?.getValue() ?? {
+    return _settings$?.getValue() ?? ({
       flowCommand: 'flow',
       accessCheckMode: 'strict',
-      customConfigPath: path.join(__dirname, '../integration/fixtures/workspace/flow.json'),
+      customConfigPath: '',
       test: {
         maxConcurrency: 1
       }
-    }
+    } as unknown as Partial<CadenceConfiguration>)
   }
 
   function watch$<T = CadenceConfiguration> (selector: (config: CadenceConfiguration) => T = (config) => config as unknown as T): Observable<T> {
