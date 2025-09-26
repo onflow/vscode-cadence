@@ -168,8 +168,8 @@ export class TestRunner implements vscode.Disposable {
 
     return await this.#acquireLock(async () => {
       const args = ['test', `'${globPattern}'`, '--output=json']
-      const nearestConfigDir = await this.#findNearestFlowConfigDir(globPattern)
-      const cwd = nearestConfigDir ?? workspace.workspaceFolders?.[0]?.uri.fsPath
+      const flowProjectDir = await this.#resolveFlowProjectDir(globPattern)
+      const cwd = flowProjectDir ?? workspace.workspaceFolders?.[0]?.uri.fsPath
       const { stdout, stderr } = await execDefault(this.#settings.getSettings().flowCommand, args, cwd != null ? { cwd } : undefined, cancellationToken)
 
       if (stderr.length > 0) {
@@ -181,7 +181,7 @@ export class TestRunner implements vscode.Disposable {
     })
   }
 
-  async #findNearestFlowConfigDir (startFilePath: string): Promise<string | undefined> {
+  async #resolveFlowProjectDir (startFilePath: string): Promise<string | undefined> {
     try {
       let currentDir = path.dirname(startFilePath)
 

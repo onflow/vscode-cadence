@@ -68,7 +68,6 @@ export class LanguageServerAPI {
       this.clientState$.next(State.Starting)
 
       const accessCheckMode: string = this.#settings.getSettings().accessCheckMode
-      // No configPath is passed; language server will auto-manage configs
 
       const binaryPath = (await this.#cliProvider.getCurrentBinary())?.command
       if (binaryPath == null) {
