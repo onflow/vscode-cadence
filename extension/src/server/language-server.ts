@@ -8,9 +8,6 @@ import { envVars } from '../utils/shell/env-vars'
 import { CliProvider } from '../flow-cli/cli-provider'
 import { KNOWN_FLOW_COMMANDS } from '../flow-cli/cli-versions-provider'
 
-// Identities for commands handled by the Language server
-const RELOAD_CONFIGURATION = 'cadence.server.flow.reloadConfiguration'
-
 export class LanguageServerAPI {
   #settings: Settings
   #cliProvider: CliProvider

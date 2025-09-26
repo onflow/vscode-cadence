@@ -1,7 +1,6 @@
 import { beforeEach, afterEach } from 'mocha'
 import { TestProvider } from '../../src/test-provider/test-provider'
 import { Settings } from '../../src/settings/settings'
-import { of } from 'rxjs'
 import * as path from 'path'
 import * as vscode from 'vscode'
 import * as sinon from 'sinon'

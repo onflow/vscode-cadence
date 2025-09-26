@@ -16,7 +16,7 @@ interface HomebrewVersionInfo {
 }
 
 // Command to check flow-cli
-const COMPATIBLE_FLOW_CLI_VERSIONS = '>=2.0.0'
+const COMPATIBLE_FLOW_CLI_VERSIONS = '>=2.8.0'
 
 // Shell install commands
 const BREW_INSTALL_FLOW_CLI = 'brew update && brew install flow-cli'

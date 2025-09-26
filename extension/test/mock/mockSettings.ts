@@ -1,6 +1,5 @@
 import { BehaviorSubject, Observable, of, map, distinctUntilChanged } from 'rxjs'
 import { CadenceConfiguration, Settings } from '../../src/settings/settings'
-import * as path from 'path'
 import { isEqual } from 'lodash'
 
 export function getMockSettings (_settings$: BehaviorSubject<Partial<CadenceConfiguration>> | Partial<CadenceConfiguration> | null = null): Settings {
