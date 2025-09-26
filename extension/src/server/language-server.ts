@@ -129,12 +129,21 @@ export class LanguageServerAPI {
   }
 
   #subscribeToSettingsChanges (): void {
-    // Subscribe to changes in the flowCommand setting to restart the client
+    // Subscribe to changes in relevant settings to restart the client
     // Skip the first value since we don't want to restart the client when it's first initialized
-    this.#settings.watch$((config) => config.flowCommand).pipe(skip(1)).subscribe(() => {
-      // Restart client
+    const flowCmdSub = this.#settings.watch$((config) => config.flowCommand).pipe(skip(1)).subscribe(() => {
       void this.restart()
     })
+
+    const customConfigSub = this.#settings.watch$((config) => config.customConfigPath).pipe(skip(1)).subscribe(() => {
+      void this.restart()
+    })
+
+    const accessModeSub = this.#settings.watch$((config) => config.accessCheckMode).pipe(skip(1)).subscribe(() => {
+      void this.restart()
+    })
+
+    this.#subscriptions.push(flowCmdSub, customConfigSub, accessModeSub)
   }
 
   #subscribeToBinaryChanges (): void {
