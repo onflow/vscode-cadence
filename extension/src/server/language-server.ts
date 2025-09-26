@@ -32,7 +32,6 @@ export class LanguageServerAPI {
 
     this.#isActive = true
 
-    this.#subscribeToConfigChanges()
     this.#subscribeToSettingsChanges()
     this.#subscribeToBinaryChanges()
 
@@ -127,11 +126,6 @@ export class LanguageServerAPI {
   async restart (): Promise<void> {
     await this.stopClient()
     await this.startClient()
-  }
-
-  #subscribeToConfigChanges (): void {
-    // Flow configuration is auto-managed by the language server.
-    // No client-side subscription is needed anymore.
   }
 
   #subscribeToSettingsChanges (): void {

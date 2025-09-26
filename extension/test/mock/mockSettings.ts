@@ -26,7 +26,7 @@ export function getMockSettings (_settings$: BehaviorSubject<Partial<CadenceConf
     if (!(_settings$ instanceof BehaviorSubject)) return of()
 
     return _settings$.asObservable().pipe(
-      map((partial) => buildConfig(partial as Partial<CadenceConfiguration>)),
+      map((partial) => buildConfig(partial)),
       map(selector as any),
       distinctUntilChanged(isEqual)
     )
