@@ -168,8 +168,19 @@ export class TestRunner implements vscode.Disposable {
 
     return await this.#acquireLock(async () => {
       const args = ['test', `'${globPattern}'`, '--output=json']
-      const flowProjectDir = await this.#resolveFlowProjectDir(globPattern)
-      const cwd = flowProjectDir ?? workspace.workspaceFolders?.[0]?.uri.fsPath
+      const customConfigPath = this.#settings.getSettings().customConfigPath
+      // Determine config path for -f flag: prefer customConfigPath, else nearest discovered flow.json
+      let configPath: string | undefined = (customConfigPath != null && customConfigPath !== '') ? customConfigPath : undefined
+      if (configPath == null) {
+        configPath = await this.#resolveFlowProjectConfig(globPattern)
+      }
+
+      if (configPath != null) {
+        args.push('-f', configPath)
+      }
+
+      // Always run from the workspace root (default)
+      const cwd = workspace.workspaceFolders?.[0]?.uri.fsPath
       const { stdout, stderr } = await execDefault(this.#settings.getSettings().flowCommand, args, cwd != null ? { cwd } : undefined, cancellationToken)
 
       if (stderr.length > 0) {
@@ -181,7 +192,7 @@ export class TestRunner implements vscode.Disposable {
     })
   }
 
-  async #resolveFlowProjectDir (startFilePath: string): Promise<string | undefined> {
+  async #resolveFlowProjectConfig (startFilePath: string): Promise<string | undefined> {
     try {
       let currentDir = path.dirname(startFilePath)
 
@@ -191,7 +202,7 @@ export class TestRunner implements vscode.Disposable {
         const candidate = path.join(currentDir, 'flow.json')
         try {
           await vscode.workspace.fs.stat(vscode.Uri.file(candidate))
-          return currentDir
+          return candidate
         } catch {}
 
         const parentDir = path.dirname(currentDir)
