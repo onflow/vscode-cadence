@@ -7,7 +7,6 @@ import { Settings } from './settings/settings'
 import { CliProvider } from './flow-cli/cli-provider'
 import { JSONSchemaProvider } from './json-schema-provider'
 import { LanguageServerAPI } from './server/language-server'
-import { FlowConfig } from './server/flow-config'
 import { TestProvider } from './test-provider/test-provider'
 import { StorageProvider } from './storage/storage-provider'
 import * as path from 'path'
@@ -53,12 +52,8 @@ export class Extension {
     // Register JSON schema provider
     this.#schemaProvider = new JSONSchemaProvider(ctx.extensionPath, cliProvider)
 
-    // Initialize Flow Config
-    const flowConfig = new FlowConfig(settings)
-    void flowConfig.activate()
-
     // Initialize Language Server
-    this.languageServer = new LanguageServerAPI(settings, cliProvider, flowConfig)
+    this.languageServer = new LanguageServerAPI(settings, cliProvider)
 
     // Check for any missing dependencies
     // The language server will start if all dependencies are installed
@@ -79,7 +74,7 @@ export class Extension {
     // Initialize TestProvider
     const extensionPath = ctx.extensionPath ?? ''
     const parserLocation = path.resolve(extensionPath, 'out/extension/cadence-parser.wasm')
-    this.#testProvider = new TestProvider(parserLocation, settings, flowConfig)
+    this.#testProvider = new TestProvider(parserLocation, settings)
   }
 
   // Called on exit
