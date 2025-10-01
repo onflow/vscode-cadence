@@ -1,5 +1,7 @@
 import { LanguageClient, State } from 'vscode-languageclient/node'
 import { window, workspace } from 'vscode'
+import * as path from 'path'
+import * as os from 'os'
 import { Settings } from '../settings/settings'
 import { exec } from 'child_process'
 import { ExecuteCommandRequest } from 'vscode-languageclient'
@@ -80,7 +82,8 @@ export class LanguageServerAPI {
       }
 
       const env = await envVars.getValue()
-      const configPath = workspace.getConfiguration('cadence').get<string>('customConfigPath') ?? ''
+      const rawConfigPath = workspace.getConfiguration('cadence').get<string>('customConfigPath') ?? ''
+      const configPath = this.#resolvePath(rawConfigPath)
       this.client = new LanguageClient(
         'cadence',
         'Cadence',
@@ -161,5 +164,29 @@ export class LanguageServerAPI {
       command: cmd,
       arguments: args
     })
+  }
+
+  // TODO: add this feature to the language server to remove the need for this method
+  #resolvePath (input: string): string {
+    const value = input?.trim() ?? ''
+    if (value === '') return ''
+
+    // Expand leading ~ to the user's home directory
+    let expanded = value
+    if (expanded === '~') {
+      expanded = os.homedir()
+    } else if (expanded.startsWith('~/') || expanded.startsWith('~\\')) {
+      expanded = path.join(os.homedir(), expanded.slice(2))
+    }
+
+    // If already absolute, normalize and return
+    if (path.isAbsolute(expanded)) return path.normalize(expanded)
+
+    // Resolve relative to first workspace folder if available, else process cwd
+    const folders = workspace.workspaceFolders
+    if (folders != null && folders.length > 0) {
+      return path.resolve(folders[0].uri.fsPath, expanded)
+    }
+    return path.resolve(expanded)
   }
 }
