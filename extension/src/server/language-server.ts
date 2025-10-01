@@ -166,7 +166,7 @@ export class LanguageServerAPI {
     })
   }
 
-  // TODO: add this feature to the language server to remove the need for this method
+  // TODO: add this feature to the Cadence language server to remove the need for this method
   #resolvePath (input: string): string {
     const value = input?.trim() ?? ''
     if (value === '') return ''
