@@ -13,7 +13,7 @@
 		"esbuild-base": "mkdirp ./out/extension && cp ./node_modules/@onflow/cadence-parser/dist/cadence-parser.wasm ./out/extension && esbuild ./extension/src/main.ts --bundle --outfile=out/extension/src/main.js --external:vscode --format=cjs --platform=node",
 		"esbuild": "npm run -S esbuild-base -- --sourcemap",
 		"esbuild-watch": "npm run -S esbuild-base -- --sourcemap --watch",
-		"check": "tsc extension/src/main.ts",
+		"check": "tsc -p ./",
 		"copy-test-fixtures": "rimraf ./out/extension/test/integration/fixtures && cp -R ./extension/test/fixtures ./out/extension/test/integration/fixtures",
 		"clean-test": "rimraf ./out",
 		"test": "npm run clean-test && npm run esbuild && tsc -p ./ && npm run copy-test-fixtures && node ./out/extension/test/run-tests.js",
@@ -209,7 +209,7 @@
 		"ts-mocha": "^11.1.0",
 		"ts-node": "^10.9.2",
 		"ts-standard": "^12.0.2",
-		"typescript": "~5.1.6"
+		"typescript": "^5.9.3"
 	},
 	"dependencies": {
 		"@onflow/cadence-parser": "^1.0.0-preview.50",

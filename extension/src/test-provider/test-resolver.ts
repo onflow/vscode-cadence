@@ -32,7 +32,7 @@ export class TestResolver implements vscode.Disposable {
 
   constructor (parserLocation: string, controller: vscode.TestController, testTrie: QueuedMutator<TestTrie>) {
     this.#controller = controller
-    this.#parser = vscode.workspace.fs.readFile(vscode.Uri.file(parserLocation)).then(async buffer => await CadenceParser.CadenceParser.create(buffer))
+    this.#parser = vscode.workspace.fs.readFile(vscode.Uri.file(parserLocation)).then(async buffer => await CadenceParser.CadenceParser.create(buffer as unknown as BufferSource))
     this.#testTrie = testTrie
 
     void this.watchFiles()
