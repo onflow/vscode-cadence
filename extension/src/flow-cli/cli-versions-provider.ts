@@ -47,8 +47,8 @@ export class CliVersionsProvider {
         })
       )
 
-      // Filter out missing binaries
-      return binaries.filter((bin) => bin != null) as CliBinary[]
+      // Filter out missing binaries using a type guard to narrow type
+      return binaries.filter((bin): bin is CliBinary => bin != null)
     })
   }
 
