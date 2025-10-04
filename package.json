@@ -24,7 +24,7 @@
 		"lint-fix": "ts-standard --fix"
 	},
 	"engines": {
-		"vscode": "1.99.3"
+		"vscode": "^1.99.3"
 	},
 	"categories": [
 		"Programming Languages"
