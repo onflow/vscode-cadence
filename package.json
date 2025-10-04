@@ -24,7 +24,7 @@
 		"lint-fix": "ts-standard --fix"
 	},
 	"engines": {
-		"vscode": "1.99.3"
+		"vscode": "^1.99.3"
 	},
 	"categories": [
 		"Programming Languages"
@@ -212,7 +212,7 @@
 		"typescript": "^5.9.3"
 	},
 	"dependencies": {
-		"@onflow/cadence-parser": "^1.0.0-preview.50",
+		"@onflow/cadence-parser": "^0.20.2",
 		"@sentry/node": "^10.11.0",
 		"@sentry/types": "^10.11.0",
 		"@vscode/vsce": "^3.6.0",
