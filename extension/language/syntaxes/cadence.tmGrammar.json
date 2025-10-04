@@ -458,12 +458,12 @@
       "function-call-expression": {
         "patterns": [
           {
-            "begin": "(?!(?:set|init))([\\p{L}_][\\p{L}_\\p{N}\\p{M}]*)\\s*(\\()",
+            "begin": "(?!(?:set|init))([\\p{L}_][\\p{L}_\\p{N}\\p{M}]*)\\s*(?:<[^>]*>)?\\s*(\\()",
             "beginCaptures": {
               "1": {
                 "name": "support.function.any-method.cadence"
               },
-              "4": {
+              "2": {
                 "name": "punctuation.definition.arguments.begin.cadence"
               }
             },
