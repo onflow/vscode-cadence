@@ -37,8 +37,11 @@ async function main () {
   const grammar = await registry.loadGrammar('source.cadence')
 
   const lines = [
-    '        let threshold = self.getSafeSuccessThreshold()',
-    '        return self.borrowSubmissionTracker().submissionExceedsThreshold(threshold)'
+    'test<&{UInt64: String}>()',
+    'test<{UInt64: String}>()',
+    'let x: &{Interface}',
+    'let x: &{UInt64: String}',
+    'let x: {UInt64: String}'
   ]
 
   let ruleStack = null

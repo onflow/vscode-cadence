@@ -269,7 +269,7 @@
           {
             "begin": "\\b(as\\?|as!|as)\\b",
             "beginCaptures": { "0": { "name": "keyword.operator.type.cast.cadence" } },
-            "end": "(?=$|;|//|/\\\\*|\\\")|(?=\\)|,)",
+            "end": "(?=$|;|//|/\\\\*|\\\")|(?=\\)|,|\\{)",
             "name": "meta.type.cast-target.cadence",
             "patterns": [
               { "include": "#type" }
@@ -355,8 +355,8 @@
             "patterns": [
               { "include": "#comments" },
               { "match": "\\binclude\\b", "name": "keyword.other.mapping.include.cadence" },
-              { "match": "(?<=\\binclude\\s)[\\p{L}_][\\p{L}_\\p{N}\\p{M}.]*", "name": "support.type.entitlement-mapping.cadence" },
-              { "match": "[\\p{L}_][\\p{L}_\\p{N}\\p{M}.]*", "name": "support.type.entitlement.cadence" },
+              { "match": "(?<=\\binclude)\\s+([\\p{L}_][\\p{L}_\\p{N}\\p{M}.]*)", "captures": { "1": { "name": "entity.name.type.entitlement-mapping.cadence" } } },
+              { "match": "[\\p{L}_][\\p{L}_\\p{N}\\p{M}.]*", "name": "entity.name.type.entitlement.cadence" },
               { "match": "->", "name": "punctuation.separator.mapping.cadence" }
             ]
           },
@@ -381,11 +381,11 @@
             "patterns": [
               { "include": "#comments" },
               { "match": "\\bmapping\\b", "name": "keyword.other.mapping.cadence" },
-              { "match": "(?<=\\bmapping\\s)[\\p{L}_][\\p{L}_\\p{N}\\p{M}.]*", "name": "support.type.entitlement-mapping.cadence" },
+              { "match": "(?<=\\bmapping)\\s+([\\p{L}_][\\p{L}_\\p{N}\\p{M}.]*)", "captures": { "1": { "name": "entity.name.type.entitlement-mapping.cadence" } } },
             { "match": "\\b(?:all|self|contract|account)\\b", "name": "constant.language.access.audience.cadence" },
               { "match": ",", "name": "punctuation.separator.entitlement.cadence" },
               { "match": "\\|", "name": "punctuation.separator.entitlement.cadence" },
-              { "match": "[\\p{L}_][\\p{L}_\\p{N}\\p{M}.]*", "name": "support.type.entitlement.cadence" }
+              { "match": "[\\p{L}_][\\p{L}_\\p{N}\\p{M}.]*", "name": "entity.name.type.entitlement.cadence" }
             ]
           },
           {
@@ -702,7 +702,7 @@
             "name": "storage.type.$1.cadence"
           },
           "2": {
-            "name": "entity.name.type.$1.cadence"
+            "name": "variable.other.declaration.cadence"
           }
         },
         "end": "=|<-|<-!|(?=//)|$",
@@ -753,7 +753,7 @@
           {
             "begin": "([\\p{L}_][\\p{L}_\\p{N}\\p{M}.]*)\\s*(<)",
             "beginCaptures": {
-              "1": { "name": "storage.type.cadence" },
+              "1": { "name": "entity.name.type.cadence" },
               "2": { "name": "punctuation.definition.type-arguments.begin.cadence" }
             },
             "end": "(>)",
@@ -780,10 +780,72 @@
             "patterns": [
               { "include": "#comments" },
               { "match": "\\bmapping\\b", "name": "keyword.other.mapping.cadence" },
-              { "match": "(?<=\\bmapping\\s)[\\p{L}_][\\p{L}_\\p{N}\\p{M}.]*", "name": "support.type.entitlement-mapping.cadence" },
+              { "match": "(?<=\\bmapping)\\s+([\\p{L}_][\\p{L}_\\p{N}\\p{M}.]*)", "captures": { "1": { "name": "entity.name.type.entitlement-mapping.cadence" } } },
               { "match": ",", "name": "punctuation.separator.entitlement.cadence" },
               { "match": "\\|", "name": "punctuation.separator.entitlement.cadence" },
-              { "match": "[\\p{L}_][\\p{L}_\\p{N}\\p{M}.]*", "name": "support.type.entitlement.cadence" }
+              { "match": "[\\p{L}_][\\p{L}_\\p{N}\\p{M}.]*", "name": "entity.name.type.entitlement.cadence" }
+            ]
+          },
+          {
+            "begin": "\\{(?!.*\\}\\s*\\()",
+            "beginCaptures": {
+              "0": { "name": "punctuation.definition.type.dictionary.begin.cadence" }
+            },
+            "end": "(\\})",
+            "endCaptures": {
+              "1": { "name": "punctuation.definition.type.dictionary.end.cadence" }
+            },
+            "name": "meta.type.dictionary.cadence",
+            "patterns": [
+              { "include": "#comments" },
+              { "include": "#type" },
+              {
+                "match": ":",
+                "name": "punctuation.separator.type.dictionary.cadence"
+              },
+              {
+                "match": ",",
+                "name": "punctuation.separator.type.dictionary.cadence"
+              }
+            ]
+          },
+          {
+            "begin": "\\[",
+            "beginCaptures": {
+              "0": { "name": "punctuation.definition.type.array.begin.cadence" }
+            },
+            "end": "(\\])",
+            "endCaptures": {
+              "1": { "name": "punctuation.definition.type.array.end.cadence" }
+            },
+            "name": "meta.type.array.cadence",
+            "patterns": [
+              { "include": "#comments" },
+              { "include": "#type" }
+            ]
+          },
+          {
+            "begin": "(&|@)\\s*(\\{)(?=[^}]*:)",
+            "beginCaptures": {
+              "1": { "name": "punctuation.definition.type.reference.cadence" },
+              "2": { "name": "punctuation.definition.type.dictionary.begin.cadence" }
+            },
+            "end": "(\\})",
+            "endCaptures": {
+              "1": { "name": "punctuation.definition.type.dictionary.end.cadence" }
+            },
+            "name": "meta.type.dictionary.cadence",
+            "patterns": [
+              { "include": "#comments" },
+              { "include": "#type" },
+              {
+                "match": ":",
+                "name": "punctuation.separator.type.dictionary.cadence"
+              },
+              {
+                "match": ",",
+                "name": "punctuation.separator.type.dictionary.cadence"
+              }
             ]
           },
           {
@@ -796,13 +858,9 @@
             "endCaptures": {
               "1": { "name": "punctuation.definition.type.intersection.end.cadence" }
             },
-            "contentName": "storage.type.intersection.cadence",
             "patterns": [
               { "include": "#comments" },
-              {
-                "match": "[\\p{L}_][\\p{L}_\\p{N}\\p{M}.]*",
-                "name": "storage.type.cadence"
-              },
+              { "include": "#type" },
               {
                 "match": ",",
                 "name": "punctuation.separator.type.intersection.cadence"
@@ -813,12 +871,16 @@
             "match": "(&|@)\\s*([\\p{L}_][\\p{L}_\\p{N}\\p{M}.]*)",
             "captures": {
               "1": { "name": "punctuation.definition.type.reference.cadence" },
-              "2": { "name": "storage.type.cadence" }
+              "2": { "name": "entity.name.type.cadence" }
             }
           },
           {
             "match": "([\\p{L}_][\\p{L}_\\p{N}\\p{M}]*)",
-            "name": "storage.type.cadence"
+            "name": "entity.name.type.cadence"
+          },
+          {
+            "match": "[?!]",
+            "name": "keyword.operator.type.optional.cadence"
           }
         ]
       },

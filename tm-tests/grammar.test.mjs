@@ -69,7 +69,7 @@ describe('Cadence tmGrammar', () => {
       // Check that type names are marked correctly
       for (const typeName of ['String', 'ResultSubmission']) {
         expect(tokens.some(t =>
-          t.scopes.includes('storage.type.cadence') &&
+          t.scopes.includes('entity.name.type.cadence') &&
           line.slice(t.startIndex, t.endIndex) === typeName
         )).to.be.true
       }
@@ -127,10 +127,10 @@ describe('Cadence tmGrammar', () => {
       expect(scopesAt(line, tokens, line.indexOf(' fun ') + 1)).to.include('storage.type.function.cadence')
       expect(scopesAt(line, tokens, line.indexOf('foo') + 1)).to.include('entity.name.function.cadence')
       expect(scopesAt(line, tokens, line.indexOf(':') + 0)).to.include('keyword.operator.function-result.cadence')
-      expect(scopesAt(line, tokens, line.indexOf('Capability') + 1)).to.include('storage.type.cadence')
+      expect(scopesAt(line, tokens, line.indexOf('Capability') + 1)).to.include('entity.name.type.cadence')
       expect(scopesAt(line, tokens, line.indexOf('<') + 0)).to.include('punctuation.definition.type-arguments.begin.cadence')
       expect(scopesAt(line, tokens, line.indexOf('auth') + 1)).to.include('keyword.other.auth.cadence')
-      expect(scopesAt(line, tokens, line.indexOf('Test') + 1)).to.include('support.type.entitlement.cadence')
+      expect(scopesAt(line, tokens, line.indexOf('Test') + 1)).to.include('entity.name.type.entitlement.cadence')
       expect(scopesAt(line, tokens, line.indexOf('&') + 0)).to.include('punctuation.definition.type.reference.cadence')
     })
 
@@ -182,7 +182,7 @@ describe('Cadence tmGrammar', () => {
       expect(hasScope(tokens, 'storage.type.transaction.cadence')).to.be.true
       expect(hasScope(tokens, 'punctuation.definition.parameters.begin.cadence')).to.be.true
       for (const typeName of ['UFix64', 'Address', 'String']) {
-        expect(hasTextWithScope(line, tokens, typeName, 'storage.type.cadence')).to.be.true
+        expect(hasTextWithScope(line, tokens, typeName, 'entity.name.type.cadence')).to.be.true
       }
     })
 
@@ -205,7 +205,7 @@ describe('Cadence tmGrammar', () => {
       const { tokens } = grammar.tokenizeLine(line)
       expect(scopesAt(line, tokens, line.indexOf('prepare') + 1)).to.include('storage.modifier.phase.cadence')
       expect(scopesAt(line, tokens, line.indexOf('auth') + 1)).to.include('keyword.other.auth.cadence')
-      expect(scopesAt(line, tokens, line.indexOf('Storage') + 1)).to.include('support.type.entitlement.cadence')
+      expect(scopesAt(line, tokens, line.indexOf('Storage') + 1)).to.include('entity.name.type.entitlement.cadence')
       expect(scopesAt(line, tokens, line.indexOf('&') + 0)).to.include('punctuation.definition.type.reference.cadence')
       expect(scopesAt(line, tokens, line.indexOf('{') + 0)).to.include('punctuation.section.phase.begin.cadence')
     })
@@ -226,15 +226,15 @@ describe('Cadence tmGrammar', () => {
       const line = 'access(Manage) fun addOwnedAccount()'
       const { tokens } = grammar.tokenizeLine(line)
       expect(scopesAt(line, tokens, line.indexOf('access(') + 1)).to.include('storage.modifier.access.cadence')
-      expect(scopesAt(line, tokens, line.indexOf('Manage') + 1)).to.include('support.type.entitlement.cadence')
+      expect(scopesAt(line, tokens, line.indexOf('Manage') + 1)).to.include('entity.name.type.entitlement.cadence')
     })
 
     it('highlights access with multiple entitlements and separators', () => {
       const line = 'access(Foo.Bar | Foo.Bar2, Baz.Qux)'
       const { tokens } = grammar.tokenizeLine(line)
-      expect(scopesAt(line, tokens, line.indexOf('Foo.Bar') + 1)).to.include('support.type.entitlement.cadence')
-      expect(scopesAt(line, tokens, line.indexOf('Foo.Bar2') + 1)).to.include('support.type.entitlement.cadence')
-      expect(scopesAt(line, tokens, line.indexOf('Baz.Qux') + 1)).to.include('support.type.entitlement.cadence')
+      expect(scopesAt(line, tokens, line.indexOf('Foo.Bar') + 1)).to.include('entity.name.type.entitlement.cadence')
+      expect(scopesAt(line, tokens, line.indexOf('Foo.Bar2') + 1)).to.include('entity.name.type.entitlement.cadence')
+      expect(scopesAt(line, tokens, line.indexOf('Baz.Qux') + 1)).to.include('entity.name.type.entitlement.cadence')
       expect(scopesAt(line, tokens, line.indexOf('|') + 0)).to.include('punctuation.separator.entitlement.cadence')
       expect(scopesAt(line, tokens, line.indexOf(',') + 0)).to.include('punctuation.separator.entitlement.cadence')
     })
@@ -243,7 +243,7 @@ describe('Cadence tmGrammar', () => {
       const line = 'access(mapping OuterToInnerMap) let child: @InnerResource'
       const { tokens } = grammar.tokenizeLine(line)
       expect(scopesAt(line, tokens, line.indexOf('mapping') + 1)).to.include('keyword.other.mapping.cadence')
-      expect(scopesAt(line, tokens, line.indexOf('OuterToInnerMap') + 2)).to.include('support.type.entitlement-mapping.cadence')
+      expect(scopesAt(line, tokens, line.indexOf('OuterToInnerMap') + 2)).to.include('entity.name.type.entitlement-mapping.cadence')
     })
 
     it('highlights entitlement declaration', () => {
@@ -266,14 +266,30 @@ describe('Cadence tmGrammar', () => {
 
       const r1 = grammar.tokenizeLine(body1, r0.ruleStack)
       expect(hasScope(r1.tokens, 'keyword.other.mapping.include.cadence')).to.be.true
-      expect(hasScope(r1.tokens, 'support.type.entitlement-mapping.cadence')).to.be.true
+      expect(hasScope(r1.tokens, 'entity.name.type.entitlement-mapping.cadence')).to.be.true
 
       const r2 = grammar.tokenizeLine(body2, r1.ruleStack)
-      expect(hasScope(r2.tokens, 'support.type.entitlement.cadence')).to.be.true
+      expect(hasScope(r2.tokens, 'entity.name.type.entitlement.cadence')).to.be.true
       expect(hasScope(r2.tokens, 'punctuation.separator.mapping.cadence')).to.be.true
 
       const r3 = grammar.tokenizeLine(footer, r2.ruleStack)
       expect(hasScope(r3.tokens, 'punctuation.definition.type.end.cadence')).to.be.true
+    })
+
+    it('handles entitlement mapping keywords with varied whitespace', () => {
+      // Test "mapping" keyword with multiple spaces/tabs
+      const line1 = 'access(mapping  MyMap) let x: Int'  // double space
+      const { tokens: t1 } = grammar.tokenizeLine(line1)
+      expect(hasScope(t1, 'keyword.other.mapping.cadence')).to.be.true
+      expect(hasScope(t1, 'entity.name.type.entitlement-mapping.cadence')).to.be.true
+
+      // Test "include" keyword with multiple spaces/tabs
+      const header = 'entitlement mapping TestMap {'
+      const body = '    include  Identity'  // double space
+      const r0 = grammar.tokenizeLine(header)
+      const r1 = grammar.tokenizeLine(body, r0.ruleStack)
+      expect(hasScope(r1.tokens, 'keyword.other.mapping.include.cadence')).to.be.true
+      expect(hasScope(r1.tokens, 'entity.name.type.entitlement-mapping.cadence')).to.be.true
     })
 
     it('highlights view modifier', () => {
@@ -284,6 +300,250 @@ describe('Cadence tmGrammar', () => {
   })
 
   describe('Types', () => {
+    it('highlights dictionary types with proper punctuation', () => {
+      const line = 'let dkgIdMapping: {String: Int}'
+      const { tokens } = grammar.tokenizeLine(line)
+      
+      // Dictionary braces
+      expect(tokens.some(t => t.scopes.includes('punctuation.definition.type.dictionary.begin.cadence'))).to.be.true
+      expect(tokens.some(t => t.scopes.includes('punctuation.definition.type.dictionary.end.cadence'))).to.be.true
+      
+      // Colon separator inside dictionary
+      expect(tokens.some(t => 
+        t.scopes.includes('punctuation.separator.type.dictionary.cadence') &&
+        line.slice(t.startIndex, t.endIndex) === ':'
+      )).to.be.true
+      
+      // Type names
+      expect(tokens.some(t => 
+        t.scopes.includes('entity.name.type.cadence') &&
+        line.slice(t.startIndex, t.endIndex) === 'String'
+      )).to.be.true
+      expect(tokens.some(t => 
+        t.scopes.includes('entity.name.type.cadence') &&
+        line.slice(t.startIndex, t.endIndex) === 'Int'
+      )).to.be.true
+    })
+
+    it('highlights array types with proper punctuation', () => {
+      const line = 'let items: [String]'
+      const { tokens } = grammar.tokenizeLine(line)
+      
+      // Array brackets
+      expect(tokens.some(t => t.scopes.includes('punctuation.definition.type.array.begin.cadence'))).to.be.true
+      expect(tokens.some(t => t.scopes.includes('punctuation.definition.type.array.end.cadence'))).to.be.true
+      
+      // Type name
+      expect(tokens.some(t => 
+        t.scopes.includes('entity.name.type.cadence') &&
+        line.slice(t.startIndex, t.endIndex) === 'String'
+      )).to.be.true
+    })
+
+    it('highlights nested dictionary and array types', () => {
+      const line = 'let data: {String: [Int?]}'
+      const { tokens } = grammar.tokenizeLine(line)
+      
+      // Dictionary punctuation
+      expect(tokens.some(t => t.scopes.includes('punctuation.definition.type.dictionary.begin.cadence'))).to.be.true
+      expect(tokens.some(t => t.scopes.includes('punctuation.separator.type.dictionary.cadence'))).to.be.true
+      
+      // Array punctuation
+      expect(tokens.some(t => t.scopes.includes('punctuation.definition.type.array.begin.cadence'))).to.be.true
+      expect(tokens.some(t => t.scopes.includes('punctuation.definition.type.array.end.cadence'))).to.be.true
+      
+      // Optional type
+      expect(tokens.some(t => 
+        t.scopes.includes('keyword.operator.type.optional.cadence') &&
+        line.slice(t.startIndex, t.endIndex) === '?'
+      )).to.be.true
+    })
+
+    it('handles dictionaries with varied whitespace', () => {
+      const variations = [
+        'let x:{String:Int}',          // no spaces
+        'let x: {String: Int}',        // normal spaces
+        'let x: { String : Int }',     // extra spaces
+      ]
+      
+      variations.forEach(line => {
+        const { tokens } = grammar.tokenizeLine(line)
+        expect(tokens.some(t => t.scopes.includes('punctuation.definition.type.dictionary.begin.cadence')), 
+          `Failed for: ${line}`).to.be.true
+        expect(tokens.some(t => t.scopes.includes('punctuation.separator.type.dictionary.cadence')),
+          `Failed for: ${line}`).to.be.true
+        expect(tokens.some(t => t.scopes.includes('entity.name.type.cadence') && 
+          line.slice(t.startIndex, t.endIndex) === 'String'),
+          `Failed for: ${line}`).to.be.true
+      })
+    })
+
+    it('handles arrays with varied whitespace', () => {
+      const variations = [
+        'let x:[String]',               // no space
+        'let x: [String]',              // normal space
+        'let x : [ String ]',           // extra spaces
+      ]
+      
+      variations.forEach(line => {
+        const { tokens } = grammar.tokenizeLine(line)
+        expect(tokens.some(t => t.scopes.includes('punctuation.definition.type.array.begin.cadence')),
+          `Failed for: ${line}`).to.be.true
+        expect(tokens.some(t => t.scopes.includes('punctuation.definition.type.array.end.cadence')),
+          `Failed for: ${line}`).to.be.true
+      })
+    })
+
+    it('handles reference types with varied whitespace', () => {
+      const variations = [
+        'let x: &Account',              // normal
+        'let x:&Account',               // no space before &
+        'let x: & Account',             // space after &
+        'let x: @MyResource',           // @ reference
+        'let x:@ MyResource',           // @ with space after
+      ]
+      
+      variations.forEach(line => {
+        const { tokens } = grammar.tokenizeLine(line)
+        expect(tokens.some(t => t.scopes.includes('punctuation.definition.type.reference.cadence')),
+          `Failed for: ${line}`).to.be.true
+        expect(tokens.some(t => t.scopes.includes('entity.name.type.cadence')),
+          `Failed for: ${line}`).to.be.true
+      })
+    })
+
+    it('handles deeply nested type structures', () => {
+      const testCases = [
+        {
+          desc: 'nested dictionaries',
+          line: 'let x: {String: {Int: Bool}}',
+          expectedScopes: ['punctuation.definition.type.dictionary.begin.cadence'],
+          expectedTypes: ['String', 'Int', 'Bool']
+        },
+        {
+          desc: 'dictionary with array value',
+          line: 'let x: {String: [Int]}',
+          expectedScopes: [
+            'punctuation.definition.type.dictionary.begin.cadence',
+            'punctuation.definition.type.array.begin.cadence'
+          ],
+          expectedTypes: ['String', 'Int']
+        },
+        {
+          desc: 'array of dictionaries',
+          line: 'let x: [{String: Int}]',
+          expectedScopes: [
+            'punctuation.definition.type.array.begin.cadence',
+            'punctuation.definition.type.dictionary.begin.cadence'
+          ],
+          expectedTypes: ['String', 'Int']
+        },
+        {
+          desc: 'nested arrays',
+          line: 'let x: [[Int]]',
+          expectedScopes: ['punctuation.definition.type.array.begin.cadence'],
+          expectedTypes: ['Int']
+        },
+        {
+          desc: 'generic type with nested generic',
+          line: 'let x: Capability<&{Interface}>',
+          expectedScopes: [
+            'punctuation.definition.type-arguments.begin.cadence',
+            'punctuation.definition.type.reference.cadence'
+          ],
+          expectedTypes: ['Capability', 'Interface']
+        },
+        {
+          desc: 'complex nesting with optionals',
+          line: 'let x: {String: [Capability<&Resource>?]}?',
+          expectedScopes: [
+            'punctuation.definition.type.dictionary.begin.cadence',
+            'punctuation.definition.type.array.begin.cadence',
+            'punctuation.definition.type-arguments.begin.cadence',
+            'keyword.operator.type.optional.cadence'
+          ],
+          expectedTypes: ['String', 'Capability', 'Resource']
+        },
+        {
+          desc: 'dictionary with auth reference value',
+          line: 'let x: {String: auth(Owner) &Account}',
+          expectedScopes: [
+            'punctuation.definition.type.dictionary.begin.cadence',
+            'keyword.other.auth.cadence',
+            'punctuation.definition.type.reference.cadence'
+          ],
+          expectedTypes: ['String', 'Account']
+        }
+      ]
+
+      testCases.forEach(({ desc, line, expectedScopes, expectedTypes }) => {
+        const { tokens } = grammar.tokenizeLine(line)
+        
+        // Check expected punctuation/keywords
+        expectedScopes.forEach(scope => {
+          expect(tokens.some(t => t.scopes.includes(scope)),
+            `${desc}: Missing scope "${scope}" in "${line}"`).to.be.true
+        })
+        
+        // Check expected type names
+        expectedTypes.forEach(typeName => {
+          expect(tokens.some(t => 
+            t.scopes.includes('entity.name.type.cadence') && 
+            line.slice(t.startIndex, t.endIndex) === typeName
+          ), `${desc}: Missing type "${typeName}" in "${line}"`).to.be.true
+        })
+      })
+
+      // Separately verify entitlements are properly scoped in auth contexts
+      const authLine = 'let x: {String: auth(Owner) &Account}'
+      const { tokens: authTokens } = grammar.tokenizeLine(authLine)
+      expect(authTokens.some(t => 
+        t.scopes.includes('entity.name.type.entitlement.cadence') &&
+        authLine.slice(t.startIndex, t.endIndex) === 'Owner'
+      ), 'Entitlement "Owner" should be scoped as entity.name.type.entitlement.cadence').to.be.true
+    })
+
+    it('handles array and dictionary separators in nested contexts', () => {
+      // Array with multiple elements
+      const line1 = 'let x: [String, Int, Bool]'
+      const { tokens: t1 } = grammar.tokenizeLine(line1)
+      expect(t1.some(t => t.scopes.includes('punctuation.definition.type.array.begin.cadence'))).to.be.true
+      
+      // Dictionary with multiple entries - not valid in Cadence, but testing the comma separator
+      const line2 = 'let x: {String: Int}'
+      const { tokens: t2 } = grammar.tokenizeLine(line2)
+      const colonToken = t2.find(t => 
+        line2.slice(t.startIndex, t.endIndex) === ':' &&
+        t.scopes.includes('punctuation.separator.type.dictionary.cadence')
+      )
+      expect(colonToken).to.not.be.undefined
+    })
+
+    it('distinguishes between reference to dictionary and intersection types', () => {
+      // Reference to dictionary - should be dictionary type
+      const dictLine = 'let x: &{String: Int}'
+      const { tokens: dictTokens } = grammar.tokenizeLine(dictLine)
+      expect(dictTokens.some(t => t.scopes.includes('punctuation.definition.type.reference.cadence'))).to.be.true
+      expect(dictTokens.some(t => t.scopes.includes('punctuation.definition.type.dictionary.begin.cadence'))).to.be.true
+      const colonToken = dictTokens.find(t => 
+        dictLine.slice(t.startIndex, t.endIndex) === ':' &&
+        t.scopes.includes('punctuation.separator.type.dictionary.cadence')
+      )
+      expect(colonToken, 'Colon should be scoped as dictionary separator').to.not.be.undefined
+
+      // Intersection type - should NOT be dictionary
+      const intersectionLine = 'let x: &{Interface}'
+      const { tokens: intersectionTokens } = grammar.tokenizeLine(intersectionLine)
+      expect(intersectionTokens.some(t => t.scopes.includes('punctuation.definition.type.reference.cadence'))).to.be.true
+      expect(intersectionTokens.some(t => t.scopes.includes('punctuation.definition.type.intersection.begin.cadence'))).to.be.true
+      expect(intersectionTokens.some(t => t.scopes.includes('punctuation.definition.type.dictionary.begin.cadence'))).to.be.false
+
+      // Reference to dictionary in generic context
+      const genericLine = 'test<&{UInt64: String}>()'
+      const { tokens: genericTokens } = grammar.tokenizeLine(genericLine)
+      expect(genericTokens.some(t => t.scopes.includes('punctuation.separator.type.dictionary.cadence'))).to.be.true
+    })
+
     it('highlights auth keyword in type contexts', () => {
       const line = 'prepare(account: auth(FungibleToken.Withdraw) &{FungibleToken.Provider}) {'
       const { tokens } = grammar.tokenizeLine(line)
@@ -294,7 +554,7 @@ describe('Cadence tmGrammar', () => {
       const line = 'let t: Capability<auth(Storage, Contracts, Keys) &{AccountPrivate}>'
       const { tokens } = grammar.tokenizeLine(line)
       expect(scopesAt(line, tokens, line.indexOf('auth') + 1)).to.include('keyword.other.auth.cadence')
-      expect(scopesAt(line, tokens, line.indexOf('Keys') + 1)).to.include('support.type.entitlement.cadence')
+      expect(scopesAt(line, tokens, line.indexOf('Keys') + 1)).to.include('entity.name.type.entitlement.cadence')
     })
 
     it('highlights intersection types with dotted names and commas', () => {
@@ -303,7 +563,7 @@ describe('Cadence tmGrammar', () => {
       const commaIdx = line.indexOf(', ')
       expect(scopesAt(line, tokens, commaIdx)).to.include('punctuation.separator.type.intersection.cadence')
       const dottedIdx = line.indexOf('ViewResolver.Resolver') + 5
-      expect(scopesAt(line, tokens, dottedIdx)).to.include('storage.type.cadence')
+      expect(scopesAt(line, tokens, dottedIdx)).to.include('entity.name.type.cadence')
     })
 
     it('highlights type arguments punctuation', () => {
@@ -366,7 +626,7 @@ describe('Cadence tmGrammar', () => {
       const { tokens } = grammar.tokenizeLine(line)
       expect(hasScope(tokens, 'keyword.other.auth.cadence')).to.be.true
       expect(hasScope(tokens, 'punctuation.definition.type.reference.cadence')).to.be.true
-      expect(hasScope(tokens, 'storage.type.cadence')).to.be.true
+      expect(hasScope(tokens, 'entity.name.type.cadence')).to.be.true
     })
 
     it('highlights labeled arguments after generic type arguments', () => {
@@ -465,7 +725,7 @@ describe('Cadence tmGrammar', () => {
       const r1 = grammar.tokenizeLine(line1)
       const r2 = grammar.tokenizeLine(line2)
       expect(hasScope(r1.tokens, 'storage.modifier.access.cadence')).to.be.true
-      expect(hasScope(r1.tokens, 'storage.type.cadence')).to.be.true
+      expect(hasScope(r1.tokens, 'entity.name.type.cadence')).to.be.true
       expect(r1.tokens.some(t => t.scopes.find(s => s.startsWith('comment.')))).to.be.true
       expect(r2.tokens.length > 0).to.be.true
     })
@@ -478,7 +738,7 @@ describe('Cadence tmGrammar', () => {
       expect(r1.tokens.some(t => t.scopes.find(s => s.startsWith('comment.')))).to.be.true
       const leaked = r2.tokens.some(t => t.scopes.includes('comment.') || t.scopes.includes('meta.type.cadence'))
       expect(leaked).to.be.false
-      expect(hasScope(r2.tokens, 'storage.type.cadence')).to.be.true
+      expect(hasScope(r2.tokens, 'entity.name.type.cadence')).to.be.true
     })
 
     it('does not leak type scope across lines with trailing comments (let)', () => {
@@ -488,7 +748,7 @@ describe('Cadence tmGrammar', () => {
       const r2 = grammar.tokenizeLine(line2)
       expect(r1.tokens.some(t => t.scopes.find(s => s.startsWith('comment.')))).to.be.true
       expect(r2.tokens.some(t => t.scopes.find(s => s.startsWith('comment.')))).to.be.false
-      expect(hasTextWithScope(line2, r2.tokens, 'Int', 'storage.type.cadence')).to.be.true
+      expect(hasTextWithScope(line2, r2.tokens, 'Int', 'entity.name.type.cadence')).to.be.true
     })
 
     it('does not leak type scope across lines with trailing comments (var)', () => {
@@ -498,8 +758,8 @@ describe('Cadence tmGrammar', () => {
       const r2 = grammar.tokenizeLine(line2, r1.ruleStack)
       const varIdx = line2.indexOf('var') + 1
       const scopes = scopesAt(line2, r2.tokens, varIdx)
-      expect(scopes.includes('storage.type.cadence')).to.be.false
-      expect(hasTextWithScope(line2, r2.tokens, 'Int', 'storage.type.cadence')).to.be.true
+      expect(scopes.includes('entity.name.type.cadence')).to.be.false
+      expect(hasTextWithScope(line2, r2.tokens, 'Int', 'entity.name.type.cadence')).to.be.true
     })
 
     it('restores normal scopes on next line after trailing comment', () => {
@@ -675,7 +935,7 @@ describe('Cadence tmGrammar', () => {
       expect(hasScope(tokens, 'keyword.operator.type.cast.cadence')).to.be.true
       expect(hasScope(tokens, 'keyword.other.auth.cadence')).to.be.true
       expect(hasScope(tokens, 'punctuation.definition.type.reference.cadence')).to.be.true
-      expect(hasScope(tokens, 'storage.type.cadence')).to.be.true
+      expect(hasScope(tokens, 'entity.name.type.cadence')).to.be.true
     })
 
     it('treats ! after optional as force-unwrap, not logical not', () => {
@@ -721,6 +981,34 @@ describe('Cadence tmGrammar', () => {
 
       // Check that the move operator is recognized
       expect(hasScope(r2.tokens, 'keyword.operator.move.cadence')).to.be.true
+    })
+
+    it('does not leak cast-target scope when followed by code block', () => {
+      // Test case from Burner contract - cast followed by opening brace
+      const lines = [
+        '} else if let dict <- r as? @{HashableStruct: AnyResource} {',
+        '    let keys = dict.keys',
+        '}'
+      ]
+
+      let ruleStack = null
+      const results = []
+      for (const line of lines) {
+        const result = grammar.tokenizeLine(line, ruleStack)
+        results.push(result)
+        ruleStack = result.ruleStack
+      }
+
+      // Line 2 should not have meta.type.cast-target scope leak
+      const line2Scopes = results[1].tokens.flatMap(t => t.scopes)
+      const hasCastTargetLeak = line2Scopes.some(s => s.includes('meta.type.cast-target'))
+      expect(hasCastTargetLeak, 'Cast-target scope should not leak to next line').to.be.false
+
+      // Line 2 should properly recognize "keys" as a member
+      expect(results[1].tokens.some(t => 
+        t.scopes.includes('variable.other.member.cadence') &&
+        lines[1].slice(t.startIndex, t.endIndex) === 'keys'
+      )).to.be.true
     })
   })
 
