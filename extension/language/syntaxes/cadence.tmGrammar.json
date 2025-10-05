@@ -101,7 +101,7 @@
                     "name": "punctuation.definition.comment.cadence"
                   }
                 },
-                "end": "^",
+                "end": "$",
                 "name": "comment.line.triple-slash.documentation.cadence"
               },
               {
@@ -111,7 +111,7 @@
                     "name": "punctuation.definition.comment.cadence"
                   }
                 },
-                "end": "^",
+                "end": "$",
                 "name": "comment.line.double-slash.documentation.cadence"
               },
               {
@@ -121,7 +121,7 @@
                     "name": "punctuation.definition.comment.cadence"
                   }
                 },
-                "end": "^",
+                "end": "$",
                 "name": "comment.line.double-slash.cadence"
               }
             ]
@@ -177,22 +177,18 @@
             ],
             "repository": {
               "binary":  {
-                "comment": "",
                 "match": "(\\B\\-|\\b)0b[01]([_01]*[01])?\\b",
                 "name": "constant.numeric.integer.binary.cadence"
               },
               "octal":  {
-                "comment": "",
                 "match": "(\\B\\-|\\b)0o[0-7]([_0-7]*[0-7])?\\b",
                 "name": "constant.numeric.integer.octal.cadence"
               },
               "decimal":  {
-                "comment": "",
                 "match": "(\\B\\-|\\b)[0-9]([_0-9]*[0-9])?\\b",
                 "name": "constant.numeric.integer.decimal.cadence"
               },
               "hexadecimal":  {
-                "comment": "",
                 "match": "(\\B\\-|\\b)0x[0-9A-Fa-f]([_0-9A-Fa-f]*[0-9A-Fa-f])?\\b",
                 "name": "constant.numeric.integer.hexadecimal.cadence"
               }
@@ -221,9 +217,9 @@
                   },
                   {
                     "begin": "\\\\\\(",
-                    "beginCaptures": { "0": { "name": "punctuation.section.embedded.begin.cadence" } },
+                    "beginCaptures": { "0": { "name": "punctuation.section.embedded.begin.cadence meta.embedded.cadence" } },
                     "end": "\\)",
-                    "endCaptures": { "0": { "name": "punctuation.section.embedded.end.cadence" } },
+                    "endCaptures": { "0": { "name": "punctuation.section.embedded.end.cadence meta.embedded.cadence" } },
                     "name": "meta.interpolation.cadence",
                     "contentName": "meta.embedded.line.cadence",
                     "patterns": [
@@ -572,9 +568,9 @@
           {
             "begin": "(\\()",
             "beginCaptures": { "1": { "name": "punctuation.definition.arguments.begin.cadence" } },
-            "end": "\\)",
-            "endCaptures": { "0": { "name": "punctuation.definition.arguments.end.cadence" } },
-            "name": "",
+            "end": "(\\))",
+            "endCaptures": { "1": { "name": "punctuation.definition.arguments.end.cadence" } },
+            "name": "meta.group.cadence",
             "patterns": [ { "include": "#expression-element-list" } ]
           },
           {
@@ -583,9 +579,9 @@
               "1": { "name": "variable.function.cadence" },
               "2": { "name": "punctuation.definition.arguments.begin.cadence" }
             },
-            "end": "\\)",
-            "endCaptures": { "0": { "name": "punctuation.definition.arguments.end.cadence" } },
-            "name": "",
+            "end": "(\\))",
+            "endCaptures": { "1": { "name": "punctuation.definition.arguments.end.cadence" } },
+            "name": "meta.function-call.method.cadence",
             "patterns": [ { "include": "#expression-element-list" } ]
           },
           { "match": "(?<=\\.)[\\p{L}_][\\p{L}_\\p{N}\\p{M}]*", "name": "variable.other.member.cadence" },
@@ -638,13 +634,13 @@
               }
             },
             "comment": "foo(args) -- a call whose callee is a highlightable name",
-            "end": "\\)",
+            "end": "(\\))",
             "endCaptures": {
-              "0": {
+              "1": {
                 "name": "punctuation.definition.arguments.end.cadence"
               }
             },
-            "name": "",
+            "name": "meta.function-call.cadence",
             "patterns": [
               {
                 "include": "#expression-element-list"
