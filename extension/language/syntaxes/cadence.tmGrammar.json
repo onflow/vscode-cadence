@@ -552,7 +552,7 @@
           {
             "begin": "([\\p{L}_][\\p{L}_\\p{N}\\p{M}]*)\\s*(<)(?![-!= \\t])",
             "beginCaptures": {
-              "1": { "name": "variable.function.cadence" },
+              "1": { "name": "entity.name.function.cadence" },
               "2": { "name": "punctuation.definition.type-arguments.begin.cadence" }
             },
             "end": "(>)(?=\\s*\\()",
@@ -576,7 +576,7 @@
           {
             "begin": "(?<=\\.)([\\p{L}_][\\p{L}_\\p{N}\\p{M}]*)\\s*(\\()",
             "beginCaptures": {
-              "1": { "name": "variable.function.cadence" },
+              "1": { "name": "entity.name.function.cadence" },
               "2": { "name": "punctuation.definition.arguments.begin.cadence" }
             },
             "end": "(\\))",
@@ -627,7 +627,7 @@
             "begin": "(?<!\\.)\\b(?!(?:set|init|transaction|prepare|execute|access|auth))([\\p{L}_][\\p{L}_\\p{N}\\p{M}]*)\\s*(\\()",
             "beginCaptures": {
               "1": {
-                "name": "variable.function.cadence"
+                "name": "entity.name.function.cadence"
               },
               "2": {
                 "name": "punctuation.definition.arguments.begin.cadence"

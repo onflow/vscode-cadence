@@ -378,7 +378,7 @@ describe('Cadence tmGrammar', () => {
     it('parses chained member calls with generic type arguments', () => {
       const line = 'f().x<&A>()'
       const { tokens } = grammar.tokenizeLine(line)
-      expect(hasScope(tokens, 'variable.function.cadence')).to.be.true
+      expect(hasScope(tokens, 'entity.name.function.cadence')).to.be.true
       expect(hasScope(tokens, 'punctuation.definition.type-arguments.begin.cadence')).to.be.true
     })
 
@@ -387,7 +387,7 @@ describe('Cadence tmGrammar', () => {
       const line2 = '    epochCounter: recoveryEpochCounter,'
       const line3 = ')'
       const r1 = grammar.tokenizeLine(line1)
-      expect(hasScope(r1.tokens, 'variable.function.cadence')).to.be.true
+      expect(hasScope(r1.tokens, 'entity.name.function.cadence')).to.be.true
       const r2 = grammar.tokenizeLine(line2, r1.ruleStack)
       expect(hasScope(r2.tokens, 'punctuation.separator.argument-label.cadence')).to.be.true
 
@@ -560,7 +560,7 @@ describe('Cadence tmGrammar', () => {
       // Check that 'self' is highlighted
       expect(hasScope(r2.tokens, 'variable.language.cadence')).to.be.true
       // Check that both 'a' and 'b' are recognized as methods
-      const methodTokens = r2.tokens.filter(t => t.scopes.includes('variable.function.cadence'))
+      const methodTokens = r2.tokens.filter(t => t.scopes.includes('entity.name.function.cadence'))
       expect(methodTokens.length).to.be.at.least(2)
       // Check that both method calls have proper argument parentheses
       const argBegins = r2.tokens.filter(t => t.scopes.includes('punctuation.definition.arguments.begin.cadence'))
@@ -574,7 +574,7 @@ describe('Cadence tmGrammar', () => {
       const { tokens } = grammar.tokenizeLine(line)
       // methods
       for (const name of ['address', 'balance']) {
-        expect(tokens.some(t => t.scopes.includes('variable.function.cadence') && line.slice(t.startIndex, t.endIndex) === name)).to.be.true
+        expect(tokens.some(t => t.scopes.includes('entity.name.function.cadence') && line.slice(t.startIndex, t.endIndex) === name)).to.be.true
       }
       // property
       expect(tokens.some(t => t.scopes.includes('variable.other.member.cadence') && line.slice(t.startIndex, t.endIndex) === 'attoflow')).to.be.true
@@ -585,7 +585,7 @@ describe('Cadence tmGrammar', () => {
       const { tokens } = grammar.tokenizeLine(line)
       // methods
       for (const name of ['address', 'toString', 'balance']) {
-        expect(tokens.some(t => t.scopes.includes('variable.function.cadence') && line.slice(t.startIndex, t.endIndex) === name)).to.be.true
+        expect(tokens.some(t => t.scopes.includes('entity.name.function.cadence') && line.slice(t.startIndex, t.endIndex) === name)).to.be.true
       }
       // property
       expect(tokens.some(t => t.scopes.includes('variable.other.member.cadence') && line.slice(t.startIndex, t.endIndex) === 'attoflow')).to.be.true
@@ -611,7 +611,7 @@ describe('Cadence tmGrammar', () => {
       // member
       expect(tokens.some(t => t.scopes.includes('variable.other.member.cadence') && line.slice(t.startIndex, t.endIndex) === 'configurableMetadata')).to.be.true
       // method
-      expect(tokens.some(t => t.scopes.includes('variable.function.cadence') && line.slice(t.startIndex, t.endIndex) === 'setNumViewsInEpoch')).to.be.true
+      expect(tokens.some(t => t.scopes.includes('entity.name.function.cadence') && line.slice(t.startIndex, t.endIndex) === 'setNumViewsInEpoch')).to.be.true
       // function argument variable
       expect(tokens.some(t => t.scopes.includes('variable.other.readwrite.cadence') && line.slice(t.startIndex, t.endIndex) === 'newEpochViews')).to.be.true
     })
@@ -626,7 +626,7 @@ describe('Cadence tmGrammar', () => {
         expect(tokens.some(t => t.scopes.includes('variable.other.member.cadence') && line.slice(t.startIndex, t.endIndex) === member)).to.be.true
       }
       // generic method
-      expect(tokens.some(t => t.scopes.includes('variable.function.cadence') && line.slice(t.startIndex, t.endIndex) === 'save')).to.be.true
+      expect(tokens.some(t => t.scopes.includes('entity.name.function.cadence') && line.slice(t.startIndex, t.endIndex) === 'save')).to.be.true
       // generic type argument punctuation
       expect(tokens.some(t => t.scopes.includes('punctuation.definition.type-arguments.begin.cadence'))).to.be.true
       expect(tokens.some(t => t.scopes.includes('punctuation.definition.type-arguments.end.cadence'))).to.be.true
@@ -716,7 +716,7 @@ describe('Cadence tmGrammar', () => {
       // Check that tokensStaked is detected as a member (may be split across tokens due to tokenizer limitations)
       const hasMember = r2.tokens.some(t => t.scopes.includes('variable.other.member.cadence') && line2.slice(t.startIndex, t.endIndex).startsWith('tokensStake'))
       expect(hasMember).to.equal(true)
-      const misclassifiedAsMethod = r2.tokens.some(t => t.scopes.includes('variable.function.cadence') && line2.slice(t.startIndex, t.endIndex).startsWith('tokensStake'))
+      const misclassifiedAsMethod = r2.tokens.some(t => t.scopes.includes('entity.name.function.cadence') && line2.slice(t.startIndex, t.endIndex).startsWith('tokensStake'))
       expect(misclassifiedAsMethod).to.equal(false)
 
       // Check that the move operator is recognized
@@ -800,7 +800,7 @@ describe('Cadence tmGrammar', () => {
       const r3 = grammar.tokenizeLine(line3, r2.ruleStack)
 
       // Line 2 should have deeply nested function calls
-      expect(hasScope(r2.tokens, 'variable.function.cadence')).to.be.true
+      expect(hasScope(r2.tokens, 'entity.name.function.cadence')).to.be.true
       const concatCount = r2.tokens.filter(t =>
         line2.substring(t.startIndex, t.endIndex) === 'concat'
       ).length
@@ -844,10 +844,10 @@ describe('Cadence tmGrammar', () => {
       }
 
       // Line 1: assert( should open a function call
-      expect(hasScope(results[0].tokens, 'variable.function.cadence')).to.be.true
+      expect(hasScope(results[0].tokens, 'entity.name.function.cadence')).to.be.true
 
       // Line 2: should recognize verifyPoP and decodeHex as methods
-      expect(hasScope(results[1].tokens, 'variable.function.cadence')).to.be.true
+      expect(hasScope(results[1].tokens, 'entity.name.function.cadence')).to.be.true
 
       // Line 3: message: should be recognized as an argument label
       expect(hasScope(results[2].tokens, 'punctuation.separator.argument-label.cadence')).to.be.true
@@ -863,7 +863,7 @@ describe('Cadence tmGrammar', () => {
 
       // Line 6: should have string and concat
       expect(hasScope(results[5].tokens, 'string.quoted.double.single-line.cadence')).to.be.true
-      expect(hasScope(results[5].tokens, 'variable.function.cadence')).to.be.true
+      expect(hasScope(results[5].tokens, 'entity.name.function.cadence')).to.be.true
 
       // Line 7: closing ) should close the assert call
       expect(results[6].tokens.some(t => t.scopes.includes('punctuation.definition.arguments.end.cadence'))).to.be.true
