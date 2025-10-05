@@ -21,7 +21,8 @@
 		"install-extension": "code --install-extension cadence-*.vsix",
 		"package-test": "vsce package --out ./extension/test/fixtures/workspace/cadence.vsix",
 		"lint": "ts-standard",
-		"lint-fix": "ts-standard --fix"
+		"lint-fix": "ts-standard --fix",
+		"test-grammar": "mocha tm-tests/grammar.test.mjs"
 	},
 	"engines": {
 		"vscode": "^1.99.3"
@@ -209,7 +210,9 @@
 		"ts-mocha": "^11.1.0",
 		"ts-node": "^10.9.2",
 		"ts-standard": "^12.0.2",
-		"typescript": "^5.9.3"
+		"typescript": "^5.9.3",
+		"onigasm": "^2.2.5",
+		"vscode-textmate": "^9.2.0"
 	},
 	"dependencies": {
 		"@onflow/cadence-parser": "^1.0.0-preview.50",
@@ -236,5 +239,10 @@
 		"publisherDisplayName": "Flow Blockchain",
 		"publisherId": "1b4a291e-1133-468e-b471-80338e4c9595",
 		"isPreReleaseVersion": false
+	},
+	"ts-standard": {
+		"ignore": [
+			"tm-tests/**"
+		]
 	}
 }
