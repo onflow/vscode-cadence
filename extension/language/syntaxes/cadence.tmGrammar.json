@@ -658,7 +658,7 @@
             "begin": "([\\p{L}_][\\p{L}_\\p{N}\\p{M}]*)\\s*(:)",
             "beginCaptures": {
               "1": {
-                "name": "entity.name.label.cadence"
+                "name": "variable.parameter.function-call.cadence"
               },
               "2": {
                 "name": "punctuation.separator.argument-label.cadence"

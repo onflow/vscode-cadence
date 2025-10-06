@@ -653,7 +653,7 @@ describe('Cadence tmGrammar', () => {
 
       // Check that the argument label is scoped correctly
       expect(r2.tokens.some(t =>
-        t.scopes.includes('entity.name.label.cadence') &&
+        t.scopes.includes('variable.parameter.function-call.cadence') &&
         line2.slice(t.startIndex, t.endIndex) === 'epochCounter'
       )).to.be.true
 
