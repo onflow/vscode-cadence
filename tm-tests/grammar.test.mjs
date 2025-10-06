@@ -1082,31 +1082,6 @@ describe('Cadence tmGrammar', () => {
     })
   })
 
-  describe('Large File Tokenization', () => {
-    it('does not leak scopes at end of large contract file', async () => {
-      const fileContent = await readFile('test-data/FlowIDTableStaking.cdc')
-      const lines = fileContent.toString('utf8').split('\n')
-
-      let ruleStack = null
-      const results = []
-
-      // Tokenize every line
-      for (let i = 0; i < lines.length; i++) {
-        const result = grammar.tokenizeLine(lines[i], ruleStack)
-        results.push(result)
-        ruleStack = result.ruleStack
-      }
-
-      // The last token should only have the base source.cadence scope (no leaked scopes)
-      const lastLine = results[results.length - 1]
-      const lastToken = lastLine.tokens[lastLine.tokens.length - 1]
-
-      // Should only be ["source.cadence"] or ["source.cadence", "punctuation..."]
-      expect(lastToken.scopes[0]).to.equal('source.cadence')
-      expect(lastToken.scopes.length).to.be.at.most(2)
-    })
-  })
-
   describe('Nested Function Calls Scope Leakage', () => {
     it('does not leak function call scope across lines with deeply nested calls', () => {
       const line1 = 'let id = 0'

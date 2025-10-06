@@ -22,6 +22,27 @@ jobs:
       - run: npm ci
       - run: npm run lint
 
+  grammar-tests:
+    name: "TextMate Grammar Tests"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22.x
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run grammar unit tests
+        run: npm run test-grammar
+
+      - name: Run regression tests
+        run: npm run test-grammar-regression
+
   build:
     name: Build
     runs-on: ubuntu-latest

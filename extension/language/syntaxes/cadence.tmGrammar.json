@@ -562,7 +562,7 @@
               "1": { "name": "entity.name.function.cadence" },
               "2": { "name": "punctuation.definition.type-arguments.begin.cadence" }
             },
-            "end": "(>)(?=\\s*\\()",
+            "end": "(>)",
             "endCaptures": {
               "1": { "name": "punctuation.definition.type-arguments.end.cadence" }
             },
@@ -758,7 +758,7 @@
             "include": "#comments"
           },
           {
-            "begin": "([\\p{L}_][\\p{L}_\\p{N}\\p{M}.]*)\\s*(<)",
+            "begin": "(?<!\\.)([\\p{L}_][\\p{L}_\\p{N}\\p{M}]*)\\s*(<)",
             "beginCaptures": {
               "1": { "name": "entity.name.type.cadence" },
               "2": { "name": "punctuation.definition.type-arguments.begin.cadence" }

@@ -22,7 +22,9 @@
 		"package-test": "vsce package --out ./extension/test/fixtures/workspace/cadence.vsix",
 		"lint": "ts-standard",
 		"lint-fix": "ts-standard --fix",
-		"test-grammar": "mocha tm-tests/grammar.test.mjs"
+		"test-grammar": "mocha tm-tests/grammar.test.mjs",
+		"test-grammar-regression": "mocha tm-tests/regression.test.mjs --timeout 180000",
+		"test-grammar-all": "npm run test-grammar && npm run test-grammar-regression"
 	},
 	"engines": {
 		"vscode": "^1.99.3"

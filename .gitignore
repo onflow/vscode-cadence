@@ -7,3 +7,4 @@ out
 *.vsix
 cypress
 .idea
+tm-tests/.repos
