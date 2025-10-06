@@ -169,10 +169,13 @@
                 "include": "#octal"
               },
               {
-                "include": "#decimal"
+                "include": "#hexadecimal"
               },
               {
-                "include": "#hexadecimal"
+                "include": "#fixed-point"
+              },
+              {
+                "include": "#decimal"
               }
             ],
             "repository": {
@@ -185,12 +188,16 @@
                 "name": "constant.numeric.integer.octal.cadence"
               },
               "decimal":  {
-                "match": "(\\B\\-|\\b)[0-9]([_0-9]*[0-9])?\\b",
+                "match": "(\\B\\-|\\b)[0-9]([_0-9]*[0-9])?\\b(?!\\.[0-9])",
                 "name": "constant.numeric.integer.decimal.cadence"
               },
               "hexadecimal":  {
                 "match": "(\\B\\-|\\b)0x[0-9A-Fa-f]([_0-9A-Fa-f]*[0-9A-Fa-f])?\\b",
                 "name": "constant.numeric.integer.hexadecimal.cadence"
+              },
+              "fixed-point": {
+                "match": "(\\B\\-|\\b)[0-9]([_0-9]*[0-9])?\\.[0-9]([_0-9]*[0-9])?\\b",
+                "name": "constant.numeric.float.cadence"
               }
             }
           },
@@ -408,7 +415,7 @@
             "match": "(?<!\\.)\\bview\\b",
             "name": "storage.modifier.view.cadence"
           },
-          
+
           {
             "match": "(?<!\\.)\\b(auth)\\b",
             "name": "keyword.other.auth.cadence"
