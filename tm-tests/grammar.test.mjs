@@ -673,6 +673,28 @@ describe('Cadence tmGrammar', () => {
       expect(hasScope(tokens, 'keyword.operator.swap.cadence')).to.be.true
     })
 
+    it('highlights bitwise shift operators', () => {
+      const lines = [
+        'let a = b << 2',
+        'let c = d >> 3',
+        'let e = (f<<1)',
+        'let g = (h>>1)'
+      ]
+      for (const line of lines) {
+        const { tokens } = grammar.tokenizeLine(line)
+        const hasShift = tokens.some(t => t.scopes.includes('keyword.operator.bitwise.shift.cadence'))
+        expect(hasShift, `Missing bitwise shift scope in: ${line}`).to.be.true
+      }
+    })
+
+    it('does not confuse << with generic type-argument begin', () => {
+      const line = 'let x = y << 1'
+      const { tokens } = grammar.tokenizeLine(line)
+      const hasTypeArgs = tokens.some(t => t.scopes.includes('meta.type.arguments.cadence'))
+      expect(hasTypeArgs).to.be.false
+      expect(tokens.some(t => t.scopes.includes('keyword.operator.bitwise.shift.cadence'))).to.be.true
+    })
+
     it('highlights string interpolation with nested parentheses', () => {
       const line = 'let foo = "test \\((self.x / 4) * self.y\\)"'
       const { tokens } = grammar.tokenizeLine(line)
@@ -737,14 +759,30 @@ describe('Cadence tmGrammar', () => {
       expect(scopesAt(line, tokens, line.indexOf('Crypto') + 1)).to.include('variable.other.readwrite.cadence')
     })
 
-    it("allows 'from' as a variable name outside import statements", () => {
+    it("scopes 'from' as a keyword outside import statements (but allows declaration name)", () => {
       const line = 'let from <- from as! @FlowToken.Vault'
       const { tokens } = grammar.tokenizeLine(line)
 
-      // The second 'from' (after <-) should be a variable
-      const fromTokens = tokens.filter(t => line.slice(t.startIndex, t.endIndex).trim() === 'from')
-      expect(fromTokens.length).to.be.greaterThan(1)
-      expect(fromTokens.some(t => t.scopes.includes('variable.other.readwrite.cadence'))).to.be.true
+      const textOf = (t) => line.slice(t.startIndex, t.endIndex)
+      const allFrom = tokens.filter(t => textOf(t).trim() === 'from')
+      expect(allFrom.length).to.be.greaterThan(1)
+
+      // First 'from' (declaration name) should be captured by var/let rule
+      const hasDeclaredFrom = tokens.some(t => textOf(t) === 'from' && t.scopes.includes('variable.other.declaration.cadence'))
+      expect(hasDeclaredFrom).to.be.true
+
+      // The second 'from' should be treated as a keyword now
+      const hasKeywordFrom = allFrom.some(t => t.scopes.includes('keyword.other.cadence'))
+      expect(hasKeywordFrom).to.be.true
+    })
+
+    it('flags deprecated pub/priv keywords as invalid', () => {
+      const lines = ['pub fun x() {}', 'priv let y: Int = 1']
+      for (const line of lines) {
+        const { tokens } = grammar.tokenizeLine(line)
+        expect(tokens.some(t => t.scopes.includes('invalid.deprecated.keyword.cadence')),
+          `Expected invalid.deprecated.keyword.cadence in: ${line}`).to.be.true
+      }
     })
   })
 

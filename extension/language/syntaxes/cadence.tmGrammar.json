@@ -283,10 +283,6 @@
             ]
           },
           {
-            "match": "\\bis\\b",
-            "name": "keyword.operator.type.cast.cadence"
-          },
-          {
             "match": "\\-",
             "name": "keyword.operator.arithmetic.unary.cadence"
           },
@@ -317,6 +313,14 @@
           {
             "match": "%",
             "name": "keyword.operator.arithmetic.remainder.cadence"
+          },
+          {
+            "match": ">>",
+            "name": "keyword.operator.bitwise.shift.cadence"
+          },
+          {
+            "match": "<<",
+            "name": "keyword.operator.bitwise.shift.cadence"
           },
           {
             "match": "==|!=|>|<|>=|<=",
@@ -408,8 +412,12 @@
             "name": "keyword.control.loop.cadence"
           },
           {
-            "match": "(?<!\\.)\\b(?:create|destroy|emit)\\b",
+            "match": "(?<!\\.)\\b(?:create|destroy|emit|attach|to|remove|from)\\b",
             "name": "keyword.other.cadence"
+          },
+          {
+            "match": "(?<!\\.)\\b(pub|priv)\\b",
+            "name": "invalid.deprecated.keyword.cadence"
           },
           {
             "match": "(?<!\\.)\\bview\\b",
@@ -557,7 +565,7 @@
           { "include": "#function-expression" },
           { "include": "#path-literals" },
           {
-            "begin": "([\\p{L}_][\\p{L}_\\p{N}\\p{M}]*)\\s*(<)(?![-!= \\t])",
+            "begin": "([\\p{L}_][\\p{L}_\\p{N}\\p{M}]*)\\s*(<)(?![-!=< \\t])",
             "beginCaptures": {
               "1": { "name": "entity.name.function.cadence" },
               "2": { "name": "punctuation.definition.type-arguments.begin.cadence" }
@@ -593,7 +601,7 @@
           },
           { "match": "(?<=\\.)[\\p{L}_][\\p{L}_\\p{N}\\p{M}]*", "name": "variable.other.member.cadence" },
           { "include": "#function-call-expression" },
-          { "match": "(?<!\\.)\\b(?!(?:contract|struct|resource|event|enum|attachment|entitlement|import|fun|let|var|if|else|switch|case|default|while|for|in|break|continue|return|emit|as|is|create|destroy|access|all|self|account|view|auth|transaction|prepare|execute|pre|post|init|true|false|nil|Type|Int|UInt|Int8|Int16|Int32|Int64|Int128|Int256|UInt8|UInt16|UInt32|UInt64|UInt128|UInt256|Word8|Word16|Word32|Word64|Fix64|UFix64|String|Character|Bool|Address|Void|AnyStruct|AnyResource|Any|Never|mapping|include)\\b)[\\p{L}_][\\p{L}_\\p{N}\\p{M}]*\\b", "name": "variable.other.readwrite.cadence" },
+          { "match": "(?<!\\.)\\b(?!(?:contract|struct|resource|event|enum|attachment|entitlement|import|fun|let|var|if|else|switch|case|default|while|for|in|break|continue|return|emit|as|create|destroy|attach|to|remove|from|pub|priv|access|all|self|account|view|auth|transaction|prepare|execute|pre|post|init|true|false|nil|Type|Int|UInt|Int8|Int16|Int32|Int64|Int128|Int256|UInt8|UInt16|UInt32|UInt64|UInt128|UInt256|Word8|Word16|Word32|Word64|Fix64|UFix64|String|Character|Bool|Address|Void|AnyStruct|AnyResource|Any|Never|mapping|include)\\b)[\\p{L}_][\\p{L}_\\p{N}\\p{M}]*\\b", "name": "variable.other.readwrite.cadence" },
           { "include": "#literals" },
           { "include": "#operators" }
         ]

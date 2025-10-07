@@ -97,51 +97,36 @@ describe('Regression Tests - Official Flow Repositories', () => {
   }
 
   /**
-   * Tokenize a file and check for scope leaks
+   * Tokenize a file and check for scope leaks.
+   * We simulate typing a newline at EOF and ensure only "source.cadence" remains.
    */
   function checkFileForScopeLeaks (filePath, content) {
     const lines = content.split('\n')
     let ruleStack = null
 
-    // Tokenize every line
+    // Tokenize every line to reach EOF state
     for (let i = 0; i < lines.length; i++) {
       const result = grammar.tokenizeLine(lines[i], ruleStack)
       ruleStack = result.ruleStack
     }
 
-    // Check the last line for scope leaks
-    const lastResult = grammar.tokenizeLine(lines[lines.length - 1], ruleStack)
-    
-    if (lastResult.tokens.length === 0) {
+    // Append a virtual newline and check scopes at this position
+    const eofResult = grammar.tokenizeLine('', ruleStack)
+
+    // If nothing is tokenized, there's nothing leaking
+    if (eofResult.tokens.length === 0) {
       return { success: true }
     }
 
-    const lastToken = lastResult.tokens[lastResult.tokens.length - 1]
-    
-    // Should only have base "source.cadence" scope or simple punctuation
-    // No meta.*, storage.*, entity.*, etc. should leak beyond their context
-    if (lastToken.scopes[0] !== 'source.cadence') {
-      return {
-        success: false,
-        error: `First scope is not source.cadence: ${lastToken.scopes[0]}`
-      }
-    }
+    // Collect any scopes other than the base "source.cadence"
+    const leakedScopes = Array.from(new Set(
+      eofResult.tokens.flatMap(t => t.scopes.filter(s => s !== 'source.cadence'))
+    ))
 
-    // Check for problematic scope leaks (not just any extra scope)
-    // We're mainly concerned about meta.definition.*, meta.function-call.*, etc.
-    // that indicate unclosed blocks or expressions
-    const problematicScopes = lastToken.scopes.filter(s => 
-      s.startsWith('meta.definition.') ||
-      s.startsWith('meta.function-call.') ||
-      s.startsWith('meta.group.') ||
-      s.startsWith('string.') ||
-      (s.startsWith('meta.type.') && s !== 'meta.type.arguments.cadence')
-    )
-    
-    if (problematicScopes.length > 0) {
+    if (leakedScopes.length > 0) {
       return {
         success: false,
-        error: `Problematic scopes leaked: ${JSON.stringify(problematicScopes)}`
+        error: `Leaked scopes at EOF: ${JSON.stringify(leakedScopes)}`
       }
     }
 
