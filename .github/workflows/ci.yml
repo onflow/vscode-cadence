@@ -7,6 +7,23 @@ on:
     branches: [ master ]
 
 jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      tm_tests: ${{ steps.filter.outputs.tm_tests }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Paths Filter
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            tm_tests:
+              - 'tm-tests/**'
+              - 'extension/language/syntaxes/cadence.tmGrammar.json'
+
   linter:
     name: "Code Style Standard"
     runs-on: ubuntu-latest
@@ -25,6 +42,8 @@ jobs:
   grammar-tests:
     name: "TextMate Grammar Tests"
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.tm_tests == 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v5

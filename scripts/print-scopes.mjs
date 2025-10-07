@@ -36,13 +36,21 @@ async function main () {
   })
   const grammar = await registry.loadGrammar('source.cadence')
 
-  const lines = [
-    'test<&{UInt64: String}>()',
-    'test<{UInt64: String}>()',
-    'let x: &{Interface}',
-    'let x: &{UInt64: String}',
-    'let x: {UInt64: String}'
-  ]
+  let lines
+  if (process.argv[2]) {
+    // Read from file argument
+    const fileContent = await fs.readFile(process.argv[2], 'utf8')
+    lines = fileContent.split('\n')
+  } else {
+    // Use default test lines
+    lines = [
+      'test<&{UInt64: String}>()',
+      'test<{UInt64: String}>()',
+      'let x: &{Interface}',
+      'let x: &{UInt64: String}',
+      'let x: {UInt64: String}'
+    ]
+  }
 
   let ruleStack = null
   lines.forEach((line, i) => {

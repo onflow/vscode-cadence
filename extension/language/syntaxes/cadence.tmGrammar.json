@@ -276,9 +276,22 @@
           {
             "begin": "\\b(as\\?|as!|as)\\b",
             "beginCaptures": { "0": { "name": "keyword.operator.type.cast.cadence" } },
-            "end": "(?=$|;|//|/\\\\*|\\\")|(?=\\)|,|\\{)",
+            "end": "(?=$|;|//|/\\\\*|\\\")|(?=\\)|,|\\})|(?<=\\>)(?=\\s*\\{(?!\\s*[\\p{L}_][\\p{L}_\\p{N}\\p{M}.]*\\s*:))|(?<=[\\p{L}\\p{N}\\}\\>\\)\\]\\?])(?=\\s*\\{(?!\\s*[\\p{L}_][\\p{L}_\\p{N}\\p{M}.]*\\s*:))|(?=\\?\\?)",
             "name": "meta.type.cast-target.cadence",
             "patterns": [
+              {
+                "begin": "\\{(?=\\s*[\\p{L}_][\\p{L}_\\p{N}\\p{M}.]*\\s*:)",
+                "beginCaptures": { "0": { "name": "punctuation.definition.type.dictionary.begin.cadence" } },
+                "end": "(\\})",
+                "endCaptures": { "1": { "name": "punctuation.definition.type.dictionary.end.cadence" } },
+                "name": "meta.type.dictionary.cadence",
+                "patterns": [
+                  { "include": "#comments" },
+                  { "include": "#type" },
+                  { "match": ":", "name": "punctuation.separator.type.dictionary.cadence" },
+                  { "match": ",", "name": "punctuation.separator.type.dictionary.cadence" }
+                ]
+              },
               { "include": "#type" }
             ]
           },
@@ -470,7 +483,7 @@
             "name": "entity.name.function.cadence"
           }
         },
-        "end": "(?<=\\})|$",
+        "end": "(?<=\\})|;|(?=\\}[\\s]*$)|$",
         "name": "meta.definition.function.cadence",
         "patterns": [
           {
@@ -549,7 +562,7 @@
             "name": "keyword.operator.function-result.cadence"
           }
         },
-        "end": "(?!\\G)(?=\\{|;)|$",
+        "end": "(?<![@&\\[<])(?!\\G)(?=\\s*\\{)|(?=;|(?<!\\{)\\})|$",
         "name": "meta.function-result.cadence",
         "patterns": [
           {
@@ -564,8 +577,9 @@
           { "include": "#language-variables" },
           { "include": "#function-expression" },
           { "include": "#path-literals" },
+          
           {
-            "begin": "([\\p{L}_][\\p{L}_\\p{N}\\p{M}]*)\\s*(<)(?![-!=< \\t])",
+            "begin": "(?!\\b(?:if|while|for|return|create|destroy|emit|as)\\b)([\\p{L}_][\\p{L}_\\p{N}\\p{M}]*)\\s*(<)(?=[\\p{Lu}_&@\\[{(]|auth\\b|\\s*$)",
             "beginCaptures": {
               "1": { "name": "entity.name.function.cadence" },
               "2": { "name": "punctuation.definition.type-arguments.begin.cadence" }
@@ -601,7 +615,7 @@
           },
           { "match": "(?<=\\.)[\\p{L}_][\\p{L}_\\p{N}\\p{M}]*", "name": "variable.other.member.cadence" },
           { "include": "#function-call-expression" },
-          { "match": "(?<!\\.)\\b(?!(?:contract|struct|resource|event|enum|attachment|entitlement|import|fun|let|var|if|else|switch|case|default|while|for|in|break|continue|return|emit|as|create|destroy|attach|to|remove|from|pub|priv|access|all|self|account|view|auth|transaction|prepare|execute|pre|post|init|true|false|nil|Type|Int|UInt|Int8|Int16|Int32|Int64|Int128|Int256|UInt8|UInt16|UInt32|UInt64|UInt128|UInt256|Word8|Word16|Word32|Word64|Fix64|UFix64|String|Character|Bool|Address|Void|AnyStruct|AnyResource|Any|Never|mapping|include)\\b)[\\p{L}_][\\p{L}_\\p{N}\\p{M}]*\\b", "name": "variable.other.readwrite.cadence" },
+          { "match": "(?<!\\.)\\b(?!(?:contract|struct|resource|event|enum|attachment|entitlement|import|fun|let|var|if|else|switch|case|default|while|for|in|break|continue|return|emit|as|create|destroy|attach|to|remove|from|pub|priv|access|all|self|view|auth|transaction|prepare|execute|pre|post|init|true|false|nil|Type|Int|UInt|Int8|Int16|Int32|Int64|Int128|Int256|UInt8|UInt16|UInt32|UInt64|UInt128|UInt256|Word8|Word16|Word32|Word64|Fix64|Fix128|UFix64|UFix128|String|Character|Bool|Address|Void|AnyStruct|AnyResource|Any|Never|mapping|include)\\b)[\\p{L}_][\\p{L}_\\p{N}\\p{M}]*\\b", "name": "variable.other.readwrite.cadence" },
           { "include": "#literals" },
           { "include": "#operators" }
         ]
@@ -720,13 +734,13 @@
             "name": "variable.other.declaration.cadence"
           }
         },
-        "end": "=|<-|<-!|(?=//)|$",
+        "end": "=|<-|<-!|;|(?=//)|$",
         "patterns": [
           { "include": "#comments" },
           {
             "begin": ":\\s*(?!\\s)",
             "beginCaptures": { "0": { "name": "keyword.operator.type.annotation.cadence" } },
-            "end": "(?=//|=|<-|<-!|$)",
+            "end": "(?=//|=|<-|<-!|;|$)",
             "patterns": [ { "include": "#type" }, { "include": "#comments" } ]
           }
         ]
@@ -802,7 +816,25 @@
             ]
           },
           {
-            "begin": "\\{(?!.*\\}\\s*\\()",
+            "begin": "\\{(?![^}]*:)(?!.*\\}\\s*\\()",
+            "beginCaptures": {
+              "0": { "name": "punctuation.definition.type.intersection.begin.cadence" }
+            },
+            "end": "(\\})",
+            "endCaptures": {
+              "1": { "name": "punctuation.definition.type.intersection.end.cadence" }
+            },
+            "patterns": [
+              { "include": "#comments" },
+              { "include": "#type" },
+              {
+                "match": ",",
+                "name": "punctuation.separator.type.intersection.cadence"
+              }
+            ]
+          },
+          {
+            "begin": "\\{(?=\\s*[\\p{L}_][\\p{L}_\\p{N}\\p{M}.]*\\s*:)(?!.*\\}\\s*\\()",
             "beginCaptures": {
               "0": { "name": "punctuation.definition.type.dictionary.begin.cadence" }
             },
@@ -840,47 +872,10 @@
             ]
           },
           {
-            "begin": "(&|@)\\s*(\\{)(?=[^}]*:)",
-            "beginCaptures": {
-              "1": { "name": "punctuation.definition.type.reference.cadence" },
-              "2": { "name": "punctuation.definition.type.dictionary.begin.cadence" }
-            },
-            "end": "(\\})",
-            "endCaptures": {
-              "1": { "name": "punctuation.definition.type.dictionary.end.cadence" }
-            },
-            "name": "meta.type.dictionary.cadence",
-            "patterns": [
-              { "include": "#comments" },
-              { "include": "#type" },
-              {
-                "match": ":",
-                "name": "punctuation.separator.type.dictionary.cadence"
-              },
-              {
-                "match": ",",
-                "name": "punctuation.separator.type.dictionary.cadence"
-              }
-            ]
-          },
-          {
-            "begin": "(&|@)\\s*(\\{)",
-            "beginCaptures": {
-              "1": { "name": "punctuation.definition.type.reference.cadence" },
-              "2": { "name": "punctuation.definition.type.intersection.begin.cadence" }
-            },
-            "end": "(\\})",
-            "endCaptures": {
-              "1": { "name": "punctuation.definition.type.intersection.end.cadence" }
-            },
-            "patterns": [
-              { "include": "#comments" },
-              { "include": "#type" },
-              {
-                "match": ",",
-                "name": "punctuation.separator.type.intersection.cadence"
-              }
-            ]
+            "match": "(&|@)(?=\\s*\\{)",
+            "captures": {
+              "1": { "name": "punctuation.definition.type.reference.cadence" }
+            }
           },
           {
             "match": "(&|@)\\s*([\\p{L}_][\\p{L}_\\p{N}\\p{M}.]*)",
@@ -1002,7 +997,7 @@
             "name": "entity.name.type.$1.cadence"
           }
         },
-        "end": "(?<=\\})",
+        "end": "(?<=\\})|(?=\\s*\\Z)",
         "name": "meta.definition.type.composite.cadence",
         "patterns": [
           {

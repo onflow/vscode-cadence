@@ -173,6 +173,19 @@ describe('Cadence tmGrammar', () => {
         line.slice(t.startIndex, t.endIndex) === 'vault'
       )).to.be.true
     })
+
+    it('highlights intersection type in function return type', () => {
+      const line = '        access(all) fun createEmptyCollection(): @{NonFungibleToken.Collection} {'
+      const { tokens } = grammar.tokenizeLine(line)
+      // '@' should be resource punctuation
+      expect(tokens.some(t => t.scopes.includes('punctuation.definition.type.reference.cadence') && line.slice(t.startIndex, t.endIndex) === '@')).to.be.true
+      // '{' and '}' should be intersection type punctuation
+      expect(tokens.some(t => t.scopes.includes('punctuation.definition.type.intersection.begin.cadence') && line.slice(t.startIndex, t.endIndex) === '{')).to.be.true
+      expect(tokens.some(t => t.scopes.includes('punctuation.definition.type.intersection.end.cadence') && line.slice(t.startIndex, t.endIndex) === '}')).to.be.true
+      // 'NonFungibleToken' and 'Collection' should be types, not variables
+      expect(tokens.some(t => t.scopes.includes('entity.name.type.cadence') && line.slice(t.startIndex, t.endIndex) === 'NonFungibleToken')).to.be.true
+      expect(tokens.some(t => t.scopes.includes('entity.name.type.cadence') && line.slice(t.startIndex, t.endIndex) === 'Collection')).to.be.true
+    })
   })
 
   describe('Transactions', () => {
@@ -673,6 +686,51 @@ describe('Cadence tmGrammar', () => {
       expect(hasScope(tokens, 'keyword.operator.swap.cadence')).to.be.true
     })
 
+    it('highlights root variable `account` in borrow with generic type args', () => {
+      const lines = [
+        '    let collection = account.capabilities.borrow<&ExampleNFT.Collection>(',
+        '            collectionData.publicPath',
+        '    ) ?? panic("The account ".concat(address.toString()).concat(" does not have a NonFungibleToken Collection at ")',
+        '                .concat(collectionData.publicPath.toString())',
+        '                .concat(". The account must initialize their account with this collection first!"))'
+      ]
+
+      const r1 = grammar.tokenizeLine(lines[0])
+      // Ensure 'account' is a normal variable
+      expect(r1.tokens.some(t => t.scopes.includes('variable.other.readwrite.cadence') && lines[0].slice(t.startIndex, t.endIndex) === 'account')).to.be.true
+
+      // Ensure borrow is identified as a method and type args punctuated
+      expect(r1.tokens.some(t => t.scopes.includes('entity.name.function.cadence') && lines[0].slice(t.startIndex, t.endIndex) === 'borrow')).to.be.true
+      expect(r1.tokens.some(t => t.scopes.includes('punctuation.definition.type-arguments.begin.cadence'))).to.be.true
+    })
+
+    it('handles multiline type args and args after dotted callee', () => {
+      // NOTE: TextMate grammars cannot handle this case properly because:
+      // - Line 1 ends with `.issue` (no context about what follows)
+      // - Line 2 starts with `<` (ambiguous: comparison operator vs type-args without prior context)
+      // - TextMate has zero cross-line lookahead capability
+      // 
+      // This test documents the limitation. Proper highlighting requires semantic tokens
+      // from the Cadence language server, which has full AST context.
+      
+      const lines = [
+        '        let vaultCapability = sharedAccount.capabilities.storage.issue',
+        '            <auth(FungibleToken.Withdraw) &FlowToken.Vault>',
+        '            (/storage/flowTokenVault)'
+      ]
+
+      const r1 = grammar.tokenizeLine(lines[0])
+      expect(r1.tokens.some(t => t.scopes.includes('variable.other.member.cadence') && lines[0].slice(t.startIndex, t.endIndex) === 'issue')).to.be.true
+      
+      const r2 = grammar.tokenizeLine(lines[1], r1.ruleStack)
+      // Without context, `<` is tokenized as comparison operator (expected limitation)
+      expect(r2.tokens.some(t => t.scopes.includes('keyword.operator.comparison.cadence') && lines[1].slice(t.startIndex, t.endIndex) === '<')).to.be.true
+
+      const r3 = grammar.tokenizeLine(lines[2], r2.ruleStack)
+      // Path literal should still be recognized
+      expect(r3.tokens.some(t => t.scopes.includes('constant.other.path.cadence'))).to.be.true
+    })
+
     it('highlights bitwise shift operators', () => {
       const lines = [
         'let a = b << 2',
@@ -1111,6 +1169,56 @@ describe('Cadence tmGrammar', () => {
         t.scopes.includes('variable.other.member.cadence') &&
         lines[1].slice(t.startIndex, t.endIndex) === 'keys'
       )).to.be.true
+    })
+
+    it('parses dictionary type after as! cast', () => {
+      const line = 'let r = y as! {UFix64: UFix64}'
+      const { tokens } = grammar.tokenizeLine(line)
+
+      // cast operator ('as' token) and immediate '!'
+      expect(tokens.some(t => t.scopes.includes('keyword.operator.type.cast.cadence') && line.slice(t.startIndex, t.endIndex) === 'as')).to.be.true
+      expect(tokens.some(t => line.slice(t.startIndex, t.endIndex) === '!' && t.scopes.includes('keyword.operator.type.optional.cadence'))).to.be.true
+
+      // dictionary types should be recognized (at least colon and inner types)
+      expect(tokens.some(t => t.scopes.includes('punctuation.separator.type.dictionary.cadence') && line.slice(t.startIndex, t.endIndex) === ':')).to.be.true
+
+      // UFix64 should be scoped as a type on both sides
+      const typeName = 'UFix64'
+      const typeTokens = tokens.filter(t => t.scopes.includes('entity.name.type.cadence') && line.slice(t.startIndex, t.endIndex) === typeName)
+      expect(typeTokens.length).to.be.greaterThan(1)
+    })
+
+    it('treats ?? after cast optional type as coalescing operator', () => {
+      const line = 'x as! Int? ?? panic("problem retrieving collection length from recipient at expected path")'
+      const { tokens } = grammar.tokenizeLine(line)
+
+      // Ensure the optional marker is part of the type
+      const hasOptionalType = tokens.some(t => t.scopes.includes('keyword.operator.type.optional.cadence') && line.slice(t.startIndex, t.endIndex) === '?')
+      expect(hasOptionalType).to.be.true
+
+      // Ensure ?? is recognized as coalescing operator, not part of type
+      const hasCoalescing = tokens.some(t => t.scopes.includes('keyword.operator.coalescing.cadence') && line.slice(t.startIndex, t.endIndex) === '??')
+      expect(hasCoalescing).to.be.true
+
+      // Ensure panic is identified as a function call
+      const panicToken = tokens.find(t => line.slice(t.startIndex, t.endIndex) === 'panic')
+      expect(panicToken && panicToken.scopes.includes('entity.name.function.cadence')).to.be.true
+    })
+
+    it('parses dictionary type after as? cast and still recognizes ??', () => {
+      const line = 'let bar = foo as? {UInt64: UInt} ?? panic("Failed to cast foo to {UInt64: UInt}")'
+      const { tokens } = grammar.tokenizeLine(line)
+
+      // dictionary separators should be recognized
+      expect(tokens.some(t => t.scopes.includes('punctuation.separator.type.dictionary.cadence') && line.slice(t.startIndex, t.endIndex) === ':')).to.be.true
+
+      // both type names should be recognized
+      for (const typeName of ['UInt64', 'UInt']) {
+        expect(tokens.some(t => t.scopes.includes('entity.name.type.cadence') && line.slice(t.startIndex, t.endIndex) === typeName)).to.be.true
+      }
+
+      // coalescing operator recognized
+      expect(tokens.some(t => t.scopes.includes('keyword.operator.coalescing.cadence') && line.slice(t.startIndex, t.endIndex) === '??')).to.be.true
     })
   })
 
