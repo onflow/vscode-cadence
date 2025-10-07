@@ -941,6 +941,40 @@ describe('Cadence tmGrammar', () => {
     })
   })
 
+  describe('Generic Type Arguments', () => {
+    it('handles multi-line generic function calls', () => {
+      const line1 = 'signer.capabilities.get<'
+      const line2 = '  &FungibleTokenSwitchboard.Switchboard'
+      const line3 = '>(path)'
+
+      const r1 = grammar.tokenizeLine(line1)
+      expect(r1.tokens.some(t => t.scopes.includes('punctuation.definition.type-arguments.begin.cadence'))).to.be.true
+
+      const r2 = grammar.tokenizeLine(line2, r1.ruleStack)
+      expect(r2.tokens.some(t => t.scopes.includes('entity.name.type.cadence'))).to.be.true
+
+      const r3 = grammar.tokenizeLine(line3, r2.ruleStack)
+      expect(r3.tokens.some(t => t.scopes.includes('punctuation.definition.type-arguments.end.cadence'))).to.be.true
+
+      // Verify scope closed after line 3
+      const r4 = grammar.tokenizeLine('let x = 1', r3.ruleStack)
+      expect(r4.tokens.some(t => t.scopes.includes('meta.type.arguments.cadence'))).to.be.false
+    })
+
+    it('does not close type arguments on comparison operators', () => {
+      const line1 = 'if a < b {'
+      const line2 = '  let x = c >= d'
+      const line3 = '}'
+
+      const r1 = grammar.tokenizeLine(line1)
+      const r2 = grammar.tokenizeLine(line2, r1.ruleStack)
+      const r3 = grammar.tokenizeLine(line3, r2.ruleStack)
+
+      // Should not have unclosed type arguments scope
+      expect(r3.tokens.some(t => t.scopes.includes('meta.type.arguments.cadence'))).to.be.false
+    })
+  })
+
   describe('Path Literals', () => {
     it('highlights storage paths with domain and identifier', () => {
       const line = 'self.account.storage.save(resource, to: /storage/myResource)'

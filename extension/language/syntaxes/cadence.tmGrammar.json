@@ -188,7 +188,7 @@
                 "name": "constant.numeric.integer.octal.cadence"
               },
               "decimal":  {
-                "match": "(\\B\\-|\\b)[0-9]([_0-9]*[0-9])?\\b(?!\\.[0-9])",
+                "match": "(\\B\\-|\\b)[0-9]([_0-9]*[0-9])?\\b",
                 "name": "constant.numeric.integer.decimal.cadence"
               },
               "hexadecimal":  {
@@ -415,7 +415,7 @@
             "match": "(?<!\\.)\\bview\\b",
             "name": "storage.modifier.view.cadence"
           },
-
+          
           {
             "match": "(?<!\\.)\\b(auth)\\b",
             "name": "keyword.other.auth.cadence"
@@ -562,7 +562,7 @@
               "1": { "name": "entity.name.function.cadence" },
               "2": { "name": "punctuation.definition.type-arguments.begin.cadence" }
             },
-            "end": "(>)",
+            "end": "(>)(?!\\s*[=<>])",
             "endCaptures": {
               "1": { "name": "punctuation.definition.type-arguments.end.cadence" }
             },
