@@ -7,3 +7,5 @@ out
 *.vsix
 cypress
 .idea
+tm-tests/.repos
+tm-tests/.fixtures-cache

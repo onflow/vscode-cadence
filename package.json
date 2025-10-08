@@ -21,7 +21,10 @@
 		"install-extension": "code --install-extension cadence-*.vsix",
 		"package-test": "vsce package --out ./extension/test/fixtures/workspace/cadence.vsix",
 		"lint": "ts-standard",
-		"lint-fix": "ts-standard --fix"
+		"lint-fix": "ts-standard --fix",
+		"test-grammar": "mocha tm-tests/grammar.test.mjs --timeout 360000",
+		"test-grammar-regression": "mocha tm-tests/regression.test.mjs --timeout 360000",
+		"test-grammar-all": "npm run test-grammar && npm run test-grammar-regression"
 	},
 	"engines": {
 		"vscode": "^1.99.3"
@@ -200,16 +203,19 @@
 		"chai": "^6.2.0",
 		"esbuild": "^0.25.1",
 		"glob": "^11.0.3",
+		"extract-zip": "^2.0.1",
 		"mkdirp": "^3.0.1",
 		"mocha": "^11.7.4",
 		"nyc": "^17.1.0",
+		"onigasm": "^2.2.5",
 		"ovsx": "^0.10.5",
 		"rimraf": "^6.0.1",
 		"sinon": "^19.0.2",
 		"ts-mocha": "^11.1.0",
 		"ts-node": "^10.9.2",
 		"ts-standard": "^12.0.2",
-		"typescript": "^5.9.3"
+		"typescript": "^5.9.3",
+		"vscode-textmate": "^9.2.0"
 	},
 	"dependencies": {
 		"@onflow/cadence-parser": "^1.0.0-preview.50",
@@ -236,5 +242,10 @@
 		"publisherDisplayName": "Flow Blockchain",
 		"publisherId": "1b4a291e-1133-468e-b471-80338e4c9595",
 		"isPreReleaseVersion": false
+	},
+	"ts-standard": {
+		"ignore": [
+			"tm-tests/**"
+		]
 	}
 }

@@ -8,3 +8,24 @@ vsc-extension-quickstart.md
 **/tslint.json
 **/*.map
 node_modules
+
+# Test files and directories
+tm-tests/**
+extension/test/**
+cypress.json
+
+# Development and build files
+scripts/**
+docker-compose.yml
+*.vsix
+
+# Documentation and meta files
+docs/**
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+CODEOWNERS
+OWNERSHIP_PROOF.md
+README.md
+
+# Package management
+package-lock.json
