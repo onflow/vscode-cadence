@@ -1,6 +1,5 @@
 /* Wrapper functions for error reporting using Sentry */
 import * as Sentry from '@sentry/node'
-import * as Type from '@sentry/types'
 
 // Sentry vscode-cadence
 const SENTRY_DSN: string = 'https://4d98c4d4ac7e4892850f8e3d2e61c733@o114654.ingest.sentry.io/6568410'
@@ -29,7 +28,7 @@ export async function sentryClose (): Promise<void> {
   void await Sentry.close()
 }
 
-export function captureException (exception: any, captureContent?: Type.CaptureContext | undefined): void {
+export function captureException (exception: any, captureContent?: Parameters<typeof Sentry.captureException>[1]): void {
   if (!sentryActivated) return
   Sentry.captureException(exception, captureContent)
 }
