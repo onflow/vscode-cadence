@@ -202,7 +202,7 @@
 		"@vscode/test-electron": "^2.5.2",
 		"chai": "^6.2.0",
 		"esbuild": "^0.25.10",
-		"glob": "^11.0.3",
+		"glob": "^11.1.0",
 		"extract-zip": "^2.0.1",
 		"mkdirp": "^3.0.1",
 		"mocha": "^11.7.4",
