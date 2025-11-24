@@ -14,7 +14,7 @@ jobs:
       tm_tests: ${{ steps.filter.outputs.tm_tests }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Paths Filter
         id: filter
         uses: dorny/paths-filter@v3
@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Use Node.js 22.x
         uses: actions/setup-node@v5
@@ -46,7 +46,7 @@ jobs:
     if: needs.changes.outputs.tm_tests == 'true'
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Use Node.js 22.x
         uses: actions/setup-node@v5
@@ -67,7 +67,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Use Node.js 22.x
         uses: actions/setup-node@v5
@@ -86,7 +86,7 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Use Node.js 22.x
         uses: actions/setup-node@v5
@@ -108,7 +108,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Use Node.js 22.x
         uses: actions/setup-node@v5
