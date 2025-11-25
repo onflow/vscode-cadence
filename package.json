@@ -230,7 +230,7 @@
 		"mixpanel": "^0.18.0",
 		"node-fetch": "^2.6.7",
 		"object-hash": "^3.0.0",
-		"os-name": "^6.0.0",
+		"os-name": "^6.1.0",
 		"rxjs": "^7.8.2",
 		"semver": "^7.7.3",
 		"sleep-synchronously": "^2.0.0",
