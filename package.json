@@ -222,7 +222,7 @@
 		"@sentry/node": "^10.11.0",
 		"@sentry/types": "^10.19.0",
 		"@vscode/vsce": "^3.6.2",
-		"ansi-regex": "^6.1.0",
+		"ansi-regex": "^6.2.2",
 		"async-lock": "^1.4.1",
 		"crypto": "^1.0.1",
 		"elliptic": "^6.6.1",
