@@ -200,7 +200,7 @@
 		"@types/uuid": "^10.0.0",
 		"@types/vscode": "1.99.1",
 		"@vscode/test-electron": "^2.5.2",
-		"chai": "^6.2.0",
+		"chai": "^6.2.2",
 		"esbuild": "^0.27.1",
 		"glob": "^11.1.0",
 		"extract-zip": "^2.0.1",
