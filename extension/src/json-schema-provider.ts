@@ -6,7 +6,7 @@ import fetch from 'node-fetch'
 import { CliProvider } from './flow-cli/cli-provider'
 
 const CADENCE_SCHEMA_URI = 'cadence-schema'
-const GET_FLOW_SCHEMA_URL = (version: string): string => `https://raw.githubusercontent.com/onflow/flow-cli/v${version}/flowkit/schema.json`
+const GET_FLOW_SCHEMA_URL = (version: string): string => `https://raw.githubusercontent.com/onflow/flowkit/v${version}/schema.json`
 
 // This class provides the JSON schema for the flow.json file
 // It is accessible via the URI scheme "cadence-schema:///flow.json"
@@ -37,21 +37,21 @@ export class JSONSchemaProvider implements vscode.FileSystemProvider, vscode.Dis
       return await this.getLocalSchema()
     }
 
-    const version = cliBinary.version.format()
-    if (this.#schemaCache[version] == null) {
-      // Try to get schema from flow-cli repo based on the flow-cli version
-      this.#schemaCache[version] = fetch(GET_FLOW_SCHEMA_URL(version)).then(async (response: Response) => {
+    const flowkitVersion = cliBinary.flowkitVersion.format()
+    if (this.#schemaCache[flowkitVersion] == null) {
+      // Try to get schema from flowkit repo based on the flowkit version
+      this.#schemaCache[flowkitVersion] = fetch(GET_FLOW_SCHEMA_URL(flowkitVersion)).then(async (response: Response) => {
         if (!response.ok) {
-          throw new Error(`Failed to fetch schema for flow-cli version ${version}`)
+          throw new Error(`Failed to fetch schema for flowkit version ${flowkitVersion}`)
         }
         return await response.text()
       }).catch(async () => {
-        void vscode.window.showWarningMessage('Failed to fetch flow.json schema from flow-cli repo, using local schema instead.  Please update flow-cli to the latest version to get the latest schema.')
+        void vscode.window.showWarningMessage('Failed to fetch flow.json schema from flowkit repo, using local schema instead.  Please update flow-cli to the latest version to get the latest schema.')
         return await this.getLocalSchema()
       })
     }
 
-    return await this.#schemaCache[version]
+    return await this.#schemaCache[flowkitVersion]
   }
 
   async getLocalSchema (): Promise<string> {
