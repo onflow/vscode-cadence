@@ -23,7 +23,8 @@ suite('Language Server & Emulator Integration', () => {
     // create a mock cli provider without invokign the constructor
     cliBinary$ = new BehaviorSubject<CliBinary>({
       command: 'flow',
-      version: new SemVer('1.0.0')
+      version: new SemVer('1.0.0'),
+      flowkitVersion: new SemVer('1.0.0')
     })
     const mockCliProvider = {
       currentBinary$: cliBinary$,
@@ -61,7 +62,8 @@ suite('Language Server & Emulator Integration', () => {
     // Check that client remains stopped even if CLI binary changes
     cliBinary$.next({
       command: 'flow',
-      version: new SemVer('1.0.1')
+      version: new SemVer('1.0.1'),
+      flowkitVersion: new SemVer('1.0.1')
     })
 
     assert.equal(client?.state, State.Stopped)

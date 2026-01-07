@@ -4,23 +4,25 @@ import { execDefault } from '../utils/shell/exec'
 import { Observable, distinctUntilChanged } from 'rxjs'
 import { isEqual } from 'lodash'
 
-const CHECK_FLOW_CLI_CMD = (flowCommand: string): string => `${flowCommand} version --output=json`
-const CHECK_FLOW_CLI_CMD_NO_JSON = (flowCommand: string): string => `${flowCommand} version`
+const CHECK_FLOW_CLI_CMD = (flowCommand: string): string => `${flowCommand} version -v --output=json`
+const FLOWKIT_PACKAGE_NAME = 'github.com/onflow/flowkit/v2'
 
 export enum KNOWN_FLOW_COMMANDS {
   DEFAULT = 'flow',
 }
 
-// Matches the version number from the output of the Flow CLI
-const LEGACY_VERSION_REGEXP = /Version:\s*v(.*)(?:\s|$)/m
-
 export interface CliBinary {
   command: string
   version: semver.SemVer
+  flowkitVersion: semver.SemVer
 }
 
 interface FlowVersionOutput {
   version: string
+  dependencies?: Array<{
+    package: string
+    version: string
+  }>
 }
 
 export class CliVersionsProvider {
@@ -84,31 +86,13 @@ export class CliVersionsProvider {
       // Format version string from output
       const versionInfo: FlowVersionOutput = JSON.parse(buffer)
 
-      return cliBinaryFromVersion(bin, versionInfo.version)
-    } catch {
-      // Fallback to old method if JSON is not supported/fails
-      return await this.#fetchBinaryInformationOld(bin)
-    }
-  }
+      // Extract flowkit version from dependencies
+      const flowkitDep = versionInfo.dependencies?.find(dep =>
+        dep.package === FLOWKIT_PACKAGE_NAME
+      )
+      const flowkitVersionStr = flowkitDep?.version
 
-  // Old version of fetchBinaryInformation (before JSON was supported)
-  // Used as fallback for old CLI versions
-  async #fetchBinaryInformationOld (bin: string): Promise<CliBinary | null> {
-    try {
-      // Get user's version information
-      const output = (await execDefault(CHECK_FLOW_CLI_CMD_NO_JSON(
-        bin
-      )))
-
-      let versionStr: string | null = parseFlowCliVersion(output.stdout)
-      if (versionStr === null) {
-        // Try to fallback to stderr as patch for bugged version
-        versionStr = parseFlowCliVersion(output.stderr)
-      }
-
-      if (versionStr == null) return null
-
-      return cliBinaryFromVersion(bin, versionStr)
+      return cliBinaryFromVersion(bin, versionInfo.version, flowkitVersionStr)
     } catch {
       return null
     }
@@ -130,16 +114,15 @@ export class CliVersionsProvider {
   }
 }
 
-export function parseFlowCliVersion (buffer: Buffer | string): string | null {
-  const rawMatch = buffer.toString().match(LEGACY_VERSION_REGEXP)?.[1] ?? null
-  if (rawMatch == null) return null
-  return semver.clean(rawMatch)
-}
-
-function cliBinaryFromVersion (bin: string, versionStr: string): CliBinary | null {
+function cliBinaryFromVersion (bin: string, versionStr: string, flowkitVersionStr?: string): CliBinary | null {
   // Ensure user has a compatible version number installed
   const version: semver.SemVer | null = semver.parse(versionStr)
   if (version === null) return null
 
-  return { command: bin, version }
+  // Parse flowkit version - both CLI and flowkit versions are required
+  if (flowkitVersionStr == null) return null
+  const flowkitVersion: semver.SemVer | null = semver.parse(flowkitVersionStr)
+  if (flowkitVersion === null) return null
+
+  return { command: bin, version, flowkitVersion }
 }
