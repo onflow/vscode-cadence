@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use vscode-cadence in your research or reference it, please cite it as below."
+title: "vscode-cadence: Visual Studio Code extension for the Cadence smart contract language on the Flow network"
+authors:
+  - name: "Flow Foundation"
+    website: "https://flow.com"
+repository-code: "https://github.com/onflow/vscode-cadence"
+url: "https://flow.com"
+license: Apache-2.0
+type: software
+keywords:
+  - flow
+  - flow-network
+  - cadence
+  - vscode-extension
+  - language-server
+  - developer-tools
+  - smart-contracts
